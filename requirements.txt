@@ -8,5 +8,6 @@ robotpy[phoenix6]
 robotpy[rev]
 
 # phoenix6==25.0.0b4
-robotpy-pathplannerlib==2025.0.0b6
+robotpy-pathplannerlib==2025.1.1
+robotpy-urcl==2025.0.0
 # robotpy-rev==2025.0.0b4
