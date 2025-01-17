@@ -2,13 +2,14 @@ import typing, threading
 import math
 
 from commands2 import Subsystem
-from wpilib import RobotState, SmartDashboard, Field2d, DriverStation
+from wpilib import RobotState, SmartDashboard, Field2d, DriverStation, getTime
 from wpilib.shuffleboard import Shuffleboard
 from wpimath.estimator import SwerveDrive4PoseEstimator
 from wpimath.geometry import Rotation2d, Translation2d, Pose2d, Pose3d, Transform2d
 from wpimath.kinematics import SwerveDrive4Kinematics, SwerveModulePosition, SwerveModuleState, SwerveDrive4Odometry, ChassisSpeeds
 from wpimath.system.plant import DCMotor
 from wpimath.units import lbsToKilograms
+from wpimath.interpolation import TimeInterpolatableRotation2dBuffer
 
 from ntcore.util import ntproperty
 
@@ -146,6 +147,7 @@ class SwerveDrive(Subsystem):
             self.__getModulePositions(),
             pose
         )
+        self.rotationBuffer = TimeInterpolatableRotation2dBuffer( 5 )
 
     # Periodic Loop
     def periodic(self) -> None:
@@ -166,6 +168,8 @@ class SwerveDrive(Subsystem):
         self.__modules[3].run()
         
         # Update Odometry
+        self.rotationBuffer.addSample( getTime(), self.getRobotAngle() )
+
         pose = self.__odometry.getPose()
         vPose = self.__visionOdometry.getEstimatedPosition()
 
@@ -211,9 +215,12 @@ class SwerveDrive(Subsystem):
     def stop(self) -> None:
         self.runChassisSpeeds( ChassisSpeeds( 0.0, 0.0, 0.0 ) )
  
-    def getRobotAngle(self) -> Rotation2d:
+    def getRobotAngle(self, at_time:float|None=None) -> Rotation2d:
         rotateBy = 180.0 if self.shouldFlipPath() else 0.0
-        return self.__gyro.getRotation2d().rotateBy( Rotation2d.fromDegrees(rotateBy) )
+        if at_time is None:
+            return self.__gyro.getRotation2d().rotateBy( Rotation2d.fromDegrees(rotateBy) )
+        else:
+            return self.rotationBuffer.sample( at_time ).rotateBy( Rotation2d.fromDegrees(rotateBy) )
 
     # Run By Percentage
     def runPercentInputs(self, x:float, y:float, omega:float) -> None:
