@@ -71,7 +71,7 @@ class Elevator(Subsystem):
         FalconLogger.logInput("Elevator/MotorOutput", self.__m2.get_motor_voltage().value)
         FalconLogger.logInput("Elevator/MotorPositionRots", self.__m2.get_position().value)
         FalconLogger.logInput("Elevator/MotorVelocityRPS", self.__m2.get_velocity().value)
-        self.__m2.set_control(self.__req.with_position(inchesToElevatorPosition(self.__setpoint)))
+        self.__m2.set_control(self.__req.with_position(self.__setpoint))
     
     def simulationPeriodic(self):
         return super().simulationPeriodic()
@@ -80,7 +80,7 @@ class Elevator(Subsystem):
         return elevatorPositionToInches(self.__setpoint)
     
     def setSetpoint(self, sp: float) -> None:
-        self.__setpoint = sp
+        self.__setpoint = inchesToElevatorPosition(sp)
 
     def atSetpoint(self) -> bool:
         margin = self.__m2.get_closed_loop_error()
@@ -94,7 +94,7 @@ class Elevator(Subsystem):
     
     def set(self, pos: float) -> None:
         pos = inchesToElevatorPosition(pos)
-        
+        self.setSetpoint(inchesToElevatorPosition(pos))
         self.__m2.set_control(self.__req.with_position(pos))
 
 
