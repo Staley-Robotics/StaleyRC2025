@@ -34,7 +34,8 @@ class ClimberUnClimb(Command):
     # Is Finished
     def isFinished(self) -> bool:
         # Def need to change this. Essentially I want to stop after climber rotates 90 degrees (or something idk) (opposite of climbing though)
-        return self.m_subsystem.getPosition(unit="rotations") > .25
+        # TODO change -.25 to +.25 if needed
+        return self.m_subsystem.getPosition(unit="rotations") > -.25
 
     # Run When Disabled
     def runsWhenDisabled(self) -> bool:

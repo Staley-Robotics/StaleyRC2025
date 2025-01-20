@@ -20,18 +20,20 @@ class Climber(Subsystem):
     # Initialization
     def __init__(self, sysId:int) -> None:
         self.m_sys_id = sysId
+
         self.m_speed = 0.0
         
         self.m_motor:SparkMax = SparkMax(self.m_sys_id, SparkMax.MotorType.kBrushless)
 
-        self.m_gear_ratio = 1
+        self.m_gear_ratio = 1 / 75.6
         
         self.m_encoder = self.m_motor.getAbsoluteEncoder()
         
 
         # consider adding limit switches to motor while running at full speed rather than track rotation?
+        # TODO Ask Tyler what how to limit switch?? Or other programmer like Ben ...
 
-        self.m_logging = NetworkTableInstance.getDefault().getTable("/Logging/Climber")
+        # self.m_logging = NetworkTableInstance.getDefault().getTable("/Logging/Climber")
 
     # Periodic Loop
     def periodic(self) -> None:
@@ -48,7 +50,8 @@ class Climber(Subsystem):
             self.run()
         
         # Logging: Write Post Operation Information
-        self.m_logging.putNumber( "Climber id (at least in code)", self.m_sys_id )
+        FalconLogger
+        # self.m_logging.putNumber( "Climber id (at least in code)", self.m_sys_id )
 
     # Run the Subsystem
     def run(self) -> None:
