@@ -3,8 +3,8 @@ from wpilib import SendableChooser, SmartDashboard
 from commands2 import Command, cmd
 
 # Local Imports
-from subsystems import SampleSubsystem
-from commands import SampleCommand
+from subsystems import SampleSubsystem, CoralManipulatorPivot
+from commands import SampleCommand, SetPivotPosition
 from util import FalconXboxController
 
 class RobotContainer:
@@ -24,10 +24,12 @@ class RobotContainer:
 
         # Declare Subsystems
         sysSample = SampleSubsystem( 0 )
+        sysCoralManipulatorPivot = CoralManipulatorPivot( 'CoralManipulatorPivot', 12 )
 
         # Commands
         cmdSampleLeft = SampleCommand(sysSample, driver1.getLeftX )
         cmdSampleRight = SampleCommand(sysSample, driver1.getRightX )
+        cmdSetPivotPosition = SetPivotPosition( sysCoralManipulatorPivot, lambda: driver1.getRightUpDown())
 
         # Autonomous Chooser
         self.__autoChooser.setDefaultOption( "1 - None", cmd.none() )
