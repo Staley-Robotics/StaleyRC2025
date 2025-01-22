@@ -11,9 +11,10 @@ from wpimath.system.plant import DCMotor
 from wpimath.units import rotationsPerMinuteToRadiansPerSecond, rotationsToRadians, radiansToRotations, kSecondsPerMinute, radians
 
 from rev import SparkMax, SparkRelativeEncoder, SparkMaxSim, SparkMaxConfig
-from phoenix6.hardware import CANcoder
-from phoenix6.configs import CANcoderConfiguration
-from phoenix6.signals.spn_enums import SensorDirectionValue
+
+from phoenix6.hardware import CANcoder, TalonFX
+from phoenix6.configs import CANcoderConfiguration, TalonFXConfiguration
+from phoenix6.signals.spn_enums import SensorDirectionValue, NeutralModeValue, InvertedValue
 
 from util import FalconLogger
 
@@ -37,17 +38,19 @@ class SwerveModuleConstants:
         kS:float = 0
         kV:float = 0
     
-    class NeoSim:
-        kMaxRpm:float = radiansToRotations( DCMotor.NEO(1).freeSpeed ) * kSecondsPerMinute
+    # class NeoSim:
+    #     kMaxRpm:float = radiansToRotations( DCMotor.NEO(1).freeSpeed ) * kSecondsPerMinute
+    class KrakenSim:
+        kMaxRps:float = radiansToRotations( DCMotor.krakenX60(1).freeSpeed )# * kSecondsPerMinute
 
 class SwerveModule:
     # Variable Declaration
-    __driveMotor:SparkMax = None
-    __driveEncoder:SparkRelativeEncoder = None
+    __driveMotor:TalonFX = None
+    # __driveEncoder:typing.Any = None
     __drivePid:PIDController = None
     __driveFF:SimpleMotorFeedforwardMeters = None
 
-    __turnMotor:SparkMax = None
+    __turnMotor:TalonFX = None
     __turnEncoder:CANcoder = None
     __turnPid:ProfiledPIDControllerRadians = None
     __turnFF:SimpleMotorFeedforwardRadians = None
@@ -59,27 +62,41 @@ class SwerveModule:
         self.moduleId = moduleId
         
         # Drive Motor
-        driveMotorCfg = SparkMaxConfig()
-        driveMotorCfg = driveMotorCfg.voltageCompensation( 12.0 )
-        driveMotorCfg = driveMotorCfg.setIdleMode( SparkMaxConfig.IdleMode.kCoast )
-        driveMotorCfg = driveMotorCfg.secondaryCurrentLimit( 40.0 )
-        driveMotorCfg = driveMotorCfg.inverted( True )
-        self.__driveMotor = SparkMax( driveId, SparkMax.MotorType.kBrushless )
-        self.__driveMotor.configure( driveMotorCfg, SparkMax.ResetMode.kResetSafeParameters, SparkMax.PersistMode.kPersistParameters )
-        self.__driveEncoder = self.__driveMotor.getEncoder()
+        # driveMotorCfg = SparkMaxConfig()
+        # driveMotorCfg = driveMotorCfg.voltageCompensation( 12.0 )
+        # driveMotorCfg = driveMotorCfg.setIdleMode( SparkMaxConfig.IdleMode.kCoast )
+        # driveMotorCfg = driveMotorCfg.secondaryCurrentLimit( 40.0 )
+        # driveMotorCfg = driveMotorCfg.inverted( True )
+        # self.__driveMotor = SparkMax( driveId, SparkMax.MotorType.kBrushless )
+        # self.__driveMotor.configure( driveMotorCfg, SparkMax.ResetMode.kResetSafeParameters, SparkMax.PersistMode.kPersistParameters )
+        # self.__driveEncoder = self.__driveMotor.getEncoder()
+        driveMotorCfg = TalonFXConfiguration()
+        driveMotorCfg.motor_output.neutral_mode = NeutralModeValue.BRAKE
+        driveMotorCfg.current_limits.with_stator_current_limit( 40.0 ).with_stator_current_limit_enable( True )
+        driveMotorCfg.motor_output.inverted = InvertedValue.COUNTER_CLOCKWISE_POSITIVE
+
+        self.__driveMotor = TalonFX( driveId, "rio" )
+        self.__driveMotor.configurator.apply( driveMotorCfg )
+
         self.__drivePid = PIDController( SwerveModuleConstants.Drive.kP, SwerveModuleConstants.Drive.kI, SwerveModuleConstants.Drive.kD )
         self.__drivePid.setTolerance( 0.01 )
         self.__driveFF = SimpleMotorFeedforwardMeters( SwerveModuleConstants.Drive.kS, SwerveModuleConstants.Drive.kV )
+        
 
         # Turn Motor
-        turnMotorCfg = SparkMaxConfig()
-        turnMotorCfg = turnMotorCfg.voltageCompensation( 12.0 )
-        turnMotorCfg = turnMotorCfg.setIdleMode( SparkMaxConfig.IdleMode.kCoast )
-        turnMotorCfg = turnMotorCfg.secondaryCurrentLimit( 20.0 )
-        turnMotorCfg = turnMotorCfg.inverted( True )
-        self.__turnMotor = SparkMax( turnId, SparkMax.MotorType.kBrushless )
-        self.__turnMotor.configure( turnMotorCfg, SparkMax.ResetMode.kResetSafeParameters, SparkMax.PersistMode.kPersistParameters )      
-        self.__turnMotorEncoder = self.__turnMotor.getEncoder()
+        # turnMotorCfg = SparkMaxConfig()
+        # turnMotorCfg = turnMotorCfg.voltageCompensation( 12.0 )
+        # turnMotorCfg = turnMotorCfg.setIdleMode( SparkMaxConfig.IdleMode.kCoast )
+        # turnMotorCfg = turnMotorCfg.secondaryCurrentLimit( 20.0 )
+        # turnMotorCfg = turnMotorCfg.inverted( True )
+        # self.__turnMotor = SparkMax( turnId, SparkMax.MotorType.kBrushless )
+        # self.__turnMotor.configure( turnMotorCfg, SparkMax.ResetMode.kResetSafeParameters, SparkMax.PersistMode.kPersistParameters )      
+        # self.__turnMotorEncoder = self.__turnMotor.getEncoder()
+        turnMotorCfg = TalonFXConfiguration()
+        turnMotorCfg.motor_output.neutral_mode = NeutralModeValue.BRAKE
+        turnMotorCfg.current_limits.with_stator_current_limit( 20.0 ).with_stator_current_limit_enable( True )
+        turnMotorCfg.motor_output.inverted = InvertedValue.COUNTER_CLOCKWISE_POSITIVE
+        self.__turnMotor = TalonFX( turnId, "rio" )
         
         # Turn Encoder (CANcoder)
         turnEncoderCfg = CANcoderConfiguration()
@@ -97,18 +114,18 @@ class SwerveModule:
         self.__turnFF = SimpleMotorFeedforwardRadians( SwerveModuleConstants.Turn.kS, SwerveModuleConstants.Turn.kV )
 
         # Drive Motor Simulation Setup
-        self.__driveMotorSim = SparkMaxSim( self.__driveMotor, DCMotor.NEO(1) )
-        self.__driveMotorSim.getAbsoluteEncoderSim().setPositionConversionFactor(1)
-        self.__driveMotorSim.getAbsoluteEncoderSim().setVelocityConversionFactor(1)
-        self.__driveMotorSim.getRelativeEncoderSim().setPositionConversionFactor(1)
-        self.__driveMotorSim.getRelativeEncoderSim().setVelocityConversionFactor(1)
+        # self.__driveMotorSim = SparkMaxSim( self.__driveMotor, DCMotor.NEO(1) )
+        # self.__driveMotorSim.getAbsoluteEncoderSim().setPositionConversionFactor(1)
+        # self.__driveMotorSim.getAbsoluteEncoderSim().setVelocityConversionFactor(1)
+        # self.__driveMotorSim.getRelativeEncoderSim().setPositionConversionFactor(1)
+        # self.__driveMotorSim.getRelativeEncoderSim().setVelocityConversionFactor(1)
         
         # Turn Motor Simulation Setup
-        self.__turnMotorSim = SparkMaxSim( self.__turnMotor, DCMotor.NEO(1) )
-        self.__turnMotorSim.getAbsoluteEncoderSim().setPositionConversionFactor(1)
-        self.__turnMotorSim.getAbsoluteEncoderSim().setVelocityConversionFactor(1)
-        self.__turnMotorSim.getRelativeEncoderSim().setPositionConversionFactor(1)
-        self.__turnMotorSim.getRelativeEncoderSim().setVelocityConversionFactor(1)
+        # self.__turnMotorSim = SparkMaxSim( self.__turnMotor, DCMotor.NEO(1) )
+        # self.__turnMotorSim.getAbsoluteEncoderSim().setPositionConversionFactor(1)
+        # self.__turnMotorSim.getAbsoluteEncoderSim().setVelocityConversionFactor(1)
+        # self.__turnMotorSim.getRelativeEncoderSim().setPositionConversionFactor(1)
+        # self.__turnMotorSim.getRelativeEncoderSim().setVelocityConversionFactor(1)
         
         # CANcoder Simulation Setup
         self.__turnEncoderSim = self.__turnEncoder.sim_state
@@ -124,21 +141,21 @@ class SwerveModule:
         # Logging Current State
         logPath = f"SwerveDrive/SwerveModule/{self.moduleId}"
         FalconLogger.logInput( f"{logPath}/DriveInput", self.__driveMotor.get() )
-        FalconLogger.logInput( f"{logPath}/DriveOutput", self.__driveMotor.getAppliedOutput() )
-        FalconLogger.logInput( f"{logPath}/DrivePosition_r", self.__driveEncoder.getPosition() )
-        FalconLogger.logInput( f"{logPath}/DriveVelocity_rpm", self.__driveEncoder.getVelocity() )
+        FalconLogger.logInput( f"{logPath}/DriveOutput", self.__driveMotor.get_motor_voltage().value )
+        FalconLogger.logInput( f"{logPath}/DrivePosition_r", self.__driveMotor.get_position().value )
+        FalconLogger.logInput( f"{logPath}/DriveVelocity_rpm", self.__driveMotor.get_velocity().value )
 
         FalconLogger.logInput( f"{logPath}/TurnInput", self.__turnMotor.get() )
-        FalconLogger.logInput( f"{logPath}/TurnOutput", self.__turnMotor.getAppliedOutput() )
-        FalconLogger.logInput( f"{logPath}/TurnPosition_r", self.__turnMotorEncoder.getPosition() )
-        FalconLogger.logInput( f"{logPath}/TurnVelocity_rpm", self.__turnMotorEncoder.getVelocity() )
+        FalconLogger.logInput( f"{logPath}/TurnOutput", self.__turnMotor.get_motor_voltage().value )
+        FalconLogger.logInput( f"{logPath}/TurnPosition_r", self.__turnMotor.get_position().value )
+        FalconLogger.logInput( f"{logPath}/TurnVelocity_rpm", self.__turnMotor.get_velocity().value )
 
         FalconLogger.logInput( f"{logPath}/EncoderPositionAbs_r", self.__turnEncoder.get_absolute_position().value )
         FalconLogger.logInput( f"{logPath}/EncoderPositionRel_r", self.__turnEncoder.get_position().value )
         FalconLogger.logInput( f"{logPath}/EncoderVelocity_rps", self.__turnEncoder.get_velocity().value )
 
         # Set Drive Motor
-        driveVelocity = self.__getDriveVelocity( self.__driveEncoder.getVelocity() )
+        driveVelocity = self.__getDriveVelocity( self.__driveMotor.get_velocity().value )
         driveOutput = self.__drivePid.calculate( driveVelocity, self.__setpoint.speed )
         driveOutputFF = self.__driveFF.calculate( self.__setpoint.speed )
         driveOut = driveOutput + driveOutputFF
@@ -154,21 +171,25 @@ class SwerveModule:
 
     def runSim(self) -> None:
         # Drive Motor Position and Velocity
-        driveRpm = SwerveModuleConstants.NeoSim.kMaxRpm * self.__driveMotor.get()
-        self.__driveMotorSim.getRelativeEncoderSim().iterate( driveRpm, 0.02 )
-        self.__driveMotorSim.getRelativeEncoderSim().setVelocity( driveRpm )
-        self.__driveMotorSim.getAbsoluteEncoderSim().setVelocity( driveRpm )
-        self.__driveMotorSim.getAbsoluteEncoderSim().setPosition( self.__driveMotorSim.getRelativeEncoderSim().getPosition() % 1 )
+        driveRps = SwerveModuleConstants.KrakenSim.kMaxRps * self.__driveMotor.get()
+        self.__driveMotor.sim_state.set_rotor_velocity(driveRps)
+        self.__driveMotor.sim_state.add_rotor_position( driveRps * 0.02 ) # idk what this does, stole from 24v2 intake
+        # self.__driveMotorSim.getRelativeEncoderSim().iterate( driveRpm, 0.02 )
+        # self.__driveMotorSim.getRelativeEncoderSim().setVelocity( driveRpm )
+        # self.__driveMotorSim.getAbsoluteEncoderSim().setVelocity( driveRpm )
+        # self.__driveMotorSim.getAbsoluteEncoderSim().setPosition( self.__driveMotorSim.getRelativeEncoderSim().getPosition() % 1 )
         
         # Turn Motor Position and Velocity
-        turnRpm = SwerveModuleConstants.NeoSim.kMaxRpm * self.__turnMotor.get()
-        self.__turnMotorSim.getRelativeEncoderSim().iterate( turnRpm, 0.02 )
-        self.__turnMotorSim.getRelativeEncoderSim().setVelocity( turnRpm )
-        self.__turnMotorSim.getAbsoluteEncoderSim().setVelocity( turnRpm )
-        self.__turnMotorSim.getAbsoluteEncoderSim().setPosition( self.__turnMotorSim.getRelativeEncoderSim().getPosition() % 1 )
+        turnRps = SwerveModuleConstants.KrakenSim.kMaxRps * self.__turnMotor.get()
+        self.__driveMotor.sim_state.set_rotor_velocity(driveRps)
+        self.__driveMotor.sim_state.add_rotor_position( driveRps * 0.02 )
+        # self.__turnMotorSim.getRelativeEncoderSim().iterate( turnRpm, 0.02 )
+        # self.__turnMotorSim.getRelativeEncoderSim().setVelocity( turnRpm )
+        # self.__turnMotorSim.getAbsoluteEncoderSim().setVelocity( turnRpm )
+        # self.__turnMotorSim.getAbsoluteEncoderSim().setPosition( self.__turnMotorSim.getRelativeEncoderSim().getPosition() % 1 )
 
         # CANcoder Velocity and Position
-        canRps = turnRpm * SwerveModuleConstants.Turn.kGearRatio / kSecondsPerMinute
+        canRps = turnRps * SwerveModuleConstants.Turn.kGearRatio# / kSecondsPerMinute
         self.__turnEncoderSim.set_velocity( canRps )
         self.__turnEncoderSim.add_position( canRps * 0.02 )
 
@@ -180,14 +201,14 @@ class SwerveModule:
         self.__setpoint.cosineScale( currentRotation ) # Smooth Out Turning
 
     def getState(self) -> SwerveModuleState:
-        driveVelocity = self.__getDriveVelocity( self.__driveEncoder.getVelocity() )
+        driveVelocity = self.__getDriveVelocity( self.__driveMotor.get_velocity().value )
         return SwerveModuleState(
             driveVelocity,
             self.__getTurnEncoderRotation()
         )
 
     def getPosition(self) -> SwerveModulePosition:
-        driveDistance = self.__getDriveDistance( self.__driveEncoder.getPosition() )
+        driveDistance = self.__getDriveDistance( self.__driveMotor.get_position().value )
         return SwerveModulePosition(
             driveDistance,
             self.__getTurnEncoderRotation()

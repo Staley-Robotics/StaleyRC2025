@@ -28,7 +28,7 @@ from util import FalconLogger
 
 class SwerveDriveConstants:
     kWeightLbs = 120.0
-    kMaxSpeed = 4.4
+    kMaxSpeed = 3.5#4.4
     kRotationSpeed = math.pi
 
 class SwerveDrive(Subsystem):
