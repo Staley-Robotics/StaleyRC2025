@@ -3,8 +3,8 @@ from wpilib import SendableChooser, SmartDashboard
 from commands2 import Command, cmd
 
 # Local Imports
-from subsystems import SampleSubsystem
-from commands import SampleCommand
+from subsystems import SampleSubsystem, Climber, ClimberSim
+from commands import ClimberNotClimb, SampleCommand, ClimberClimb
 from util import FalconXboxController
 
 class RobotContainer:
@@ -19,22 +19,29 @@ class RobotContainer:
         """
         Initializes RobotContainer
         """
+        is_simulation = True
+
         # Driver Controller
         driver1 = FalconXboxController( 0 )
 
         # Declare Subsystems
-        sysSample = SampleSubsystem( 0 )
+        # sysSample = SampleSubsystem( 0 )
+        if is_simulation:
+            self.climber = ClimberSim()
+        else:
+            self.climber = Climber()
 
         # Commands
-        cmdSampleLeft = SampleCommand(sysSample, driver1.getLeftX )
-        cmdSampleRight = SampleCommand(sysSample, driver1.getRightX )
+        # cmdSampleLeft = SampleCommand(sysSample, driver1.getLeftX )
+        # cmdSampleRight = SampleCommand(sysSample, driver1.getRightX )
+
 
         # Autonomous Chooser
         self.__autoChooser.setDefaultOption( "1 - None", cmd.none() )
         SmartDashboard.putData( "Autonomous Mode", self.__autoChooser )
 
         # Default Commands
-        sysSample.setDefaultCommand( cmdSampleLeft )
+        # sysSample.setDefaultCommand( cmdSampleLeft )
 
         # Driver Controller Button Binding
         driver1.a().whileTrue( cmdSampleRight )
