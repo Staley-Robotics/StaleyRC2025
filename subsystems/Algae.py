@@ -4,7 +4,7 @@ from wpilib import SmartDashboard, RobotBase, RobotState, Mechanism2d, Color8Bit
 from wpilib.shuffleboard import Shuffleboard
 from wpimath.controller import PIDController, SimpleMotorFeedforwardRadians
 from wpimath.system.plant import DCMotor
-from wpimath.units import radiansToRotations, degrees, degreesToRotations, rotationsToDegrees
+from wpimath.units import radiansToRotations, degrees, degreesToRotations, rotationsToDegrees, kSecondsPerMinute
 
 from phoenix6.hardware import TalonFX, CANcoder
 from phoenix6.controls import VoltageOut, DutyCycleOut
@@ -12,7 +12,7 @@ from phoenix6.configs import TalonFXConfiguration, CANcoderConfiguration
 from phoenix6.signals.spn_enums import InvertedValue, NeutralModeValue, \
     SensorDirectionValue
 
-from rev import SparkMax, SparkBase, SparkMaxConfig
+from rev import SparkMax, SparkMaxConfig, SparkMaxSim, SparkBase
 
 from enum import Enum
 
@@ -53,14 +53,17 @@ class AlgaeManipulatorConstants:
 
     intake_kGearRatio: float = 1.0
     intake_kOffsetRotations: float = 0.0
-    class KrakenSim:
-        kMaxRps = radiansToRotations(DCMotor.krakenX60(1).freeSpeed)
+    class NeoSim:
+        kMaxRpm = DCMotor.NEO(1).freeSpeed * kSecondsPerMinute
+
+    class Vex775Sim:
+        kMaxRpm = DCMotor.vex775Pro().freeSpeed * kSecondsPerMinute
 
 
 class AlgaeManipulator():
     # Motors (Neo and 775pro, at 25:1 and 10.3333:1 respectively)
     __pivotMotor:SparkMax = None
-    pivotSetPoint = 0.0
+    pivotSetpoint:float = None
 
     __intakeMotor: TalonFX = None
     intakeState = IntakeState.OFF
@@ -68,6 +71,7 @@ class AlgaeManipulator():
     def __init__(self):
         # Motor
         # Neo
+        self.__pivotMotor = SparkMax(1, SparkMax.MotorType.kBrushless)
         self.__pivotController = self.__pivotMotor.getClosedLoopController()
         self.sparkConfig = SparkMaxConfig()
         self.sparkConfig.closedLoop.pidf(AlgaeManipulatorConstants.pivot_kP, AlgaeManipulatorConstants.pivot_kI, AlgaeManipulatorConstants.pivot_kD, AlgaeManipulatorConstants.pivot_kFF)
@@ -79,6 +83,20 @@ class AlgaeManipulator():
         # Zero Motor
         self.voltOut = VoltageOut(0, use_timesync=True)
         self.dutyOut = DutyCycleOut(0, use_timesync=True)
+
+        if RobotBase.isSimulation():
+            # Pivot Simulation
+            self.simPivot = SparkMaxSim(self.__pivotMotor, DCMotor.NEO(1))
+            self.simPivot.getAbsoluteEncoderSim().setPositionConversionFactor(1)
+            self.simPivot.getAbsoluteEncoderSim().setVelocityConversionFactor(1)
+            self.simPivot.getRelativeEncoderSim().setPositionConversionFactor(1)
+            self.simPivot.getRelativeEncoderSim().setVelocityConversionFactor(1)
+
+            # Intake Simulation
+            self.simIntake = TalonFX(25, "canivore1")
+
+
+
 
         # Mechanism Graphics / Logging NOT IMPLEMENTED YET
         # self.mech = Mechanism2d(28, 28, Color8Bit(0, 0, 0))
@@ -103,8 +121,6 @@ class AlgaeManipulator():
         # Run
         if RobotState.isDisabled():
             self.stop()
-        else:
-            self.setSetpoint(self.getSetpoint())
 
         # Intake
         self.__intakeMotor.set(self.intakeState.value)
@@ -113,24 +129,22 @@ class AlgaeManipulator():
         FalconLogger.logOutput("AlgaeManipulator/Pivot/TargetAngle", rotationsToDegrees(self.getSetpoint()))
         FalconLogger.logOutput("AlgaeManipulator/Pivot/ActualAngle", rotationsToDegrees(self.getMeasurement()))
 
-        FalconLogger.logOutput("AlgaeManipulator/Intake/State", self.intakeActive)
+        FalconLogger.logOutput("AlgaeManipulator/Intake/State", self.intakeState)
         FalconLogger.logOutput("AlgaeManipulator/Intake/Voltage", self.__intakeMotor.get_motor_voltage())
 
-    # def simulationPeriodic(self) -> None:
-    #     # Simulation Motor Deadband
-    #     if self.atSetpoint() and abs(self.__motor.get_duty_cycle().value) <= 0.011:
-    #         self.__motor.set_control(self.dutyOut.with_output(0.0))
-    #
-    #     # Motor
-    #     self.__motor.sim_state.set_supply_voltage(RobotController.getBatteryVoltage())
-    #     velocity = self.__motor.sim_state.motor_voltage / 12 * AlgaeManipulatorConstants.KrakenSim.kMaxRps
-    #
-    #     self.__motor.sim_state.set_rotor_velocity(velocity)
-    #     self.__motor.sim_state.add_rotor_position(velocity * 0.02)
-    #
-    #     # CANcoder
-    #     self.__encoder.sim_state.set_velocity(-velocity * AlgaeManipulatorConstants.kGearRatio)
-    #     self.__encoder.sim_state.add_position(-velocity * AlgaeManipulatorConstants.kGearRatio * 0.02)
+    def simulationPeriodic(self) -> None:
+        # Neo Periodic
+        driveRpm = AlgaeManipulatorConstants.NeoSim.kMaxRpm * self.__pivotMotor.get()
+        self.simPivot.getRelativeEncoderSim().iterate(driveRpm, 0.02)
+        self.simPivot.getRelativeEncoderSim().setVelocity(driveRpm)
+        self.simPivot.getAbsoluteEncoderSim().setVelocity(driveRpm)
+        self.simPivot.getAbsoluteEncoderSim().setPosition(self.simPivot.getRelativeEncoderSim().getPosition() % 1)
+
+        # 775pro Periodic
+        velocity = AlgaeManipulatorConstants.Vex775Sim.kMaxRpm * self.__intakeMotor.get()
+        self.simIntake.sim_state.set_rotor_velocity(velocity)
+        self.simIntake.sim_state.add_rotor_position(velocity * 0.02)
+
 
     def stop(self) -> None:
         self.setSetpoint(rotationsToDegrees(self.getMeasurement()), True)
@@ -141,17 +155,20 @@ class AlgaeManipulator():
         # Limits the specific range (Protects mechanism)
         if not overrideRange:
             setpoint = min(max(setpoint, AlgaeManipulatorPositions.MIN), AlgaeManipulatorPositions.MAX)
-        setpoint = degreesToRotations(setpoint)
-        return super().setSetpoint(setpoint)
+        self.__pivotController.setReference(degreesToRotations(setpoint), SparkBase.ControlType.kPosition)
+        self.pivotSetpoint = setpoint
+
 
     def getMeasurement(self) -> float:
         return self.__pivotMotor.getAbsoluteEncoder().getPosition()
 
-    def atSetpoint(self, position: float = None) -> bool:
-        if position is None or self.getSetpoint() == degreesToRotations(position):
-            return self._controller.atSetpoint()
-        else:
-            return False
+    def atSetpoint(self, positionDeg: float = None) -> bool:
+        if positionDeg is None:
+            positionDeg = rotationsToDegrees(self.getMeasurement())
+        return self.pivotSetpoint == positionDeg
+
+    def getSetpoint(self) -> float:
+        return self.pivotSetpoint
 
     def setIntake(self, state: IntakeState):
         self.intakeState = state
