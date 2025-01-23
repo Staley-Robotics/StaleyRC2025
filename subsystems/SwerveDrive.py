@@ -45,19 +45,20 @@ class SwerveDrive(Subsystem):
     __DriveMaxRotationPercent = ntproperty( "/Settings/Driver1/MaxRotationPercent", 1.0 )
 
     __setpoint:ChassisSpeeds = None
+    __setpointStates = [ SwerveModuleState(), SwerveModuleState(), SwerveModuleState(), SwerveModuleState() ]
     __odometryLock = False
 
-    # Initialization
+    # Initializationß
     def __init__(self) -> None:
         self.setName( "SwerveDrive" )
 
         self.__gyro = Pigeon2( 0, "rio" )
 
         self.__modules = [
-            SwerveModule( 0, 7, 8, 1, 0.235352-0.5 ), # 97.471 ),
-            SwerveModule( 1, 1, 2, 2, 0.486572-0.5 ), #5.361 ),
-            SwerveModule( 2, 5, 6, 3, -0.325439+0.5 ), #298.828 ),325439
-            SwerveModule( 3, 3, 4, 4, 0.334473-0.5 ) #60.557 )0.334473
+            SwerveModule( 0, 1, 2, 1, -0.329590 ), # 97.471 ),
+            SwerveModule( 1, 3, 4, 2, 0.249023 ), #5.361 ),
+            SwerveModule( 2, 5, 6, 3, -0.051758 ), #298.828 ),325439
+            SwerveModule( 3, 7, 8, 4, 0.423584 ) #60.557 )0.334473
         ]
 
         self.__kinematics = SwerveDrive4Kinematics(
