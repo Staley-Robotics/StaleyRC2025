@@ -1,7 +1,5 @@
 import math
 
-from commands2 import PIDSubsystem
-
 from wpilib import SmartDashboard, RobotBase, RobotState, Mechanism2d, Color8Bit, RobotController
 from wpilib.shuffleboard import Shuffleboard
 from wpimath.controller import PIDController, SimpleMotorFeedforwardRadians
@@ -59,7 +57,7 @@ class AlgaeManipulatorConstants:
         kMaxRps = radiansToRotations(DCMotor.krakenX60(1).freeSpeed)
 
 
-class AlgaeManipulator(PIDSubsystem):
+class AlgaeManipulator():
     # Motors (Neo and 775pro, at 25:1 and 10.3333:1 respectively)
     __pivotMotor:SparkMax = None
     pivotSetPoint = 0.0
@@ -82,18 +80,6 @@ class AlgaeManipulator(PIDSubsystem):
         self.voltOut = VoltageOut(0, use_timesync=True)
         self.dutyOut = DutyCycleOut(0, use_timesync=True)
 
-        # PID Controller
-        pidController = PIDController(AlgaeManipulatorConstants.pivot_kP, AlgaeManipulatorConstants.pivot_kI, AlgaeManipulatorConstants.pivot_kD)
-        # pidController.setTolerance(AlgaeManipulatorConstants.kTolerance)
-        # pidController.enableContinuousInput(-0.5, 0.5)
-
-        super().__init__(
-            pidController,
-        )
-
-        # Enable Subsystem PIDController
-        self.enable()
-
         # Mechanism Graphics / Logging NOT IMPLEMENTED YET
         # self.mech = Mechanism2d(28, 28, Color8Bit(0, 0, 0))
         #
@@ -102,7 +88,6 @@ class AlgaeManipulator(PIDSubsystem):
 
         Shuffleboard.getTab("AlgaeManipulator").add("AlgaeManipulator", self)
         # Shuffleboard.getTab("AlgaeManipulator").add("AlgaeManipulatorMech", self.mech)
-        Shuffleboard.getTab("AlgaeManipulator").add("AlgaeManipulatorPid", self._controller)
 
     def periodic(self) -> None:
         # Input Logging
@@ -118,12 +103,11 @@ class AlgaeManipulator(PIDSubsystem):
         # Run
         if RobotState.isDisabled():
             self.stop()
-        super().periodic()
+        else:
+            self.setSetpoint(self.getSetpoint())
 
-        # Visualization | MORE UNIMPLEMENTED MECHANISM 2D
-        # offset = self.mechPost.getAngle()
-        # self.mechFront.setAngle(rotationsToDegrees(self.getMeasurement()) - offset)
-        # self.mechBack.setAngle(rotationsToDegrees(self.getMeasurement()) + 180 - offset)
+        # Intake
+        self.__intakeMotor.set(self.intakeState.value)
 
         # Output Logging
         FalconLogger.logOutput("AlgaeManipulator/Pivot/TargetAngle", rotationsToDegrees(self.getSetpoint()))
