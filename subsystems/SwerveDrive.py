@@ -51,13 +51,13 @@ class SwerveDrive(Subsystem):
     def __init__(self) -> None:
         self.setName( "SwerveDrive" )
 
-        self.__gyro = Pigeon2( 9, "canivore1" )
+        self.__gyro = Pigeon2( 0, "rio" )
 
         self.__modules = [
-            SwerveModule( 0, 7, 8, 18, 0.235352-0.5 ), # 97.471 ),
-            SwerveModule( 1, 1, 2, 12, 0.486572-0.5 ), #5.361 ),
-            SwerveModule( 2, 5, 6, 16, -0.325439+0.5 ), #298.828 ),325439
-            SwerveModule( 3, 3, 4, 14, 0.334473-0.5 ) #60.557 )0.334473
+            SwerveModule( 0, 7, 8, 1, 0.235352-0.5 ), # 97.471 ),
+            SwerveModule( 1, 1, 2, 2, 0.486572-0.5 ), #5.361 ),
+            SwerveModule( 2, 5, 6, 3, -0.325439+0.5 ), #298.828 ),325439
+            SwerveModule( 3, 3, 4, 4, 0.334473-0.5 ) #60.557 )0.334473
         ]
 
         self.__kinematics = SwerveDrive4Kinematics(
@@ -191,7 +191,7 @@ class SwerveDrive(Subsystem):
         FalconLogger.logOutput( "SwerveDrive/ChassisSpeeds/Actual", self.getChassisSpeeds() )
         FalconLogger.logOutput( "SwerveDrive/ChassisSpeeds/Target", self.__setpoint )
         FalconLogger.logOutput( "SwerveDrive/SwerveModuleStates/Actual", self.__getModuleStates() )
-        FalconLogger.logOutput( "SwerveDrive/SwerveModuleStates/Target", self.__setpoint )
+        FalconLogger.logOutput( "SwerveDrive/SwerveModuleStates/Target", self.__setpointStates )
 
     # Simulation Periodic Loop
     def simulationPeriodic(self) -> None:

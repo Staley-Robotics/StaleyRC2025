@@ -8,7 +8,7 @@ from wpimath.geometry import Rotation2d
 from wpimath.kinematics import SwerveModulePosition, SwerveModuleState
 from wpimath import applyDeadband
 from wpimath.system.plant import DCMotor
-from wpimath.units import rotationsPerMinuteToRadiansPerSecond, rotationsToRadians, radiansToRotations, kSecondsPerMinute, radians
+from wpimath.units import radiansPerSecondToRotationsPerMinute, rotationsToRadians, radiansToRotations, kSecondsPerMinute, radians
 
 from rev import SparkMax, SparkRelativeEncoder, SparkMaxSim, SparkMaxConfig
 
@@ -26,11 +26,11 @@ class SwerveModuleConstants:
         kI:float = 0
         kD:float = 0
         kS:float = 0 #0.1
-        kV:float = 2.8235 #0.13
+        kV:float = 0#2.8235 #0.13
     
     class Turn:
         kGearRatio:float = 1 / (150/7)
-        kP:float = 2.5 # 25.0
+        kP:float = 0#2.5 # 25.0
         kI:float = 0
         kD:float = 0
         kMaxAngularVelocity:float = math.pi
@@ -103,7 +103,7 @@ class SwerveModule:
         turnEncoderCfg.magnet_sensor.absolute_sensor_discontinuity_point = 0.5
         turnEncoderCfg.magnet_sensor.sensor_direction = SensorDirectionValue.COUNTER_CLOCKWISE_POSITIVE
         if not RobotBase.isSimulation(): turnEncoderCfg.magnet_sensor.magnet_offset = encoderOffset
-        self.__turnEncoder = CANcoder( encoderId, "canivore1" )
+        self.__turnEncoder = CANcoder( encoderId, "rio" )
         self.__turnEncoder.configurator.apply( turnEncoderCfg )
         self.__turnEncoder.set_position( self.__turnEncoder.get_absolute_position().value ) # Position Safeguard
 
@@ -164,7 +164,7 @@ class SwerveModule:
 
         # Set Turn Motor
         turnOutput = self.__turnPid.calculate( self.__getTurnEncoderRadians(), self.__setpoint.angle.radians() )
-        turnOutputFF = self.__turnFF.calculate( self.__setpoint.angle.radians() )
+        turnOutputFF = 0#self.__turnFF.calculate( self.__setpoint.angle.radians() )
         turnOut = turnOutput + turnOutputFF
         if RobotBase.isSimulation() and abs( turnOut ) < 0.12: turnOut = 0.0
         self.__turnMotor.setVoltage( turnOut )
@@ -222,7 +222,7 @@ class SwerveModule:
 
     def __getDriveVelocity(self, rotationsPerMinute:float) -> float:
         wheelRotationsPerMin = rotationsPerMinute * SwerveModuleConstants.Drive.kGearRatio
-        wheelRadiansPerSec = rotationsPerMinuteToRadiansPerSecond( wheelRotationsPerMin )
+        wheelRadiansPerSec = radiansPerSecondToRotationsPerMinute( wheelRotationsPerMin )
         metersPerSec = wheelRadiansPerSec * SwerveModuleConstants.Drive.kWheelRadius
         return metersPerSec
 
