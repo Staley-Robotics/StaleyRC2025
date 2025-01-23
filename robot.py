@@ -29,6 +29,8 @@ class MyRobot(TimedRobot):
         self.__robotContainer = RobotContainer()
         self.__logger = FalconLogger(False)
 
+        #print( numpy.version )
+
     # Periodic Loop / All Modes
     def robotPeriodic(self):
         # Mark the Current Timestamp for Logging

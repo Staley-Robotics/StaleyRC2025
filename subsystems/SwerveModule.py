@@ -61,7 +61,7 @@ class SwerveModule:
         # Drive Motor
         driveMotorCfg = SparkMaxConfig()
         driveMotorCfg = driveMotorCfg.voltageCompensation( 12.0 )
-        driveMotorCfg = driveMotorCfg.setIdleMode( SparkMaxConfig.IdleMode.kCoast )
+        driveMotorCfg = driveMotorCfg.setIdleMode( SparkMaxConfig.IdleMode.kBrake )
         driveMotorCfg = driveMotorCfg.secondaryCurrentLimit( 40.0 )
         driveMotorCfg = driveMotorCfg.inverted( True )
         self.__driveMotor = SparkMax( driveId, SparkMax.MotorType.kBrushless )
@@ -74,7 +74,7 @@ class SwerveModule:
         # Turn Motor
         turnMotorCfg = SparkMaxConfig()
         turnMotorCfg = turnMotorCfg.voltageCompensation( 12.0 )
-        turnMotorCfg = turnMotorCfg.setIdleMode( SparkMaxConfig.IdleMode.kCoast )
+        turnMotorCfg = turnMotorCfg.setIdleMode( SparkMaxConfig.IdleMode.kBrake )
         turnMotorCfg = turnMotorCfg.secondaryCurrentLimit( 20.0 )
         turnMotorCfg = turnMotorCfg.inverted( True )
         self.__turnMotor = SparkMax( turnId, SparkMax.MotorType.kBrushless )
