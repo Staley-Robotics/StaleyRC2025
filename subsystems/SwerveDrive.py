@@ -192,7 +192,7 @@ class SwerveDrive(Subsystem):
         FalconLogger.logOutput( "SwerveDrive/ChassisSpeeds/Actual", self.getChassisSpeeds() )
         FalconLogger.logOutput( "SwerveDrive/ChassisSpeeds/Target", self.__setpoint )
         FalconLogger.logOutput( "SwerveDrive/SwerveModuleStates/Actual", self.__getModuleStates() )
-        FalconLogger.logOutput( "SwerveDrive/SwerveModuleStates/Target", self.__setpointStates )
+        FalconLogger.logOutput( "SwerveDrive/SwerveModuleStates/Target", self.__getDesiredModuleStates() )
 
     # Simulation Periodic Loop
     def simulationPeriodic(self) -> None:
@@ -267,6 +267,14 @@ class SwerveDrive(Subsystem):
             self.__modules[1].getState(),
             self.__modules[2].getState(),
             self.__modules[3].getState()
+        ]
+    
+    def __getDesiredModuleStates(self) -> typing.Tuple[ SwerveModuleState, SwerveModuleState, SwerveModuleState, SwerveModuleState]:
+        return [
+            self.__modules[0].getDesiredState(),
+            self.__modules[1].getDesiredState(),
+            self.__modules[2].getDesiredState(),
+            self.__modules[3].getDesiredState()
         ]
 
     def getChassisSpeeds(self) -> ChassisSpeeds:

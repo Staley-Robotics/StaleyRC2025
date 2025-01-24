@@ -206,6 +206,9 @@ class SwerveModule:
             driveVelocity,
             self.__getTurnEncoderRotation()
         )
+    
+    def getDesiredState(self) -> SwerveModuleState:
+        return self.__setpoint
 
     def getPosition(self) -> SwerveModulePosition:
         driveDistance = self.__getDriveDistance( self.__driveMotor.get_position().value )
