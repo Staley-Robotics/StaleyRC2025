@@ -1,7 +1,7 @@
 from commands2 import Subsystem
 from wpimath import units, controller
 from wpilib import RobotState, RobotBase, Mechanism2d, SmartDashboard
-from ntcore import NetworkTable, NetworkTableInstance
+# from ntcore import NetworkTable, NetworkTableInstance
 from rev import SparkMax
 from util import FalconLogger
 
@@ -46,9 +46,12 @@ class Climber(Subsystem):
         self.kP = 0
         self.kI = 0
         self.kD = 0
+        self.kIZone = 0
+        self.kTolerance = 0
 
         self.pid_controller = controller.PIDController(self.kP, self.kI, self.kD)
-
+        self.pid_controller.setIZone(self.kIZone)
+        self.pid_controller.setTolerance(self.kTolerance)      
         # self.pid_controller.set
 
 
