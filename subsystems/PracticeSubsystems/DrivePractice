@@ -1,0 +1,39 @@
+from wpilib import SparkMax
+#motor class
+from commands2 import Subsystem
+from wpimath import units
+from util import FalconLogger
+#import all classes that are needed for the program
+
+class DrivePracticeCode(Subsystem):
+    
+    m_sys_id:int = None
+
+    def __init__(self, SysId:int):
+        self.m_sys_id = SysId
+        #assigns motor (Id, type of motor (comonly the one below))
+        self.m_motor:SparkMax = SparkMax(self.m_sys_id, SparkMax.MotorType.kburshless)
+        #assigns the encoder for the motor
+        self.encoder = self.m_motor.getAbsoluteEncoder()
+
+
+    def periodic(self):
+        #logs all inputs (name, class return)
+        FalconLogger.logInput("MotorPos", self.getPosition('position'))
+        FalconLogger.logInput("MotorRotation", self.getPosition('Rotation'))
+        FalconLogger.logInput("MotorDegrees", self.getPosition('Degrees'))
+        FalconLogger.logInput("MotorSpeed", self.getSpeed())
+        
+    def getSpeed(self):
+        self.m_motor.get()
+
+
+    def getPosition(self, Unit:int):
+
+
+        if Unit == 'position':
+            return self.encoder.getPosition()
+        if Unit == 'Degrees':
+            return units.rotationsToDegrees(self.encoder.getPosition())
+        if Unit == 'Rotation':
+            return units.rotationsToRadians(self.encoder.getPosition())
