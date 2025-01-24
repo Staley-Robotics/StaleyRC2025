@@ -41,7 +41,7 @@ class SwerveDrive(Subsystem):
 
     # Settings
     __DriveFieldRelative = ntproperty( "/Settings/Driver1/FieldRelative", True )
-    __DriveMaxSpeedPercent = ntproperty( "/Settings/Driver1/MaxSpeedPercent", 1.0 )
+    __DriveMaxSpeedPercent = ntproperty( "/Settings/Driver1/MaxSpeedPercent", 0.33 )
     __DriveMaxRotationPercent = ntproperty( "/Settings/Driver1/MaxRotationPercent", 1.0 )
 
     __setpoint:ChassisSpeeds = None

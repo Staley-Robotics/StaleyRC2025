@@ -8,33 +8,34 @@ from wpimath.geometry import Rotation2d
 from wpimath.kinematics import SwerveModulePosition, SwerveModuleState
 from wpimath import applyDeadband
 from wpimath.system.plant import DCMotor
-from wpimath.units import radiansPerSecondToRotationsPerMinute, rotationsToRadians, radiansToRotations, kSecondsPerMinute, radians
+from wpimath.units import radiansPerSecondToRotationsPerMinute, rotationsToRadians, radiansToRotations, kSecondsPerMinute, radians, meters_per_second, meters
 
 from rev import SparkMax, SparkRelativeEncoder, SparkMaxSim, SparkMaxConfig
 
 from phoenix6.hardware import CANcoder, TalonFX
 from phoenix6.configs import CANcoderConfiguration, TalonFXConfiguration
+from phoenix6.controls import VelocityVoltage, PositionVoltage
 from phoenix6.signals.spn_enums import SensorDirectionValue, NeutralModeValue, InvertedValue
-
+#hey im writing things
 from util import FalconLogger
 
 class SwerveModuleConstants:
     class Drive:
         kWheelRadius:float = 0.0508
         kGearRatio:float = 1 / 6.75
-        kP:float = 0 #0.1
+        kP:float = 1 #0.1
         kI:float = 0
         kD:float = 0
         kS:float = 0 #0.1
-        kV:float = 0#2.8235 #0.13
+        kV:float = 2.4#2.8235 #0.13
     
     class Turn:
         kGearRatio:float = 1 / (150/7)
-        kP:float = 0#2.5 # 25.0
+        kP:float = 4.2#2.5 # 25.0
         kI:float = 0
         kD:float = 0
         kMaxAngularVelocity:float = math.pi
-        kMaxAngularAcceleration:float = math.tau
+        kMaxAngularAcceleration:float = math.pi
         kS:float = 0
         kV:float = 0
     
@@ -62,21 +63,23 @@ class SwerveModule:
         self.moduleId = moduleId
         
         # Drive Motor
-        # driveMotorCfg = SparkMaxConfig()
-        # driveMotorCfg = driveMotorCfg.voltageCompensation( 12.0 )
-        # driveMotorCfg = driveMotorCfg.setIdleMode( SparkMaxConfig.IdleMode.kCoast )
-        # driveMotorCfg = driveMotorCfg.secondaryCurrentLimit( 40.0 )
-        # driveMotorCfg = driveMotorCfg.inverted( True )
-        # self.__driveMotor = SparkMax( driveId, SparkMax.MotorType.kBrushless )
-        # self.__driveMotor.configure( driveMotorCfg, SparkMax.ResetMode.kResetSafeParameters, SparkMax.PersistMode.kPersistParameters )
-        # self.__driveEncoder = self.__driveMotor.getEncoder()
+        # basic config
         driveMotorCfg = TalonFXConfiguration()
         driveMotorCfg.motor_output.neutral_mode = NeutralModeValue.BRAKE
         driveMotorCfg.current_limits.with_stator_current_limit( 40.0 ).with_stator_current_limit_enable( True )
         driveMotorCfg.motor_output.inverted = InvertedValue.COUNTER_CLOCKWISE_POSITIVE
-
+        # pid config
+        driveMotorCfg.slot0.k_p = SwerveModuleConstants.Drive.kP
+        driveMotorCfg.slot0.k_i = SwerveModuleConstants.Drive.kI
+        driveMotorCfg.slot0.k_d = SwerveModuleConstants.Drive.kD
+        #motor init
         self.__driveMotor = TalonFX( driveId, "rio" )
         self.__driveMotor.configurator.apply( driveMotorCfg )
+
+        self.__driveMotor.set_control( VelocityVoltage(
+            0,
+
+        ) )
 
         self.__drivePid = PIDController( SwerveModuleConstants.Drive.kP, SwerveModuleConstants.Drive.kI, SwerveModuleConstants.Drive.kD )
         self.__drivePid.setTolerance( 0.01 )
@@ -84,14 +87,6 @@ class SwerveModule:
         
 
         # Turn Motor
-        # turnMotorCfg = SparkMaxConfig()
-        # turnMotorCfg = turnMotorCfg.voltageCompensation( 12.0 )
-        # turnMotorCfg = turnMotorCfg.setIdleMode( SparkMaxConfig.IdleMode.kCoast )
-        # turnMotorCfg = turnMotorCfg.secondaryCurrentLimit( 20.0 )
-        # turnMotorCfg = turnMotorCfg.inverted( True )
-        # self.__turnMotor = SparkMax( turnId, SparkMax.MotorType.kBrushless )
-        # self.__turnMotor.configure( turnMotorCfg, SparkMax.ResetMode.kResetSafeParameters, SparkMax.PersistMode.kPersistParameters )      
-        # self.__turnMotorEncoder = self.__turnMotor.getEncoder()
         turnMotorCfg = TalonFXConfiguration()
         turnMotorCfg.motor_output.neutral_mode = NeutralModeValue.BRAKE
         turnMotorCfg.current_limits.with_stator_current_limit( 20.0 ).with_stator_current_limit_enable( True )
@@ -223,9 +218,9 @@ class SwerveModule:
         meters = wheelRadians * SwerveModuleConstants.Drive.kWheelRadius
         return meters
 
-    def __getDriveVelocity(self, rotationsPerMinute:float) -> float:
-        wheelRotationsPerMin = rotationsPerMinute * SwerveModuleConstants.Drive.kGearRatio
-        wheelRadiansPerSec = radiansPerSecondToRotationsPerMinute( wheelRotationsPerMin )
+    def __getDriveVelocity(self, motorRotationsPerSecond:float) -> meters_per_second:
+        wheelRotationsPerSecond = motorRotationsPerSecond * SwerveModuleConstants.Drive.kGearRatio
+        wheelRadiansPerSec = rotationsToRadians( wheelRotationsPerSecond )
         metersPerSec = wheelRadiansPerSec * SwerveModuleConstants.Drive.kWheelRadius
         return metersPerSec
 
