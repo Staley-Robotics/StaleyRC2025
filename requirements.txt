@@ -1,5 +1,5 @@
 ### RoboRio Installers
-robotpy-installer==2025.0.0
+robotpy-installer==2025.0.1
 
 ### RobotPy
 robotpy==2025.2.1.0

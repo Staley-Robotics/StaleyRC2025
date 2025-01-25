@@ -28,8 +28,8 @@ from util import FalconLogger
 
 class SwerveDriveConstants:
     kWeightLbs = 120.0
-    kMaxSpeed = 3.5#4.4
-    kRotationSpeed = math.pi
+    kMaxSpeed = 4.4
+    kRotationSpeed = math.pi*3.6
 
 class SwerveDrive(Subsystem):
     # Variable Declaration
@@ -42,7 +42,7 @@ class SwerveDrive(Subsystem):
     # Settings
     __DriveFieldRelative = ntproperty( "/Settings/Driver1/FieldRelative", True )
     __DriveMaxSpeedPercent = ntproperty( "/Settings/Driver1/MaxSpeedPercent", 0.33 )
-    __DriveMaxRotationPercent = ntproperty( "/Settings/Driver1/MaxRotationPercent", 1.0 )
+    __DriveMaxRotationPercent = ntproperty( "/Settings/Driver1/MaxRotationPercent", 1/3.6 )
 
     __setpoint:ChassisSpeeds = None
     __setpointStates = [ SwerveModuleState(), SwerveModuleState(), SwerveModuleState(), SwerveModuleState() ]
@@ -52,7 +52,7 @@ class SwerveDrive(Subsystem):
     def __init__(self) -> None:
         self.setName( "SwerveDrive" )
 
-        self.__gyro = Pigeon2( 0, "rio" )
+        self.__gyro = Pigeon2( 0, "canivore1" )
 
         self.__modules = [
             SwerveModule( 0, 1, 2, 1, -0.329590 ), # 97.471 ),
