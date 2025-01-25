@@ -10,7 +10,7 @@ class ClimberClimb(Command):
     
     # Initialization
     def __init__( self,
-                  mySubsystem:Subsystem,
+                  mySubsystem:Climber,
                 #   myValue: typing.Callable[[], float] = lambda: 0.0
                 ) -> None:
         
