@@ -7,7 +7,7 @@ class ElevatorToPos(Command):
         self.__elevator = elevatorSubsystem
         self.__position = pos
 
-        self.setName(f"ElevatorToPositino({self.__position})")
+        self.setName(f"ElevatorToPosition({self.__position})")
         self.addRequirements(self.__elevator)
 
     def initialize(self):
