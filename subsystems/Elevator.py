@@ -1,8 +1,4 @@
 from commands2 import Subsystem
-from phoenix6.hardware import TalonFX, CANcoder
-from phoenix6.configs import TalonFXConfiguration, CANcoderConfiguration, Slot0Configs
-from phoenix6.signals.spn_enums import InvertedValue, NeutralModeValue, SensorDirectionValue
-from phoenix6.controls import Follower, PositionVoltage
 from wpimath.units import *
 from wpimath.system.plant import DCMotor
 from wpilib.shuffleboard import Shuffleboard
@@ -10,7 +6,7 @@ from wpilib import SmartDashboard, RobotBase, RobotState, Mechanism2d, Color8Bit
 from wpilib.simulation import ElevatorSim, RoboRioSim, BatterySim
 from enum import Enum
 from util import FalconLogger
-
+from rev import SparkMax, SparkBase, SparkMaxConfig, ClosedLoopConfig, ClosedLoopSlot
 
 class ElevatorPositions(Enum):
     TROUGH = 0.0
@@ -25,6 +21,7 @@ class ElevatorConstants:
     _kG = 0.0 # force to overcome gravity
     _kS = 0.0 # force to overcome friction
     _kV = 0.0 # Apply __ voltage for target velocitr
+    _kFF = 0.0 # Feed Forward
 
     _kOffset = 0.0
     _kTolerance = 0.0
@@ -39,43 +36,29 @@ class ElevatorConstants:
 
 class Elevator(Subsystem):
     def __init__(self):
-        sl0Cfg = Slot0Configs()
-        sl0Cfg.k_p = ElevatorConstants._kP
-        sl0Cfg.k_i = ElevatorConstants._kI
-        sl0Cfg.k_d = ElevatorConstants._kD
-        sl0Cfg.k_g = ElevatorConstants._kG 
-        stdMotorCfg = TalonFXConfiguration()
-        stdMotorCfg.motor_output.neutral_mode = NeutralModeValue.BRAKE
-        stdMotorCfg.motor_output.duty_cycle_neutral_deadband = 0.001
-        stdMotorCfg.with_slot0(sl0Cfg)
 
-        self.__m1 = TalonFX(1, "canivore1")
-        self.__m1.configurator.apply(stdMotorCfg)
-        self.__m2 = TalonFX(0, "canivore1")
-        self.__m2.configurator.apply(stdMotorCfg)
-        self.__m1.set_control(Follower(0, False))
+        self.__motorLead = SparkMax(0, SparkBase.MotorType.kBrushless)
+        self.__motorFollow = SparkMax(1, SparkBase.MotorType.kBrushless)
 
-        # initialization assumes elevator is at the bottom
+        self.__encoderLead = self.__motorLead.getEncoder()
+        self.__encoderFollower = self.__motorFollow.getEncoder()
 
-        self.__req = PositionVoltage(0).with_slot(0)
-        self.__setpoint = 0.0
-         # TODO: finish Mech2d simulatins
+        self.__motorLeadConfig = SparkMaxConfig()
+        self.__motorLeadConfig.encoder.positionConversionFactor(1).velocityConversionFactor(1)
+        self.__motorLeadConfig.closedLoop.setFeedbackSensor(
+            ClosedLoopConfig.FeedbackSensor.kPrimaryEncoder
+        ).P(ElevatorConstants._kP, ClosedLoopSlot.kSlot0).I(
+            ElevatorConstants._kI, ClosedLoopSlot.kSlot0).D(
+            ElevatorConstants._kD, ClosedLoopSlot.kSlot0).velocityFF(
+            ElevatorConstants._kFF, ClosedLoopSlot.kSlot0).outputRange(-1, 1, ClosedLoopSlot.kSlot0)
 
-        self.simMotors = DCMotor.krakenX60(2)
+        self.__motorLead.configure(self.__motorLeadConfig, SparkBase.ResetMode.kResetSafeParameters, SparkBase.PersistMode.kNoPersistParameters)
+        self.__motorFollowConfig = SparkMaxConfig().follow(0, False)
+        self.__motorFollow.configure(self.__motorFollowConfig, SparkBase.ResetMode.kResetSafeParameters, SparkBase.PersistMode.kNoPersistParameters)
 
+        self.pid_controller = self.__motorLead.getClosedLoopController()
 
-        self.simElevator = ElevatorSim(
-            self.simMotors,
-            ElevatorConstants._gearing,
-            ElevatorConstants._mass,
-            ElevatorConstants._drumRadius,
-            ElevatorConstants._elevatorHeight,
-            ElevatorConstants._elevatorWidth,
-            simulateGravity=True,
-            startingHeight=0
-        )
-            # default val for StdDevs goes here, not sure what it means by
-            # standard deviation of the measurements
+        self.__motorFollow.PersistMode
 
         self.mech = Mechanism2d(
             30,
@@ -93,8 +76,6 @@ class Elevator(Subsystem):
         self.mechElevator = self.mechBase.appendLigament("ElevatorImmutable", 10, 90, color=Color8Bit(Color.kRed))
         self.mechElevatorMutable = self.mechElevator.appendLigament("ElevatorMutable", 0, 0)
 
-        Shuffleboard.getTab("Elevator").add("Elevator", self)
-        Shuffleboard.getTab("Elevator").add("ElevatorMech", self.mech)
         SmartDashboard.putData("Elevator", self)
         SmartDashboard.putData("ElevatorMech", self.mech)
 
