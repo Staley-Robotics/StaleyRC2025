@@ -6,7 +6,7 @@ from wpilib import SmartDashboard, RobotBase, RobotState, Mechanism2d, Color8Bit
 from wpilib.simulation import ElevatorSim, RoboRioSim, BatterySim
 from enum import Enum
 from util import FalconLogger
-from rev import SparkMax, SparkBase, SparkMaxConfig, ClosedLoopConfig, ClosedLoopSlot
+from rev import SparkMax, SparkBase, SparkMaxConfig, ClosedLoopConfig, ClosedLoopSlot, SparkMaxSim
 
 class ElevatorPositions(Enum):
     TROUGH = 0.0
@@ -33,6 +33,8 @@ class ElevatorConstants:
     _mass = 10.0
     _drumRadius = 0.25
     _rotsPerInch = 1.0
+    _minLength = 0
+    _maxLength = 0.5
 
 class Elevator(Subsystem):
     def __init__(self):
@@ -40,8 +42,9 @@ class Elevator(Subsystem):
         self.__motorLead = SparkMax(0, SparkBase.MotorType.kBrushless)
         self.__motorFollow = SparkMax(1, SparkBase.MotorType.kBrushless)
 
+        self.__pidController = self.__motorLead.getClosedLoopController()
+
         self.__encoderLead = self.__motorLead.getEncoder()
-        self.__encoderFollower = self.__motorFollow.getEncoder()
 
         self.__motorLeadConfig = SparkMaxConfig()
         self.__motorLeadConfig.encoder.positionConversionFactor(1).velocityConversionFactor(1)
@@ -56,9 +59,19 @@ class Elevator(Subsystem):
         self.__motorFollowConfig = SparkMaxConfig().follow(0, False)
         self.__motorFollow.configure(self.__motorFollowConfig, SparkBase.ResetMode.kResetSafeParameters, SparkBase.PersistMode.kNoPersistParameters)
 
-        self.pid_controller = self.__motorLead.getClosedLoopController()
-
-        self.__motorFollow.PersistMode
+        self.__gearbox = DCMotor.NEO(2)
+        self.__motorSim = SparkMaxSim(self.__motorLead, self.__gearbox)
+        self.__elevatorSim = ElevatorSim(
+            self.__gearbox,
+            ElevatorConstants._gearing,
+            ElevatorConstants._mass,
+            ElevatorConstants._drumRadius,
+            ElevatorConstants._minLength,
+            ElevatorConstants._maxLength,
+            True,
+            0,
+            [0.01, 0.00]
+        )
 
         self.mech = Mechanism2d(
             30,
@@ -72,6 +85,8 @@ class Elevator(Subsystem):
             10
         )
 
+        self.__setpoint = 0.0
+
         self.mechBase = self.mechRoot.appendLigament("ElevatorBase", 10, 0, color=Color8Bit(Color.kRed))
         self.mechElevator = self.mechBase.appendLigament("ElevatorImmutable", 10, 90, color=Color8Bit(Color.kRed))
         self.mechElevatorMutable = self.mechElevator.appendLigament("ElevatorMutable", 0, 0)
@@ -81,10 +96,10 @@ class Elevator(Subsystem):
 
 
     def periodic(self):
-        FalconLogger.logInput("Elevator/MotorInput", self.__m2.get())
-        FalconLogger.logInput("Elevator/MotorOutput", self.__m2.get_motor_voltage().value)
-        FalconLogger.logInput("Elevator/MotorPositionRots", self.__m2.get_position().value_as_double)
-        FalconLogger.logInput("Elevator/MotorVelocityRPS", self.__m2.get_velocity().value)
+        FalconLogger.logInput("Elevator/MotorInput", self.__motorLead.get()) # current speed of motor
+        FalconLogger.logInput("Elevator/MotorOutput", self.__motorLead.getAppliedOutput()) # TODO: check if this is the voltage
+        FalconLogger.logInput("Elevator/MotorPositionRots", self.__encoderLead.getPosition())
+        FalconLogger.logInput("Elevator/MotorVelocity", self.__encoderLead.getVelocity())
 
         FalconLogger.logOutput("Elevator/CurrentHeightIN", self.get())
         FalconLogger.logOutput("Elevator/TargetHeightIN", self.getSetpoint())
@@ -92,31 +107,42 @@ class Elevator(Subsystem):
     #TODO: Check if correct, feel like something is missing here
     def simulationPeriodic(self):
         #TODO: check if deadband needed
-        self.__m2.sim_state.set_supply_voltage(RobotController.getBatteryVoltage())
-        self.__m2.sim_state.add_rotor_position(self.calculateSimMotorRots())
+        self.__motorSim.setBusVoltage(RobotController.getBatteryVoltage())
+        self.__elevatorSim.setInput([self.__motorSim.getAppliedOutput() * RoboRioSim.getVInVoltage()])
+        self.__elevatorSim.update(0.020)
+        self.__motorSim.iterate(
+            radiansPerSecondToRotationsPerMinute(self.__elevatorSim.getVelocity()),
+            RoboRioSim.getVInVoltage(),
+            0.020
+        )
+        RoboRioSim.setVInVoltage(
+            BatterySim.calculate([self.__elevatorSim.getCurrentDraw()])
+        )
         self.mechElevatorMutable.setLength(
-            self.get()
+            self.__elevatorSim.getPosition()
         )
 
         
     def getSetpoint(self) -> float:
-        return self.elevatorPositionToInches(self.__m2.get_closed_loop_reference().value_as_double)
-        # return self.elevatorPositionToInches(self.__setpoint)
+        return self.__setpoint
     
     def setSetpoint(self, sp: float) -> None:
-        req = PositionVoltage(self.inchesToElevatorPosition(sp))
-        self.__m2.set_control(req)
+        self.__setpoint = sp
+        self.__pidController.setReference(
+            sp,
+            SparkBase.ControlType.kPosition, 
+            ClosedLoopSlot.kSlot0
+        )
 
     def atSetpoint(self) -> bool:
-        margin = self.__m2.get_closed_loop_error().value_as_double
-        self.__m2.get_closed_loop_reference
+        margin = self.__encoderLead.getPosition()
         return abs(margin) <= ElevatorConstants._kTolerance
     
     def stop(self) -> None:
         self.setSetpoint(self.get())
 
     def get(self) -> float:
-        return self.elevatorPositionToInches(self.__m2.get_position().value_as_double)
+        return self.__encoderLead.getPosition()
 
     # TODO: reimplement these so that calculations are mainly for setting, not writing for logging
     def inchesToElevatorPosition(self, pos: float) -> float:
@@ -128,8 +154,5 @@ class Elevator(Subsystem):
     # per 0.020 seconds
     def calculateSimMotorRots(self) -> float:
         # for 3V, 100 rps
-        mv = self.__m2.sim_state.motor_voltage
+        mv = self.__motorSim.getAppliedOutput()
         return (mv/3) * 1.5
-
-    def updateMech(self) -> None:
-        self.mechElevatorMutable.setLength(self.get())
