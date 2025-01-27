@@ -23,7 +23,7 @@ except Exception as e:
     print( "ERROR! SwerveDrive PathPlanner Includes")
     print( e )
 
-from subsystems.SwerveModule import SwerveModule, SwerveModuleConstants
+from subsystems.Swerve.SwerveModule import SwerveModule, SwerveModuleConstants
 from util import FalconLogger
 
 class SwerveDriveConstants:

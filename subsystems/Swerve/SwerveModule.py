@@ -47,14 +47,9 @@ class SwerveModuleConstants:
 class SwerveModule:
     # Variable Declaration
     __driveMotor:TalonFX = None
-    # __driveEncoder:typing.Any = None
-    __drivePid:PIDController = None
-    __driveFF:SimpleMotorFeedforwardMeters = None
 
     __turnMotor:TalonFX = None
     __turnEncoder:CANcoder = None
-    __turnPid:ProfiledPIDControllerRadians = None
-    __turnFF:SimpleMotorFeedforwardRadians = None
 
     __setpoint:SwerveModuleState = None
 

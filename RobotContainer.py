@@ -30,9 +30,11 @@ class RobotContainer:
 
         # Declare Subsystems
         sysDriveTrain = SwerveDrive()
+        sysVision = Vision( sysDriveTrain.getOdometry() )
 
         # Commands
         cmdDriveByStick = DriveByStick( sysDriveTrain, driver1.getLeftUpDown, driver1.getLeftSideToSide, driver1.getRightSideToSide )
+        cmdAwaitVisionData = AwaitVisionData( sysVision.has_recieved_first_botpose_data, sysDriveTrain.resetGyro )
 
         # Autonomous Chooser
         # self.__autoChooser.setDefaultOption( "1 - None", cmd.none() )
@@ -40,6 +42,7 @@ class RobotContainer:
 
         # Default Commands
         sysDriveTrain.setDefaultCommand( cmdDriveByStick )
+        cmdAwaitVisionData.schedule()
 
         # PathPlanner Setup
         try:
