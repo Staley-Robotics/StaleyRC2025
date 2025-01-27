@@ -1,6 +1,7 @@
 import math
 
-from wpilib import SmartDashboard, RobotBase, RobotState, Mechanism2d, Color8Bit, RobotController
+from commands2 import Subsystem
+from wpilib import SmartDashboard, RobotBase, RobotState, Mechanism2d, Color8Bit, RobotController, Victor
 from wpilib.shuffleboard import Shuffleboard
 from wpimath.controller import PIDController, SimpleMotorFeedforwardRadians
 from wpimath.system.plant import DCMotor
@@ -11,6 +12,8 @@ from phoenix6.controls import VoltageOut, DutyCycleOut
 from phoenix6.configs import TalonFXConfiguration, CANcoderConfiguration
 from phoenix6.signals.spn_enums import InvertedValue, NeutralModeValue, \
     SensorDirectionValue
+
+from phoenix5 import TalonSRX, TalonSRXControlMode
 
 from rev import SparkMax, SparkMaxConfig, SparkMaxSim, SparkBase
 
@@ -39,7 +42,7 @@ class AlgaeManipulatorConstants:
     pivot_kV: float = 0.0
     pivot_kTolerance: float = 0.01
 
-    pivot_kGearRatio: float = 1.0
+    pivot_kGearRatio: float = 25
     pivot_kOffsetRotations: float = 0.0
 
 
@@ -51,7 +54,7 @@ class AlgaeManipulatorConstants:
     intake_kV: float = 0.0
     intake_kTolerance: float = 0.01
 
-    intake_kGearRatio: float = 1.0
+    intake_kGearRatio: float = 10.3333
     intake_kOffsetRotations: float = 0.0
     class NeoSim:
         kMaxRpm = DCMotor.NEO(1).freeSpeed * kSecondsPerMinute
@@ -60,12 +63,12 @@ class AlgaeManipulatorConstants:
         kMaxRpm = DCMotor.vex775Pro().freeSpeed * kSecondsPerMinute
 
 
-class AlgaeManipulator():
+class AlgaeManipulator(Subsystem):
     # Motors (Neo and 775pro, at 25:1 and 10.3333:1 respectively)
     __pivotMotor:SparkMax = None
     pivotSetpoint:float = None
 
-    __intakeMotor: TalonFX = None
+    __intakeMotor: TalonSRX = None
     intakeState = IntakeState.OFF
 
     def __init__(self):
@@ -78,8 +81,7 @@ class AlgaeManipulator():
 
 
         # 775pro
-        self.__intakeMotor = TalonFX(25, "canivore1")
-
+        self.__intakeMotor = TalonSRX(25)
         # Zero Motor
         self.voltOut = VoltageOut(0, use_timesync=True)
         self.dutyOut = DutyCycleOut(0, use_timesync=True)
@@ -112,25 +114,26 @@ class AlgaeManipulator():
         FalconLogger.logInput("AlgaeManipulator/Pivot/MotorInput", self.__pivotMotor.get())
         FalconLogger.logInput("AlgaeManipulator/Pivot/MotorOutput", self.__pivotMotor.getAppliedOutput())
         FalconLogger.logInput("AlgaeManipulator/Pivot/MotorPosition_abs", self.__pivotMotor.getAbsoluteEncoder().getPosition())
-        FalconLogger.logInput("AlgaeManipulator/Pivot/ClosedLoopController", self.__pivotMotor.getClosedLoopController())
+
 
         # Input Logging
-        FalconLogger.logInput("AlgaeManipulator/Intake/MotorInput", self.__intakeMotor.get())
-        FalconLogger.logInput("AlgaeManipulator/Intake/MotorOutput", self.__intakeMotor.get_motor_voltage())
+        FalconLogger.logInput("AlgaeManipulator/Intake/MotorOutputPercent", self.__intakeMotor.getMotorOutputPercent())
+        FalconLogger.logInput("AlgaeManipulator/Intake/MotorVoltage", self.__intakeMotor.getMotorOutputVoltage())
 
         # Run
         if RobotState.isDisabled():
             self.stop()
 
         # Intake
-        self.__intakeMotor.set(self.intakeState.value)
+        self.__intakeMotor.set(TalonSRXControlMode.PercentOutput, self.intakeState.value )
 
         # Output Logging
         FalconLogger.logOutput("AlgaeManipulator/Pivot/TargetAngle", rotationsToDegrees(self.getSetpoint()))
         FalconLogger.logOutput("AlgaeManipulator/Pivot/ActualAngle", rotationsToDegrees(self.getMeasurement()))
 
-        FalconLogger.logOutput("AlgaeManipulator/Intake/State", self.intakeState)
-        FalconLogger.logOutput("AlgaeManipulator/Intake/Voltage", self.__intakeMotor.get_motor_voltage())
+        FalconLogger.logOutput("AlgaeManipulator/Intake/DesiredState", self.intakeState.value)
+        FalconLogger.logOutput("AlgaeManipulator/Intake/CurrentState", self.__intakeMotor.getMotorOutputPercent())
+        FalconLogger.logOutput("AlgaeManipulator/Intake/Voltage", self.__intakeMotor.getMotorOutputVoltage())
 
     def simulationPeriodic(self) -> None:
         # Neo Periodic
@@ -141,14 +144,14 @@ class AlgaeManipulator():
         self.simPivot.getAbsoluteEncoderSim().setPosition(self.simPivot.getRelativeEncoderSim().getPosition() % 1)
 
         # 775pro Periodic
-        velocity = AlgaeManipulatorConstants.Vex775Sim.kMaxRpm * self.__intakeMotor.get()
+        velocity = AlgaeManipulatorConstants.Vex775Sim.kMaxRpm * self.__intakeMotor.getMotorOutputPercent()
         self.simIntake.sim_state.set_rotor_velocity(velocity)
         self.simIntake.sim_state.add_rotor_position(velocity * 0.02)
 
 
     def stop(self) -> None:
         self.setSetpoint(rotationsToDegrees(self.getMeasurement()), True)
-        self.__intakeMotor.set(0.0)
+        self.__intakeMotor.set(TalonSRXControlMode.PercentOutput, 0.0)
 
     def setSetpoint(self, setpoint: degrees, overrideRange: bool = False):
         setpoint *= AlgaeManipulatorConstants.pivot_kGearRatio # Gear Ratio
@@ -172,4 +175,4 @@ class AlgaeManipulator():
 
     def setIntake(self, state: IntakeState):
         self.intakeState = state
-        self.__intakeMotor.set(state.value)
+        self.__intakeMotor.set(TalonSRXControlMode.PercentOutput, state.value)

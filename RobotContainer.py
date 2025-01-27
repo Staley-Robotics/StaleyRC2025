@@ -3,8 +3,8 @@ from wpilib import SendableChooser, SmartDashboard
 from commands2 import Command, cmd
 
 # Local Imports
-from subsystems import SampleSubsystem
-from commands import SampleCommand
+from subsystems import AlgaeManipulator
+from commands import SampleCommand, AlgaeGrabCommand, AlgaeHoldCommand
 from util import FalconXboxController
 
 class RobotContainer:
@@ -23,21 +23,22 @@ class RobotContainer:
         driver1 = FalconXboxController( 0 )
 
         # Declare Subsystems
-        sysSample = SampleSubsystem( 0 )
+        sysAlgae = AlgaeManipulator()
 
         # Commands
-        cmdSampleLeft = SampleCommand(sysSample, driver1.getLeftX )
-        cmdSampleRight = SampleCommand(sysSample, driver1.getRightX )
+        # cmdSampleLeft = SampleCommand(sysSample, driver1.getLeftX )
+        cmdAlgaeGrab = AlgaeGrabCommand( sysAlgae )
+        cmdAlgaeDefault = AlgaeHoldCommand( sysAlgae )
 
         # Autonomous Chooser
         self.__autoChooser.setDefaultOption( "1 - None", cmd.none() )
         SmartDashboard.putData( "Autonomous Mode", self.__autoChooser )
 
         # Default Commands
-        sysSample.setDefaultCommand( cmdSampleLeft )
+        sysAlgae.setDefaultCommand( cmdAlgaeDefault )
 
         # Driver Controller Button Binding
-        driver1.a().whileTrue( cmdSampleRight )
+        driver1.a().whileTrue( cmdAlgaeGrab )
 
     # Get Autonomous Command
     def getAutonomousCommand(self) -> Command:
