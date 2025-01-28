@@ -48,7 +48,7 @@ class SwerveDrive(Subsystem):
     __setpointStates = [ SwerveModuleState(), SwerveModuleState(), SwerveModuleState(), SwerveModuleState() ]
     __odometryLock = False
 
-    # Initializationß
+    # Initialization
     def __init__(self) -> None:
         self.setName( "SwerveDrive" )
 
@@ -120,6 +120,10 @@ class SwerveDrive(Subsystem):
         return DriverStation.getAlliance() == DriverStation.Alliance.kRed
 
     def resetGyro(self) -> None:
+        '''
+        sets the current gyroscope yaw offset to the estimated position from vision data\n
+        uses threading, there is no 100ms timeout
+        '''
         # Thread Safe Function
         def resetGyroThread() -> None:
             # Get The Current Pose Data
@@ -154,7 +158,7 @@ class SwerveDrive(Subsystem):
         FalconLogger.logInput( "SwerveDrive/Gyro/yaw_d", self.__gyro.get_yaw().value )
         FalconLogger.logInput( "SwerveDrive/Gyro/pitch_d", self.__gyro.get_pitch().value  )
         FalconLogger.logInput( "SwerveDrive/Gyro/roll_d", self.__gyro.get_roll().value  )
-        #FalconLogger.logInput( "SwerveDrive/OdometryLock", self.__odometryLock )
+        FalconLogger.logInput( "SwerveDrive/OdometryLock", self.__odometryLock )
 
         # Run Subsystem: Set New State To Subsystem
         if RobotState.isDisabled():
