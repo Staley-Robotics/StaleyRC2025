@@ -19,7 +19,7 @@ class ClimberClimb(Command):
         
         
         # self.m_getValue = myValue
-        self.setName( "SampleCommand" )
+        self.setName( "ClimberClimb" )
         self.addRequirements( mySubsystem )
 
     # On Start

@@ -4,7 +4,7 @@ from commands2 import Command, cmd
 
 # Local Imports
 from subsystems import SampleSubsystem, Climber
-from commands import ClimberNotClimb, SampleCommand, ClimberClimb
+from commands import ClimberNotClimb, SampleCommand, ClimberClimb, ClimberStay
 from util import FalconXboxController
 
 class RobotContainer:
@@ -43,8 +43,10 @@ class RobotContainer:
 
         # Driver Controller Button Binding
         # driver1.a().whileTrue( cmdSampleRight )
-        driver1.a().onTrue(ClimberClimb.ClimberClimb(self.climber))
-        driver1.x().onTrue(ClimberNotClimb.ClimberNotClimb(self.climber))
+        driver1.a().whileTrue(ClimberClimb.ClimberClimb(self.climber))
+        driver1.x().whileTrue(ClimberNotClimb.ClimberNotClimb(self.climber))
+        driver1.a().whileFalse(ClimberStay.ClimberStay(self.climber))
+        driver1.x().whileFalse(ClimberStay.ClimberStay(self.climber))
 
     # Get Autonomous Command
     def getAutonomousCommand(self) -> Command:
