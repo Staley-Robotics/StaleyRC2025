@@ -11,7 +11,7 @@ class SetPivotPosition(Command):
     # Initialization
     def __init__( self,
                   pivot:Subsystem,
-                  myBaseValue: typing.Callable[[], float] = lambda: 0.0
+                  myBaseValue: typing.Callable[[], float]
                 ) -> None:
         # Command Attributes
         self.pivot:CoralManipulatorPivot = pivot
@@ -26,8 +26,8 @@ class SetPivotPosition(Command):
 
     # Periodic
     def execute(self) -> None:
-        #stupid scaling code t
-        self.pivot.setSetpoint( (self.m_getValue() * (self.pivot.PivotConstants.max-self.pivot.PivotConstants.max)) +self.pivot.PivotConstants.min )
+        #stupid scaling code 
+        self.pivot.setSetpoint(self.m_getValue())# * (self.pivot.PivotConstants.max-self.pivot.PivotConstants.max)) +self.pivot.PivotConstants.min )
 
     # On End
     def end(self, interrupted:bool) -> None:
