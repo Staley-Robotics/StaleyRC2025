@@ -1,0 +1,75 @@
+{
+  "version": "2025.0",
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "path",
+          "data": {
+            "pathName": "S1 to C1"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "L4 Drop Off"
+          }
+        },
+        {
+          "type": "parallel",
+          "data": {
+            "commands": [
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "C1 to A"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "Elevator Reset"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Wait for Pickup"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "A to C12"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "L4 Drop Off"
+          }
+        },
+        {
+          "type": "parallel",
+          "data": {
+            "commands": [
+              {
+                "type": "path",
+                "data": {
+                  "pathName": null
+                }
+              }
+            ]
+          }
+        }
+      ]
+    }
+  },
+  "resetOdom": false,
+  "folder": null,
+  "choreoAuto": false
+}
