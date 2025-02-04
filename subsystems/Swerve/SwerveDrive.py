@@ -68,7 +68,18 @@ class SwerveDrive(Subsystem):
             Translation2d( -0.2667, -0.2667 )
         )
 
-        self.__resetOdometry( Pose2d() )
+        self.__odometry = SwerveDrive4Odometry(
+            self.__kinematics,
+            self.__gyro.getRotation2d(),
+            self.__getModulePositions(),
+            Pose2d()
+        )
+        self.__visionOdometry = SwerveDrive4PoseEstimator(
+            self.__kinematics,
+            self.__gyro.getRotation2d(),
+            self.__getModulePositions(),
+            Pose2d()
+        )
 
         self.stop()
 
@@ -80,21 +91,6 @@ class SwerveDrive(Subsystem):
         # Path Planner
         try:
             robotConfig = RobotConfig.fromGUISettings()
-            # moduleConfig = ModuleConfig(
-            #     wheelRadiusMeters = SwerveModuleConstants.Drive.kWheelRadius,
-            #     maxDriveVelocityMPS = SwerveDriveConstants.kMaxSpeed,
-            #     wheelCOF = 1.0,
-            #     driveMotor = DCMotor.NEO(1),
-            #     driveCurrentLimit = 40.0,
-            #     numMotors = 1
-            # )
-            # robotConfig = RobotConfig(
-            #     massKG = lbsToKilograms( SwerveDriveConstants.kWeightLbs ),
-            #     MOI = 6.893,
-            #     moduleConfig = moduleConfig,
-            #     moduleOffsets = self.__kinematics.getModules(),
-            #     trackwidthMeters = None
-            # )
             AutoBuilder.configure(
                 pose_supplier = self.__odometry.getPose,
                 reset_pose = self.__odometry.resetPose,
@@ -119,38 +115,44 @@ class SwerveDrive(Subsystem):
     def shouldFlipPath(self) -> bool:
         return DriverStation.getAlliance() == DriverStation.Alliance.kRed
 
-    def resetGyro(self) -> None:
-        '''
-        sets the current gyroscope yaw offset to the estimated position from vision data\n
-        uses threading, there is no 100ms timeout
-        '''
-        # Thread Safe Function
-        def resetGyroThread() -> None:
-            # Get The Current Pose Data
-            currentPose = self.__visionOdometry.getEstimatedPosition()
-            self.__gyro.set_yaw( currentPose.rotation().degrees(), 0.5 )
-            self.__resetOdometry( currentPose )
-            self.__odometryLock = False
-            print( "OdometryUnlocked!" )
+    # def resetGyro(self) -> None:
+    #     '''
+    #     sets the current gyroscope yaw offset to the estimated position from vision data\n
+    #     uses threading, there is no 100ms timeout
+    #     '''
+    #     # Thread Safe Function
+    #     def resetGyroThread() -> None:
+    #         # Get The Current Pose Data
+    #         currentPose = self.__visionOdometry.getEstimatedPosition()
+    #         self.__gyro.set_yaw( currentPose.rotation().degrees(), 0.3 )
+    #         self.__resetOdometry( currentPose )
+    #         self.__odometryLock = False
+    #         print( "OdometryUnlocked!" )
 
-        # Odometry Lock
-        self.__odometryLock = True
-        print( "OdometryLock!" )
-        threading.Thread( target=lambda: resetGyroThread() ).start()
+    #     # Odometry Lock
+    #     self.__odometryLock = True
+    #     print( "OdometryLock!" )
+    #     threading.Thread( target=lambda: resetGyroThread() ).start()
 
-    def __resetOdometry(self, pose:Pose2d) -> None:
-        self.__odometry = SwerveDrive4Odometry(
-            self.__kinematics,
-            self.__gyro.getRotation2d(),
-            self.__getModulePositions(),
-            pose
-        )
-        self.__visionOdometry = SwerveDrive4PoseEstimator(
-            self.__kinematics,
-            self.__gyro.getRotation2d(),
-            self.__getModulePositions(),
-            pose
-        )
+    def resetOdometry(self, pose:Pose2d|None=None) -> None:
+        self.__odometry.resetPosition(self.__gyro.getRotation2d(),
+                                      self.__getModulePositions(),
+                                      pose if pose else self.__visionOdometry.getEstimatedPosition() )
+        self.__visionOdometry.resetPosition(self.__gyro.getRotation2d(),
+                                            self.__getModulePositions(),
+                                            pose if pose else self.__visionOdometry.getEstimatedPosition() )
+        # self.__odometry = SwerveDrive4Odometry(
+        #     self.__kinematics,
+        #     self.__gyro.getRotation2d(),
+        #     self.__getModulePositions(),
+        #     pose
+        # )
+        # self.__visionOdometry = SwerveDrive4PoseEstimator(
+        #     self.__kinematics,
+        #     self.__gyro.getRotation2d(),
+        #     self.__getModulePositions(),
+        #     pose
+        # )
 
     # Periodic Loop
     def periodic(self) -> None:

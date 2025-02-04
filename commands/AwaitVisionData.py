@@ -10,8 +10,8 @@ class AwaitVisionData(Command):
     
     # Initialization
     def __init__( self,
-                  visionDataRecieved: typing.Callable[[], float] = lambda: 0.0,
-                  resetSwerveGyro: typing.Callable[[], float] = lambda: 0.0
+                  visionDataRecieved: typing.Callable[[], bool],
+                  resetSwerveGyro: typing.Callable[[], None]
                 ) -> None:
         # Command Attributes
         self.visionDataRecieved = visionDataRecieved

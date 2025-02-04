@@ -34,7 +34,7 @@ class RobotContainer:
 
         # Commands
         cmdDriveByStick = DriveByStick( sysDriveTrain, driver1.getLeftUpDown, driver1.getLeftSideToSide, driver1.getRightSideToSide )
-        cmdAwaitVisionData = AwaitVisionData( sysVision.has_recieved_first_botpose_data, sysDriveTrain.resetGyro )
+        cmdAwaitVisionData = AwaitVisionData( sysVision.has_recieved_first_botpose_data, sysDriveTrain.resetOdometry )
 
         # Autonomous Chooser
         # self.__autoChooser.setDefaultOption( "1 - None", cmd.none() )
@@ -58,7 +58,7 @@ class RobotContainer:
             print( e )
 
         # Driver Controller Button Binding
-        # driver1.a().whileTrue( cmdSampleRight )
+        driver1.back().onTrue( cmdAwaitVisionData )
 
     # Get Autonomous Command
     def getAutonomousCommand(self) -> Command:
