@@ -2,6 +2,7 @@
 from wpilib import SendableChooser, SmartDashboard
 from commands2 import Command, cmd
 
+from commands.AlgaeEject import AlgaeEjectCommand
 # Local Imports
 from subsystems import AlgaeManipulator
 from commands import SampleCommand, AlgaeGrabCommand, AlgaeHoldCommand
@@ -29,6 +30,7 @@ class RobotContainer:
         # cmdSampleLeft = SampleCommand(sysSample, driver1.getLeftX )
         cmdAlgaeGrab = AlgaeGrabCommand( sysAlgae )
         cmdAlgaeDefault = AlgaeHoldCommand( sysAlgae )
+        cmdAlgaeEject = AlgaeEjectCommand( sysAlgae )
 
         # Autonomous Chooser
         self.__autoChooser.setDefaultOption( "1 - None", cmd.none() )
@@ -39,6 +41,7 @@ class RobotContainer:
 
         # Driver Controller Button Binding
         driver1.a().whileTrue( cmdAlgaeGrab )
+        driver1.b().whileTrue( cmdAlgaeEject )
 
     # Get Autonomous Command
     def getAutonomousCommand(self) -> Command:

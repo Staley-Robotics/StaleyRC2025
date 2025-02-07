@@ -22,11 +22,11 @@ from enum import Enum
 from util import FalconLogger
 
 class AlgaeManipulatorPositions:
-    MAX = 55.0
-    HOLD = 30.0
-    PLACE = 0.0
-    GRAB = -20.0
-    MIN = -52.0
+    MAX = 95.0
+    HOLD = 90.0
+    PLACE = 95.0
+    GRAB = 35.0
+    MIN = 0.0
 
 class IntakeState(Enum):
     IN = 0.5
@@ -90,7 +90,7 @@ class AlgaeManipulator(Subsystem):
 
         self.mech = Mechanism2d(3, 3, Color8Bit(0, 0, 0))
         self.root = self.mech.getRoot("Pivot", 2, 0.5)
-        self.manipulator = self.root.appendLigament("Manipulator", 1, 90, 0.5, Color8Bit(255, 255, 255))
+        self.manipulator = self.root.appendLigament("Manipulator", 1, 0, 0.5, Color8Bit(255, 255, 255))
 
         SmartDashboard.putData("AlgaeMech", self.mech)
 
