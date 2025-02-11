@@ -219,8 +219,11 @@ class SwerveDrive(Subsystem):
         self.runChassisSpeeds( ChassisSpeeds( 0.0, 0.0, 0.0 ) )
  
     def getRobotAngle(self) -> Rotation2d:
-        rotateBy = 180.0 if self.shouldFlipPath() else 0.0
-        return self.__gyro.getRotation2d().rotateBy( Rotation2d.fromDegrees(rotateBy) )
+        # rotateBy = 180.0 if self.shouldFlipPath() else 0.0
+        # return self.__gyro.getRotation2d().rotateBy( Rotation2d.fromDegrees(rotateBy) )
+        return self.__visionOdometry.getEstimatedPosition().rotation().rotateBy(
+            Rotation2d.fromDegrees(180.0 if self.shouldFlipPath() else 0.0)
+        )
 
     # Run By Percentage
     def runPercentInputs(self, x:float, y:float, omega:float) -> None:

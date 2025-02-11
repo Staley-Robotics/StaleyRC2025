@@ -1,10 +1,16 @@
 from commands2 import Subsystem
 
+import typing
+
 from ntcore import NetworkTableInstance
+
+from wpilib import getTime
 
 from wpimath.estimator import SwerveDrive4PoseEstimator
 from wpimath.geometry import Pose2d
 from wpimath.units import degreesToRadians
+
+from util import FalconLogger
 
 class CamTypes:
     APRIL_TAG_BOT_POSE = 0 # for getting the position of the robot on the field
@@ -13,17 +19,22 @@ class CamTypes:
     CLASSIFIER = 3 # Nueral net object classification ( & location?) (multiple obj types)
 
 class Camera:
-    def __init__(self, id:str, mode:CamTypes, poseEstimator:SwerveDrive4PoseEstimator):
+    def __init__(self, id:str, mode:CamTypes, poseEstimator:typing.Callable[[], SwerveDrive4PoseEstimator]):
         self.id = id
         self.mode = mode
         self.estimatorRef = poseEstimator
 
         table = NetworkTableInstance.getDefault().getTable(id)
-        self.poseSub = table.getDoubleArrayTopic('botpose').subscribe([])
+        self.poseSub = table.getDoubleArrayTopic('botpose_wpiblue').subscribe([])
         self.targetSub = table.getDoubleArrayTopic('t2d').subscribe([])
+
+        self.last_pose:Pose2d = None
     
     def array2d_to_botpose(self, data:list[float]) -> Pose2d:
         return Pose2d( data[0], data[1], degreesToRadians(data[5]) )
+    
+    def get_last_pose(self) -> Pose2d:
+        return self.last_pose
     
     def update_botpose(self) -> bool:
         '''
@@ -32,11 +43,13 @@ class Camera:
         '''
         data = self.poseSub.readQueue()
 
-        if data == []:
-            return False
-
-        for data in data:
-            self.estimatorRef.addVisionMeasurement( self.array2d_to_botpose(data.value), data.time - data.value[6]/1000 )
+        for pose_data in data:
+            if pose_data.value[0] != 0:
+                # FalconLogger.logOutput('thingy/thingy', self.array2d_to_botpose(pose_data.value))
+                self.last_pose = self.array2d_to_botpose(pose_data.value)
+                # FalconLogger.logOutput('thingy/time', pose_data.time)
+                # FalconLogger.logOutput('thingy/latency', pose_data.value[6])
+                self.estimatorRef().addVisionMeasurement( self.array2d_to_botpose(pose_data.value), pose_data.time/1000000.0 - (pose_data.value[6]/1000), [1.,1.,999999.] )
         
         return True
     
@@ -53,18 +66,24 @@ class Vision(Subsystem):
     creates and handles all limelights & limelight data
     '''
 
-    def __init__(self, poseEstimator:SwerveDrive4PoseEstimator):
+    def __init__(self, poseEstimator:typing.Callable[[], SwerveDrive4PoseEstimator]):
         self.estimatorRef = poseEstimator
 
+        # self.cameras = [
+        #     Camera('UpperCam', CamTypes.DETECTOR, poseEstimator), #on the coral arm or something
+        #     Camera('FrontCam', CamTypes.APRIL_TAG_BOT_POSE, poseEstimator),
+        #     Camera('BackCam', CamTypes.APRIL_TAG_BOT_POSE, poseEstimator),
+        #     Camera('RightCam', CamTypes.APRIL_TAG_BOT_POSE, poseEstimator),
+        #     Camera('LeftCam', CamTypes.APRIL_TAG_BOT_POSE, poseEstimator),
+        # ]
         self.cameras = [
-            Camera('UpperCam', CamTypes.DETECTOR, poseEstimator), #on the coral arm or something
-            Camera('FrontCam', CamTypes.APRIL_TAG_BOT_POSE, poseEstimator),
-            Camera('BackCam', CamTypes.APRIL_TAG_BOT_POSE, poseEstimator),
-            Camera('RightCam', CamTypes.APRIL_TAG_BOT_POSE, poseEstimator),
-            Camera('LeftCam', CamTypes.APRIL_TAG_BOT_POSE, poseEstimator),
+            Camera('limelight-four', CamTypes.APRIL_TAG_BOT_POSE, poseEstimator)
         ]
 
         self.frames_without_data = -1
+    
+    def get_last_pose(self) -> Pose2d:
+        return self.cameras[0].get_last_pose()
 
     def periodic(self):
         if self.frames_without_data >= 0:

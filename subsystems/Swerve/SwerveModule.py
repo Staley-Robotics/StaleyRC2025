@@ -3,7 +3,7 @@ import math
 
 from wpilib import RobotBase
 from wpilib.shuffleboard import Shuffleboard
-from wpimath.controller import PIDController, ProfiledPIDControllerRadians, SimpleMotorFeedforwardMeters, SimpleMotorFeedforwardRadians
+# from wpimath.controller import PIDController, ProfiledPIDControllerRadians, SimpleMotorFeedforwardMeters, SimpleMotorFeedforwardRadians
 from wpimath.geometry import Rotation2d
 from wpimath.kinematics import SwerveModulePosition, SwerveModuleState
 from wpimath import applyDeadband
@@ -17,7 +17,7 @@ from phoenix6.configs import CANcoderConfiguration, TalonFXConfiguration
 from phoenix6.controls import VelocityVoltage, PositionVoltage
 from phoenix6.signals.spn_enums import SensorDirectionValue, NeutralModeValue, InvertedValue, FeedbackSensorSourceValue
 
-from util import FalconLogger
+from util import FalconLogger, NTTunableFloat
 
 class SwerveModuleConstants:
     class Drive:
@@ -31,16 +31,14 @@ class SwerveModuleConstants:
     
     class Turn:
         kGearRatio:float = 1 / (150/7)
-        kP:float = 28#2.5 # 25.0
-        kI:float = 0
+        kP:float = 50#2.5 # 25.0
+        kI:float = 0.05
         kD:float = 0
         kMaxAngularVelocity:float = math.pi
         kMaxAngularAcceleration:float = math.pi
         kS:float = 0
         kV:float = 0
     
-    # class NeoSim:
-    #     kMaxRpm:float = radiansToRotations( DCMotor.NEO(1).freeSpeed ) * kSecondsPerMinute
     class KrakenSim:
         kMaxRps:float = radiansToRotations( DCMotor.krakenX60(1).freeSpeed )# * kSecondsPerMinute
 
@@ -73,7 +71,6 @@ class SwerveModule:
         self.__driveMotor = TalonFX( driveId, "canivore1" )
         self.__driveMotor.configurator.apply( driveMotorCfg )
 
-
         ## Turn Encoder (CANcoder)
         # config
         turnEncoderCfg = CANcoderConfiguration()
@@ -98,6 +95,9 @@ class SwerveModule:
         turnMotorCfg.slot0.k_i = SwerveModuleConstants.Turn.kI
         turnMotorCfg.slot0.k_d = SwerveModuleConstants.Turn.kD
         turnMotorCfg.slot0.k_v = SwerveModuleConstants.Turn.kV
+        self.turn_kP = NTTunableFloat('stuff/turnPID/kP', SwerveModuleConstants.Drive.kP, self.updatePID, False)
+        self.turn_kI = NTTunableFloat('stuff/turnPID/kI', SwerveModuleConstants.Drive.kI, self.updatePID, False)
+        self.turn_kD = NTTunableFloat('stuff/turnPID/kD', SwerveModuleConstants.Drive.kD, self.updatePID, False)
         turnMotorCfg.closed_loop_general.continuous_wrap = True
         self.__turnController = PositionVoltage( 0 )
         # motor init
@@ -111,7 +111,11 @@ class SwerveModule:
         self.__setpoint = SwerveModuleState(0, self.__getTurnEncoderRotation())
 
         # Dashboards
-
+    
+    def updatePID(self):
+        config = SparkMaxConfig()
+        config.closedLoop.P( self.turn_kP, 0 ).I( self.turn_kI, 0 ).D( self.turn_kD, 0 )
+        self.__turnMotor.configurator.apply( config )
 
     def run(self) -> None:
         # Logging Current State

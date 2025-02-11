@@ -52,21 +52,24 @@ class DriveByStick(Command):
     
     # calls __getX lambda with Slew Rate Limiter Integration
     def getX(self, close:bool = False) -> float:
-        x = self.__getX()
-        x_normal = Constants.Limiters.srl_tX.calculate( x )
-        x_close = Constants.Limiters.srl_tX_close.calculate( x )
-        return x_normal if not close else x_close
+        # x = self.__getX()
+        # x_normal = Constants.Limiters.srl_tX.calculate( x )
+        # x_close = Constants.Limiters.srl_tX_close.calculate( x )
+        # return x_normal if not close else x_close
+        return self.__getX()
     
     # calls __getX lambda with Slew Rate Limiter Integration
     def getY(self, close:bool = False) -> float:
-        y = self.__getY()
-        y_normal = Constants.Limiters.srl_tY.calculate( y )
-        y_close = Constants.Limiters.srl_tY_close.calculate( y )       
-        return y_normal if not close else y_close
+        # y = self.__getY()
+        # y_normal = Constants.Limiters.srl_tY.calculate( y )
+        # y_close = Constants.Limiters.srl_tY_close.calculate( y )       
+        # return y_normal if not close else y_close
+        return self.__getY()
     
     # calls __getRotation lambda with Slew Rate Limiter Integration
     def getR(self, close:bool = False) -> float:
-        r = self.__getRotation()
-        r_normal = Constants.Limiters.srl_rO.calculate( r )
-        r_close = Constants.Limiters.srl_rO_close.calculate( r )
-        return r_normal if not close else r_close
+        # r = self.__getRotation()
+        # r_normal = Constants.Limiters.srl_rO.calculate( r )
+        # r_close = Constants.Limiters.srl_rO_close.calculate( r )
+        # return r_normal if not close else r_close
+        return self.__getRotation()
