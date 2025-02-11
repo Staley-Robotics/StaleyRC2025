@@ -5,21 +5,21 @@ from subsystems.AlgaeSubsystem import AlgaeManipulator, AlgaeManipulatorPosition
 
 class AlgaeGrabCommand(Command):
     # Variable Declaration
-    m_subsystem:AlgaeManipulator = None
+    Algae:AlgaeManipulator = None
 
     # Initialization
     def __init__( self,
-                  mySubsystem:Subsystem,
+                  mySubsystem:AlgaeManipulator,
                 ) -> None:
         # Command Attributes
-        self.m_subsystem:AlgaeManipulator = mySubsystem
+        self.Algae:AlgaeManipulator = mySubsystem
         self.setName( "AlgaeGrab" )
         self.addRequirements( mySubsystem )
 
     # On Start
     def initialize(self) -> None:
-        self.m_subsystem.setIntake( IntakeState.IN )
-        self.m_subsystem.setSetpoint( AlgaeManipulatorPositions.GRAB )
+        self.Algae.setIntake(IntakeState.IN)
+        self.Algae.setSetpoint(AlgaeManipulatorPositions.GRAB)
 
     # Periodic
     def execute(self) -> None:
@@ -31,9 +31,8 @@ class AlgaeGrabCommand(Command):
 
     # Is Finished
     def isFinished(self) -> bool:
-        if self.m_subsystem.atSetpoint():
-            return True
-        return False
+        return self.Algae.hasAlgae()
+
 
     # Run When Disabled
     def runsWhenDisabled(self) -> bool:

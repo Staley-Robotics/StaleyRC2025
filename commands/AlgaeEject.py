@@ -3,21 +3,24 @@ from subsystems.AlgaeSubsystem import AlgaeManipulator, AlgaeManipulatorPosition
 
 class AlgaeEjectCommand(Command):
     # Variable Declaration
-    m_subsystem:AlgaeManipulator = None
+    Algae:AlgaeManipulator = None
 
     # Initialization
     def __init__( self,
                   mySubsystem:Subsystem,
                 ) -> None:
         # Command Attributes
-        self.m_subsystem:AlgaeManipulator = mySubsystem
+        self.Algae:AlgaeManipulator = mySubsystem
         self.setName( "AlgaeEject" )
         self.addRequirements( mySubsystem )
 
     # On Start
     def initialize(self) -> None:
-        self.m_subsystem.setIntake( IntakeState.OUT )
-        self.m_subsystem.setSetpoint( AlgaeManipulatorPositions.PLACE )
+        if not self.Algae.hasAlgae():
+            self.cancel()
+        else:
+            self.Algae.setIntake(IntakeState.OUT)
+            self.Algae.setSetpoint(AlgaeManipulatorPositions.PLACE)
 
     # Periodic
     def execute(self) -> None:
@@ -29,7 +32,7 @@ class AlgaeEjectCommand(Command):
 
     # Is Finished
     def isFinished(self) -> bool:
-        if self.m_subsystem.atSetpoint():
+        if self.Algae.atSetpoint():
             return True
         return False
 

@@ -1,7 +1,7 @@
 import math
 
 from commands2 import Subsystem
-from wpilib import SmartDashboard, RobotBase, RobotState, Mechanism2d, Color8Bit, RobotController, Victor
+from wpilib import SmartDashboard, RobotBase, RobotState, Mechanism2d, Color8Bit, RobotController, Victor, DigitalInput
 from wpilib.shuffleboard import Shuffleboard
 from wpimath.controller import PIDController, SimpleMotorFeedforwardRadians
 from wpimath.system.plant import DCMotor
@@ -75,6 +75,8 @@ class AlgaeManipulator(Subsystem):
     __intakeMotor: TalonSRX = None
     intakeState = IntakeState.OFF
 
+    __irBeam:DigitalInput = None
+
     def __init__(self):
         # Motor
         # Neo
@@ -120,6 +122,10 @@ class AlgaeManipulator(Subsystem):
         #
         #
 
+        # IR Beam
+        self.__irBeam = DigitalInput(3)
+
+        # Shuffleboard
         Shuffleboard.getTab("AlgaeManipulator").add("AlgaeManipulator", self)
         # Shuffleboard.getTab("AlgaeManipulator").add("AlgaeManipulatorMech", self.mech)
 
@@ -133,6 +139,9 @@ class AlgaeManipulator(Subsystem):
         # Input Logging
         FalconLogger.logInput("AlgaeManipulator/Intake/MotorOutputPercent", self.__intakeMotor.getMotorOutputPercent())
         FalconLogger.logInput("AlgaeManipulator/Intake/MotorVoltage", self.__intakeMotor.getMotorOutputVoltage())
+
+        # Input Logging
+        FalconLogger.logInput("AlgaeManipulator/IRBeam", self.__irBeam.get())
 
         # Run
         if RobotState.isDisabled():
@@ -167,7 +176,7 @@ class AlgaeManipulator(Subsystem):
         self.simIntake.sim_state.add_rotor_position(velocity * 0.02)
 
     def stop(self) -> None:
-        self.setSetpoint(rotationsToDegrees(self.getMeasurement()), True)
+        self.setSetpoint(self.getMeasurement(), True)
         self.__intakeMotor.set(TalonSRXControlMode.PercentOutput, 0.0)
 
     def setSetpoint(self, setpoint: degrees, overrideRange: bool = False):
@@ -191,3 +200,6 @@ class AlgaeManipulator(Subsystem):
     def setIntake(self, state: IntakeState):
         self.intakeState = state
         self.__intakeMotor.set(TalonSRXControlMode.PercentOutput, state.value)
+
+    def hasAlgae(self) -> bool:
+        return not self.__irBeam.get()
