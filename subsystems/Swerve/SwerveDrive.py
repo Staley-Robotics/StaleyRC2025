@@ -40,7 +40,7 @@ class SwerveDrive(Subsystem):
     __visionOdometry:SwerveDrive4PoseEstimator = None
 
     # Settings
-    __DriveFieldRelative = ntproperty( "/Settings/Driver1/FieldRelative", True )
+    __DriveFieldRelative = ntproperty( "/Settings/Driver1/FieldRelative", False )
     __DriveMaxSpeedPercent = ntproperty( "/Settings/Driver1/MaxSpeedPercent", 0.33 )
     __DriveMaxRotationPercent = ntproperty( "/Settings/Driver1/MaxRotationPercent", 1/3.6 )
 
@@ -62,10 +62,10 @@ class SwerveDrive(Subsystem):
         ]
 
         self.__kinematics = SwerveDrive4Kinematics(
-            Translation2d( 0.2667, 0.2667 ),
-            Translation2d( 0.2667, -0.2667 ),
-            Translation2d( -0.2667, 0.2667 ),
-            Translation2d( -0.2667, -0.2667 )
+            Translation2d( 0.27305, 0.27305 ),
+            Translation2d( 0.27305, -0.27305 ),
+            Translation2d( -0.27305, 0.27305 ),
+            Translation2d( -0.27305, -0.27305 )
         )
 
         self.__odometry = SwerveDrive4Odometry(
