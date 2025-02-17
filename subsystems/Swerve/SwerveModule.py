@@ -23,7 +23,7 @@ class SwerveModuleConstants:
     class Drive:
         kWheelRadius:float = 0.0508
         kGearRatio:float = 1 / 6.75
-        kP:float = 0 #0.1
+        kP:float = 0.1 #0.1
         kI:float = 0
         kD:float = 0
         kS:float = 0 #0.1
@@ -95,9 +95,9 @@ class SwerveModule:
         turnMotorCfg.slot0.k_i = SwerveModuleConstants.Turn.kI
         turnMotorCfg.slot0.k_d = SwerveModuleConstants.Turn.kD
         turnMotorCfg.slot0.k_v = SwerveModuleConstants.Turn.kV
-        self.turn_kP = NTTunableFloat('stuff/turnPID/kP', SwerveModuleConstants.Drive.kP, self.updatePID, False)
-        self.turn_kI = NTTunableFloat('stuff/turnPID/kI', SwerveModuleConstants.Drive.kI, self.updatePID, False)
-        self.turn_kD = NTTunableFloat('stuff/turnPID/kD', SwerveModuleConstants.Drive.kD, self.updatePID, False)
+        # self.turn_kP = NTTunableFloat('stuff/turnPID/kP', SwerveModuleConstants.Drive.kP, self.updatePID, False)
+        # self.turn_kI = NTTunableFloat('stuff/turnPID/kI', SwerveModuleConstants.Drive.kI, self.updatePID, False)
+        # self.turn_kD = NTTunableFloat('stuff/turnPID/kD', SwerveModuleConstants.Drive.kD, self.updatePID, False)
         turnMotorCfg.closed_loop_general.continuous_wrap = True
         self.__turnController = PositionVoltage( 0 )
         # motor init

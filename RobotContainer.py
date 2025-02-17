@@ -2,6 +2,8 @@
 from wpilib import SendableChooser, SmartDashboard
 from commands2 import Command, cmd
 
+from ntcore.util import ntproperty
+
 # Local Imports
 from subsystems import *
 from commands import *
@@ -20,13 +22,13 @@ class RobotContainer:
     # Variable Declaration
     __autoChooser:SendableChooser = SendableChooser()
 
-    # Initialization
+    # Initializationn
     def __init__(self):
         """
         Initializes RobotContainer
         """
         # Driver Controller
-        driver1 = FalconXboxController( 0 )
+        driver1 = FalconXboxController( 0, squaredInputs=ntproperty("/Settings/Driver1/SquaredInputs", True) )
 
         # Declare Subsystems
         sysDriveTrain = SwerveDrive()
