@@ -10,22 +10,24 @@ from wpimath.units import radians, rotationsToRadians, rotationsToDegrees, radia
 from ntcore import NetworkTable, NetworkTableInstance
 from ntcore.util import ntproperty
 
-from rev import SparkMax, SparkMaxSim
-# from phoenix6.hardware import CANcoder
+from rev import SparkMax, SparkMaxSim, SparkMaxConfig
+from phoenix6.hardware import CANcoder
+from phoenix6.configs import CANcoderConfiguration
 
 import math
  
 from util import FalconLogger
 
-class PhysicalConstants:
-    thing=2
-
 class CoralManipulatorPivot(Subsystem):
 
     class PivotConstants:
-        gear_ratio=25 # or 1/25 idk
-        min=0.0
-        max=1.0
+        k_max_velocity=DCMotor.NEO550().freeSpeed * 60
+        gear_ratio=1/25 
+        min=-math.pi/2 #NOTE: wrong
+        max=math.pi/3
+        kP=1
+        kI=0
+        kD=0
 
     # Variable Declaration
     m_sys_id:int = None
@@ -33,13 +35,27 @@ class CoralManipulatorPivot(Subsystem):
     tolerance = math.pi / 10 #ntproperty("/CoralManipulatorPivot/AtPostionTolerance", math.pi/20, persistent=True)
 
 
-    def __init__(self, sysId:int, motor_port:int) -> None:
+    def __init__(self, sysId:int, motor_port:int, encoder_port:int) -> None:
         self.m_sys_id = sysId
 
+        ## Motor Init
         # using NEO 550
+        self.encoder = CANcoder( encoder_port, 'rio' )
         self.pivotMotor = SparkMax( motor_port, SparkMax.MotorType.kBrushless )
+        # config
+        motorConfig = SparkMaxConfig()
+        motorConfig.setIdleMode( SparkMaxConfig.IdleMode.kBrake )
+        motorConfig.alternateEncoder.fromId( encoder_port )
+        motorConfig.closedLoop.setFeedbackSensor( motorConfig.closedLoop.FeedbackSensor.kAlternateOrExternalEncoder )
+        motorConfig.closedLoop.pid(
+            self.PivotConstants.kP,
+            self.PivotConstants.kI,
+            self.PivotConstants.kD,
+        )
+        self.pivotMotor.configure( motorConfig, SparkMax.ResetMode.kResetSafeParameters, SparkMax.PersistMode.kPersistParameters )
 
-        self.encoder = self.pivotMotor.getAbsoluteEncoder()
+        ## Encoder Init
+        
 
         self.controller = PIDController(
             0.0,
@@ -73,7 +89,7 @@ class CoralManipulatorPivot(Subsystem):
                 math.pi*3/2,
              )
             self.simMotor = SparkMaxSim( self.pivotMotor, DCMotor.NEO550() )
-            self.simEncoder = self.simMotor.getAbsoluteEncoderSim()
+            # self.simEncoder = self.simMotor.getAbsoluteEncoderSim()
             # self.simEncoder.setPositionConversionFactor(1)
 
 
@@ -95,16 +111,20 @@ class CoralManipulatorPivot(Subsystem):
         FalconLogger.logOutput('/CoralManipulatorPivot/DesiredPosition', self.desiredPosition)
     
     def simulationPeriodic(self):
-        # self.simMotor.setMotorCurrent
+        
+        # self.armSim.setInputVoltage( 12 )
 
-        vel = self.controller.calculate( self.getMeasuredPosition(), self.desiredPosition )
-        self.simMotor.iterate( vel, 12, 0.02 )
+        output = self.controller.calculate( self.getMeasuredPosition(), self.desiredPosition ) * self.PivotConstants.k_max_velocity
 
-        self.simEncoder.iterate( vel, 0.02 )
+        self.armSim.setInput(
+            0, output
+        )
+        self.armSim.update(0.02)
 
-        self.pivotArm.setAngle( self.simEncoder.getPosition() )
+        self.encoder.sim_state.add_position( self.armSim.getAngle() )
 
-        # self.pivotArm.setAngle( rotationsToDegrees(self.simEncoder.getPosition()) )
+        self.pivotArm.setAngle( radiansToDegrees(self.getSetpoint()) )
+
 
     def run(self) -> None:
         val = self.controller.calculate( self.getMeasuredPosition(), self.desiredPosition )
@@ -116,11 +136,11 @@ class CoralManipulatorPivot(Subsystem):
     def setSetpoint(self, value:radians) -> None:
         self.desiredPosition = value
 
-    def getSetpoint(self) -> float:
+    def getSetpoint(self) -> radians:
         return self.desiredPosition
     
     def atSetpoint(self) -> bool:
         return abs(self.desiredPosition - self.getMeasuredPosition()) < self.tolerance # figure out tolerance
 
     def getMeasuredPosition(self) -> radians:
-        return rotationsToRadians(self.encoder.getPosition())
+        return rotationsToRadians(self.encoder.get_position().value)

@@ -3,8 +3,8 @@ from wpilib import SendableChooser, SmartDashboard
 from commands2 import Command, cmd
 
 # Local Imports
-from subsystems import SampleSubsystem, CoralManipulatorPivot
-from commands import SampleCommand, SetPivotPosition
+from subsystems import *
+from commands import *
 from util import FalconXboxController
 
 class RobotContainer:
@@ -23,24 +23,23 @@ class RobotContainer:
         driver1 = FalconXboxController( 0 )
 
         # Declare Subsystems
-        sysSample = SampleSubsystem( 0 )
-        sysCoralManipulatorPivot = CoralManipulatorPivot( 'CoralManipulatorPivot', 12 )
+        sysCoralManipulatorPivot = CoralManipulatorPivot( 'CoralManipulatorPivot', 12, 20 )
+        sysCoralManipulatorWheel = CoralManipulatorWheel( 'CoralManipulatorWheel', 3 )
 
         # Commands
-        cmdSampleLeft = SampleCommand(sysSample, driver1.getLeftX )
-        cmdSampleRight = SampleCommand(sysSample, driver1.getRightX )
         cmdSetPivotPosition = SetPivotPosition( sysCoralManipulatorPivot, lambda: driver1.getLeftUpDown())
+        cmdRunCoralWheel = CoralWheelOpenControl( sysCoralManipulatorWheel, driver1.getRightUpDown )
+        
 
         # Autonomous Chooser
         self.__autoChooser.setDefaultOption( "1 - None", cmd.none() )
         SmartDashboard.putData( "Autonomous Mode", self.__autoChooser )
 
         # Default Commands
-        sysSample.setDefaultCommand( cmdSampleLeft )
         sysCoralManipulatorPivot.setDefaultCommand( cmdSetPivotPosition )
+        sysCoralManipulatorWheel.setDefaultCommand( cmdRunCoralWheel )
 
         # Driver Controller Button Binding
-        # driver1.a().whileTrue( cmdSetPivotPosition )
 
 
     # Get Autonomous Command
