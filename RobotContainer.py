@@ -3,6 +3,7 @@ from wpilib import SendableChooser, SmartDashboard
 from commands2 import Command, cmd
 
 from ntcore.util import ntproperty
+from commands.AlgaeEject import AlgaeEjectCommand
 
 # Local Imports
 from subsystems import *
@@ -31,6 +32,13 @@ class RobotContainer:
         driver1 = FalconXboxController( 0, squaredInputs=ntproperty("/Settings/Driver1/SquaredInputs", True) )
 
         # Declare Subsystems
+        sysAlgae = AlgaeManipulator()
+
+        # Commands
+        # cmdSampleLeft = SampleCommand(sysSample, driver1.getLeftX )
+        cmdAlgaeGrab = AlgaeGrabCommand( sysAlgae )
+        cmdAlgaeDefault = AlgaeHoldCommand( sysAlgae )
+        cmdAlgaeEject = AlgaeEjectCommand( sysAlgae )
         sysDriveTrain = SwerveDrive()
         sysVision = Vision( sysDriveTrain.getOdometry )
 
@@ -43,6 +51,7 @@ class RobotContainer:
         # SmartDashboard.putData( "Autonomous Mode", self.__autoChooser )
 
         # Default Commands
+        sysAlgae.setDefaultCommand( cmdAlgaeDefault )
         sysDriveTrain.setDefaultCommand( cmdDriveByStick )
         cmdAwaitVisionData.schedule()
 
@@ -60,6 +69,8 @@ class RobotContainer:
             print( e )
 
         # Driver Controller Button Binding
+        driver1.a().whileTrue( cmdAlgaeGrab )
+        driver1.b().whileTrue( cmdAlgaeEject )
         driver1.back().onTrue( cmd.runOnce( sysDriveTrain.resetOdometry() ) )
 
     # Get Autonomous Command
