@@ -2,10 +2,18 @@
 from wpilib import SendableChooser, SmartDashboard
 from commands2 import Command, cmd
 
+from ntcore.util import ntproperty
+
 # Local Imports
-from subsystems import SampleSubsystem
-from commands import SampleCommand
+from subsystems import *
+from commands import *
 from util import FalconXboxController
+
+try:
+    from pathplannerlib.auto import AutoBuilder, NamedCommands
+except Exception as e:
+    print("ERROR: PlanPlanner Includes")
+    print( e )
 
 class RobotContainer:
     """
@@ -14,30 +22,45 @@ class RobotContainer:
     # Variable Declaration
     __autoChooser:SendableChooser = SendableChooser()
 
-    # Initialization
+    # Initializationn
     def __init__(self):
         """
         Initializes RobotContainer
         """
         # Driver Controller
-        driver1 = FalconXboxController( 0 )
+        driver1 = FalconXboxController( 0, squaredInputs=ntproperty("/Settings/Driver1/SquaredInputs", True) )
 
         # Declare Subsystems
-        sysSample = SampleSubsystem( 0 )
+        sysDriveTrain = SwerveDrive()
+        sysVision = Vision( sysDriveTrain.getOdometry )
 
         # Commands
-        cmdSampleLeft = SampleCommand(sysSample, driver1.getLeftX )
-        cmdSampleRight = SampleCommand(sysSample, driver1.getRightX )
+        cmdDriveByStick = DriveByStick( sysDriveTrain, driver1.getLeftUpDown, driver1.getLeftSideToSide, driver1.getRightSideToSide )
+        cmdAwaitVisionData = AwaitVisionData( sysVision.has_recieved_first_botpose_data, sysDriveTrain.resetOdometry, sysVision.get_last_pose )
 
         # Autonomous Chooser
-        self.__autoChooser.setDefaultOption( "1 - None", cmd.none() )
-        SmartDashboard.putData( "Autonomous Mode", self.__autoChooser )
+        # self.__autoChooser.setDefaultOption( "1 - None", cmd.none() )
+        # SmartDashboard.putData( "Autonomous Mode", self.__autoChooser )
 
         # Default Commands
-        sysSample.setDefaultCommand( cmdSampleLeft )
+        sysDriveTrain.setDefaultCommand( cmdDriveByStick )
+        cmdAwaitVisionData.schedule()
+
+        # PathPlanner Setup
+        try:
+            # PathPlanner Register Named Commands
+            NamedCommands.registerCommand('Pickup', cmd.waitSeconds(0.25) )
+            NamedCommands.registerCommand('LaunchSpeaker', cmd.waitSeconds(0.25) )
+
+            # Autonomous Chooser
+            self.__autoChooser = AutoBuilder.buildAutoChooser( "None" )
+            SmartDashboard.putData( "Autonomous Mode", self.__autoChooser )
+        except Exception as e:
+            print( "ERROR: PathPlanner Named Commands and Chooser")
+            print( e )
 
         # Driver Controller Button Binding
-        driver1.a().whileTrue( cmdSampleRight )
+        driver1.back().onTrue( cmd.runOnce( sysDriveTrain.resetOdometry() ) )
 
     # Get Autonomous Command
     def getAutonomousCommand(self) -> Command:
