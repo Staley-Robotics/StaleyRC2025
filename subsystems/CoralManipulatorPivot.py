@@ -45,17 +45,10 @@ class CoralManipulatorPivot(Subsystem):
         # config
         motorConfig = SparkMaxConfig()
         motorConfig.setIdleMode( SparkMaxConfig.IdleMode.kBrake )
-        motorConfig.alternateEncoder.fromId( encoder_port )
-        motorConfig.closedLoop.setFeedbackSensor( motorConfig.closedLoop.FeedbackSensor.kAlternateOrExternalEncoder )
-        motorConfig.closedLoop.pid(
-            self.PivotConstants.kP,
-            self.PivotConstants.kI,
-            self.PivotConstants.kD,
-        )
         self.pivotMotor.configure( motorConfig, SparkMax.ResetMode.kResetSafeParameters, SparkMax.PersistMode.kPersistParameters )
 
         ## Encoder Init
-        
+        self.encoder = CANcoder( encoder_port, 'canivore1' )
 
         self.controller = PIDController(
             0.0,
