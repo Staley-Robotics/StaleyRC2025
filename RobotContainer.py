@@ -32,13 +32,21 @@ class RobotContainer:
         driver1 = FalconXboxController( 0, squaredInputs=ntproperty("/Settings/Driver1/SquaredInputs", True) )
 
         # Declare Subsystems
+
+        sysCoralManipulatorPivot = CoralManipulatorPivot( 'CoralManipulatorPivot', 12, 20 )
+        sysCoralManipulatorWheel = CoralManipulatorWheel( 'CoralManipulatorWheel', 3 )
+
         sysAlgae = AlgaeManipulator()
 
         # Commands
         # cmdSampleLeft = SampleCommand(sysSample, driver1.getLeftX )
+        cmdSetPivotPosition = SetPivotPosition( sysCoralManipulatorPivot, lambda: driver1.getLeftUpDown())
+        cmdRunCoralWheel = CoralWheelOpenControl( sysCoralManipulatorWheel, driver1.getRightUpDown )
+        
         cmdAlgaeGrab = AlgaeGrabCommand( sysAlgae )
         cmdAlgaeDefault = AlgaeHoldCommand( sysAlgae )
         cmdAlgaeEject = AlgaeEjectCommand( sysAlgae )
+        
         sysDriveTrain = SwerveDrive()
         sysVision = Vision( sysDriveTrain.getOdometry )
 
@@ -51,6 +59,8 @@ class RobotContainer:
         # SmartDashboard.putData( "Autonomous Mode", self.__autoChooser )
 
         # Default Commands
+        sysCoralManipulatorPivot.setDefaultCommand( cmdSetPivotPosition )
+        sysCoralManipulatorWheel.setDefaultCommand( cmdRunCoralWheel )
         sysAlgae.setDefaultCommand( cmdAlgaeDefault )
         sysDriveTrain.setDefaultCommand( cmdDriveByStick )
         cmdAwaitVisionData.schedule()

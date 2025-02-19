@@ -1,0 +1,10 @@
+[
+  {
+    "name": "/CoralManipulatorPivot/AtPostionTolerance",
+    "type": "double",
+    "value": 0.15707963267948966,
+    "properties": {
+      "persistent": true
+    }
+  }
+]
