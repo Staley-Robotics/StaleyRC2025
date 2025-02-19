@@ -7,11 +7,7 @@ from subsystems import *
 from commands import *
 from util import FalconXboxController
 
-# try:
-#     from pathplannerlib.auto import AutoBuilder, NamedCommands
-# except Exception as e:
-#     print("ERROR: PlanPlanner Includes")
-#     print( e )
+from pathplannerlib.auto import AutoBuilder, NamedCommands
 
 class RobotContainer:
     """
@@ -37,24 +33,20 @@ class RobotContainer:
         cmdDriveByNote = DriveByNote( sysDriveTrain, sysVisionCamera, driver1.getLeftUpDown, driver1.getLeftSideToSide )
 
         # Autonomous Chooser
-        # self.__autoChooser.setDefaultOption( "1 - None", cmd.none() )
-        # SmartDashboard.putData( "Autonomous Mode", self.__autoChooser )
+        self.__autoChooser.setDefaultOption( "1 - None", cmd.none() )
+        SmartDashboard.putData( "Autonomous Mode", self.__autoChooser )
 
         # Default Commands
         sysDriveTrain.setDefaultCommand( cmdDriveByStick )
 
         # PathPlanner Setup
-        # try:
-        #     # PathPlanner Register Named Commands
-        #     NamedCommands.registerCommand('Pickup', cmd.waitSeconds(0.25) )
-        #     NamedCommands.registerCommand('LaunchSpeaker', cmd.waitSeconds(0.25) )
+        # PathPlanner Register Named Commands
+        NamedCommands.registerCommand('Pickup', cmd.waitSeconds(0.25) )
+        NamedCommands.registerCommand('LaunchSpeaker', cmd.waitSeconds(0.25) )
 
-        #     # Autonomous Chooser
-        #     self.__autoChooser = AutoBuilder.buildAutoChooser( "None" )
-        #     SmartDashboard.putData( "Autonomous Mode", self.__autoChooser )
-        # except Exception as e:
-        #     print( "ERROR: PathPlanner Named Commands and Chooser")
-        #     print( e )
+        # Autonomous Chooser
+        self.__autoChooser = AutoBuilder.buildAutoChooser( "None" )
+        SmartDashboard.putData( "Autonomous Mode", self.__autoChooser )
 
         # Driver Controller Button Binding
         driver1.a().toggleOnTrue( cmdDriveByNote )
