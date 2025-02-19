@@ -33,6 +33,8 @@ class FalconLogger:
             path = f"{key}/{k}"
             match v:
                 case list():
+                    if len(v) == 0:
+                        continue
                     match v[0]:
                         case bool():
                             self.__tbl.putBooleanArray( path, v )
