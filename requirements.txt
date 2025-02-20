@@ -2,7 +2,7 @@
 robotpy-installer==2025.0.3
 
 ### RobotPy
-robotpy==2025.3.1.0
+robotpy==2025.3.1.1
 robotpy[commands2]
 robotpy[phoenix6]
 robotpy[rev]
