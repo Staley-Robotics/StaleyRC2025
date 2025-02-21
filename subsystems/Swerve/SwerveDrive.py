@@ -92,8 +92,8 @@ class SwerveDrive(Subsystem):
         try:
             robotConfig = RobotConfig.fromGUISettings()
             AutoBuilder.configure(
-                pose_supplier = self.__odometry.getPose,
-                reset_pose = self.__odometry.resetPose,
+                pose_supplier = self.__visionOdometry.getPose,
+                reset_pose = self.__visionOdometry.resetPose,
                 robot_relative_speeds_supplier = self.getChassisSpeeds,
                 output = lambda speeds, feedforwards: self.runChassisSpeeds(speeds),
                 controller = PPHolonomicDriveController(

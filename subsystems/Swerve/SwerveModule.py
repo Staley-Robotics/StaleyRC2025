@@ -1,6 +1,7 @@
 import typing
 import math
 
+from ntcore.util import ntproperty
 from wpilib import RobotBase
 from wpilib.shuffleboard import Shuffleboard
 # from wpimath.controller import PIDController, ProfiledPIDControllerRadians, SimpleMotorFeedforwardMeters, SimpleMotorFeedforwardRadians
@@ -51,8 +52,17 @@ class SwerveModule:
 
     __setpoint:SwerveModuleState = None
 
+    # turnP = ntproperty("/SwerveModule/TurnP", 50)
+    # turnI = ntproperty("/SwerveModule/TurnI", 0.0)
+    # turnD = ntproperty("/SwerveModule/TurnD", 0.0)
+    #
+    # driveP = ntproperty("/SwerveModule/DriveP", 0.1)
+    # driveI = ntproperty("/SwerveModule/DriveI", 0.0)
+    # driveD = ntproperty("/SwerveModule/DriveD", 0.0)
+
+
     def __init__(self, moduleId:int, driveId:int, turnId:int, encoderId:int, encoderOffset:float):
-        ## Susbsystem setup
+        ## Subsystem setup
         self.moduleId = moduleId
         
         ## Drive Motor
@@ -112,12 +122,16 @@ class SwerveModule:
 
         # Dashboards
     
-    def updatePID(self):
-        config = SparkMaxConfig()
-        config.closedLoop.P( self.turn_kP, 0 ).I( self.turn_kI, 0 ).D( self.turn_kD, 0 )
-        self.__turnMotor.configurator.apply( config )
+    # def updatePID(self):
+    #     turnConfig = SparkMaxConfig()
+    #     driveConfig = SparkMaxConfig()
+    #     driveConfig.closedLoop.P( float(self.driveP), 0 ).I( float(self.driveI), 0 ).D( float(self.driveD), 0 )
+    #     turnConfig.closedLoop.P( float(self.turnP), 0 ).I( float(self.turnI), 0 ).D( float(self.turnD), 0 )
+    #     self.__turnMotor.configurator.apply( turnConfig )
+    #     self.__driveMotor.configurator.apply( driveConfig )
 
     def run(self) -> None:
+        # self.updatePID()
         # Logging Current State
         logPath = f"SwerveDrive/SwerveModule/{self.moduleId}"
         FalconLogger.logInput( f"{logPath}/DriveInput", self.__driveMotor.get() )

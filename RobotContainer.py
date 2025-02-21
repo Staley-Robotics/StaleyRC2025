@@ -35,7 +35,7 @@ class RobotContainer:
         sysVision = Vision( sysDriveTrain.getOdometry )
 
         # Commands
-        cmdDriveByStick = DriveByStick( sysDriveTrain, driver1.getLeftUpDown, driver1.getLeftSideToSide, driver1.getRightSideToSide )
+        cmdDriveByStick = DriveByStick( sysDriveTrain, driver1.getLeftUpDown, driver1.getLeftSideToSide, driver1.getRightSideToSide, driver1.getHID().getPOV )
         cmdAwaitVisionData = AwaitVisionData( sysVision.has_recieved_first_botpose_data, sysDriveTrain.resetOdometry, sysVision.get_last_pose )
 
         # Autonomous Chooser
