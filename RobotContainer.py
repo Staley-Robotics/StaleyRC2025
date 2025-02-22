@@ -48,7 +48,7 @@ class RobotContainer:
 
         sysDriveTrain = SwerveDrive()
         sysVision = Vision( sysDriveTrain.getOdometry )
-        self.climber = Climber( 1 )
+        self.climber = Climber( 15 )
         self.climber.setDefaultCommand(ClimberStay(self.climber))
 
         # Commands
@@ -83,8 +83,8 @@ class RobotContainer:
         driver1.y().whileTrue( cmdAlgaeGrab )
         driver1.b().whileTrue( cmdAlgaeEject )
         driver1.back().onTrue( cmd.runOnce( sysDriveTrain.resetOdometry() ) )
-        driver1.a().whileTrue(ClimberClimb.ClimberClimb(self.climber))
-        driver1.x().whileTrue(ClimberNotClimb.ClimberNotClimb(self.climber))
+        driver1.a().whileTrue(ClimberClimb(self.climber))
+        driver1.x().whileTrue(ClimberNotClimb(self.climber))
 
     # Get Autonomous Command
     def getAutonomousCommand(self) -> Command:

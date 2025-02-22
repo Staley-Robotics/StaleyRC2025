@@ -5,10 +5,11 @@ robotpy-installer==2025.0.3
 robotpy==2025.3.1.1
 robotpy[commands2]
 robotpy[phoenix6]
+robotpy[phoenix5]
 robotpy[rev]
-robotpy[pathplanner]
+robotpy[pathplannerlib]
 
 # phoenix6==25.0.0b4
-robotpy-pathplannerlib==2025.1.1
+# robotpy-pathplannerlib==2025.1.1
 robotpy-urcl==2025.0.1
 # robotpy-rev==2025.0.0b4

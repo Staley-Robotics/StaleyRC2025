@@ -12,6 +12,7 @@ robotpy_version = "2025.3.1.1"
 robotpy_extras = [
     "commands2",
     "phoenix6",
+    "phoenix5",
     "rev",
     "pathplannerlib"
 ]
