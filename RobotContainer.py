@@ -27,6 +27,7 @@ class RobotContainer:
         # Declare Subsystems
         # sysSample = SampleSubsystem( 0 )
         self.climber = Climber.Climber( 1 )
+        self.climber.setDefaultCommand(ClimberStay.ClimberStay(self.climber))
 
         # Commands
         # cmdSampleLeft = SampleCommand(sysSample, driver1.getLeftX )
@@ -43,10 +44,9 @@ class RobotContainer:
 
         # Driver Controller Button Binding
         # driver1.a().whileTrue( cmdSampleRight )
-        driver1.a().whileTrue(ClimberClimb.ClimberClimb(self.climber))
-        driver1.x().whileTrue(ClimberNotClimb.ClimberNotClimb(self.climber))
-        driver1.a().whileFalse(ClimberStay.ClimberStay(self.climber))
-        driver1.x().whileFalse(ClimberStay.ClimberStay(self.climber))
+        driver1.a().whileTrue(ClimberClimb.ClimberClimb(self.climber)) # z on keyboard
+        driver1.x().whileTrue(ClimberNotClimb.ClimberNotClimb(self.climber)) # c on keyboard
+        # driver1.b().onTrue(ClimberStay.ClimberStay(self.climber)) # x on keyboard
 
     # Get Autonomous Command
     def getAutonomousCommand(self) -> Command:
