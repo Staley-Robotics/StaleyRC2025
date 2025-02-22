@@ -3,7 +3,6 @@ from wpilib import SendableChooser, SmartDashboard
 from commands2 import Command, cmd
 
 from ntcore.util import ntproperty
-from commands.AlgaeEject import AlgaeEjectCommand
 
 # Local Imports
 from subsystems import *

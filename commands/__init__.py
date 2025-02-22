@@ -6,6 +6,10 @@ from .AlgaeGrab import *
 from .AlgaeHold import *
 from .DriveByStick import *
 from .AwaitVisionData import *
+from .AlgaeEject import *
+from .ClimberClimb import *
+from .ClimberNotClimb import *
+from .ClimberStay import *
 
 # Classes to Import
 __all__ = [
@@ -15,5 +19,9 @@ __all__ = [
     "AlgaeGrabCommand",
     "AlgaeHoldCommand",
     "DriveByStick",
-    "AwaitVisionData"
+    "AwaitVisionData",
+    "AlgaeEjectCommand",
+    "ClimberClimb",
+    "ClimberNotClimb",
+    "ClimberStay"
 ]

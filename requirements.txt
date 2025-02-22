@@ -10,5 +10,5 @@ robotpy[pathplanner]
 
 # phoenix6==25.0.0b4
 robotpy-pathplannerlib==2025.1.1
-robotpy-urcl==2025.0.0
+robotpy-urcl==2025.0.1
 # robotpy-rev==2025.0.0b4

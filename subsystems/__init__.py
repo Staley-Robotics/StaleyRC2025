@@ -5,7 +5,7 @@ from .CoralManipulatorWheel import *
 from .AlgaeSubsystem import *
 from .Swerve.SwerveDrive import *
 from .Vision import *
-
+from .Climber import *
 # Classes to Import
 __all__ = [
     "SampleSubsystem",
@@ -13,5 +13,6 @@ __all__ = [
     "CoralManipulatorWheel",
     "AlgaeManipulator",
     "SwerveDrive",
-    "Vision"
+    "Vision",
+    "Climber"
 ]
