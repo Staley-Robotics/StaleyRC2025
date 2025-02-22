@@ -48,8 +48,8 @@ class RobotContainer:
 
         sysDriveTrain = SwerveDrive()
         sysVision = Vision( sysDriveTrain.getOdometry )
-        self.climber = Climber.Climber( 1 )
-        self.climber.setDefaultCommand(ClimberStay.ClimberStay(self.climber))
+        self.climber = Climber( 1 )
+        self.climber.setDefaultCommand(ClimberStay(self.climber))
 
         # Commands
         cmdDriveByStick = DriveByStick( sysDriveTrain, driver1.getLeftUpDown, driver1.getLeftSideToSide, driver1.getRightSideToSide )
