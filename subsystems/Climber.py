@@ -1,10 +1,9 @@
 from commands2 import Subsystem
 from wpimath import units, controller
-from wpilib import RobotState, RobotBase, Mechanism2d, SmartDashboard, Encoder, Color, Color8Bit
+from wpilib import RobotState, Mechanism2d, SmartDashboard, Color, Color8Bit
 from wpimath.system.plant import DCMotor
 from wpilib.simulation import SingleJointedArmSim
-# from ntcore import NetworkTable, NetworkTableInstance
-from rev import SparkMax, SparkMaxSim
+from rev import SparkMax, SparkMaxSim, SparkMaxConfig
 from util import FalconLogger
 from math import pi
 
@@ -21,38 +20,33 @@ class ClimberConstants():
         GEAR_RATIO:float = 1/75.6
 
     class Simulation:
-        GEAR_RATIO_SIM:float = 75.6 # might need to use this
+        GEAR_RATIO_SIM:float = 75.6
         ARM_LENGTH_METERS:float = 0.2667
         ARM_MASS_KG:float = 1.35575924
         MIN_ANGLE_RADS:float = 0
         MAX_ANGLE_RADS:float = pi
         IS_SIMULATING_GRAVITY:bool = False
         STARTING_ANGLE_RADS:float = 0
-        # distance per pulse = (angle per revolution) / (pulses per revolution)
-        #  = (2 * PI rads) / (4096 pulses) MAYBE??
+        # note distance per pulse = (angle per revolution) / (pulses per revolution) = (2 * PI rads) / (4096 pulses)
         ENCODER_DIST_PER_PULSE:float = 1
 
 
 class Climber(Subsystem):
 
-
-    # Variable Declaration
-    # m_speed:float = 0.0
-    # m_sys_id:int = None
-    # m_logging:NetworkTable = None
-
     # Initialization
     def __init__(self, sysId:int) -> None:
         self.__sys_id = sysId
-
-        # self.m_speed = 0.0
         
         # Init motor and abs encoder
         self.__motor:SparkMax = SparkMax(self.__sys_id, SparkMax.MotorType.kBrushless)
+        self.__motor_config:SparkMaxConfig = SparkMaxConfig()
+        self.__motor_config.setIdleMode(idleMode=SparkMaxConfig.IdleMode.kBrake)
+        self.__motor.configure(self.__motor_config, self.__motor.ResetMode.kResetSafeParameters, self.__motor.PersistMode.kPersistParameters)
         self.__abs_encoder = self.__motor.getAbsoluteEncoder()
-        # self.__rel_encoder = self.__motor.getEncoder()
 
-        # self.__encoder_test = self.
+        # Init status vars
+        self.__is_climbing = False
+        self.__is_un_climbing = False
 
         # Init sim motor and sim encoders
         self.__motor_sim = SparkMaxSim(self.__motor, DCMotor.NEO(1))
@@ -62,7 +56,7 @@ class Climber(Subsystem):
 
         self.__sim_jointed_arm = SingleJointedArmSim(
             DCMotor.NEO(1),
-            ClimberConstants.Simulation.GEAR_RATIO_SIM, # might change to ClimberConstants.Simulation.GEAR_RATIO_SIM
+            ClimberConstants.Simulation.GEAR_RATIO_SIM,
             SingleJointedArmSim.estimateMOI(ClimberConstants.Simulation.ARM_LENGTH_METERS, ClimberConstants.Simulation.ARM_MASS_KG),
             ClimberConstants.Simulation.ARM_LENGTH_METERS,
             ClimberConstants.Simulation.MIN_ANGLE_RADS,
@@ -72,7 +66,7 @@ class Climber(Subsystem):
         )
 
 
-        self.actual_position = self.__abs_encoder.getPosition()
+        self.actual_position = self.getPosition()
         self.desired_position = idk
         self.save_position = self.actual_position
         self.__set_voltage = 0
@@ -116,23 +110,20 @@ class Climber(Subsystem):
         """
 
 
-        output = units.radiansToRotations(self.__motor.getAppliedOutput()) * 12 * 60 # self.__motor.getAppliedOutput() outputs in radians per sec
-        # multiplied by 12 because output needs to be volts (or something like that)
-        # multiplied by 60 because conversion from radians per SEC to rotations per MIN
+        output = units.radiansToRotations(self.__motor.getAppliedOutput()) * 12 * 60 # note: self.__motor.getAppliedOutput() outputs in radians per sec
+        # note: multiplied by 12 because output needs to be in volts
+        # note: multiplied by 60 because conversion from radians per SEC to rotations per MIN
 
 
-        self.__sim_jointed_arm.setInputVoltage(output) # input needs to be in rotations per minute
+        self.__sim_jointed_arm.setInputVoltage(output) # note: input needs to be in rotations per minute
 
         self.__sim_jointed_arm.update(0.02)
 
-        sim_velocity = self.__sim_jointed_arm.getVelocity() # this returns velocity in rotation per sec <-- dunno if this is a problem
-        self.__motor_sim.iterate(sim_velocity, 12, 0.02)
-        self.__sim_abs_encoder.iterate(sim_velocity * ClimberConstants.Simulation.GEAR_RATIO_SIM, 0.02) # TODO add gear ratio (check if gear ratio should be * or /)
-        self.__sim_rel_encoder.iterate(sim_velocity, 0.02) # TODO add gear ratio (check if gear ratio should be * or /)
-        #iterate must be done on absolute encoder, relative encoder, and motor
-        #* ClimberConstants.Simulation.GEAR_RATIO_SIM
+        sim_velocity = self.__sim_jointed_arm.getVelocity() # note: this returns velocity in rotation per sec
+        self.__sim_abs_encoder.iterate(sim_velocity * ClimberConstants.Simulation.GEAR_RATIO_SIM, 0.02)
+        self.__sim_rel_encoder.iterate(sim_velocity, 0.02) # TODO add gear ratio (check if gear ratio should be * to or / by sim_velocity) IF NEEDED after testing
+        # note: iterate must be done on absolute encoder, relative encoder, and motor
 
-        # print(f"output: {output},  sim_velocity: {sim_velocity}")
         SmartDashboard.putNumber("sim_motor_output (rotations per minute)", output)
         SmartDashboard.putNumber("sim_velocity", sim_velocity)
 
@@ -151,35 +142,36 @@ class Climber(Subsystem):
         FalconLogger.logInput("/Climber/Current Position (degrees)", self.getPosition())
         FalconLogger.logInput("/Climber/Speed (degrees per sec)", self.getSpeed())
         FalconLogger.logInput("/Climber/Motor Voltage from motor", self.__motor.getBusVoltage() * self.__motor.getAppliedOutput())
-        #apparently multiplying 
-
-        # Logging: Log Outputs
-        FalconLogger.logOutput("/Climber/Motor Voltage from PID calculation", self.__set_voltage)
-        FalconLogger.logOutput("/Climber/Desired Position (degrees)", self.desired_position) # (up is 180, down is 0) TODO change key for this input after testing
-
 
         # Update some variables
-        self.actual_position = self.__abs_encoder.getPosition()
-        self.save_position = round(self.actual_position) # this is used for the command ClimberStay (why is it rounded? idk maybe to stop climber from bakonking itself)
-        # self.desired_position = self.pid_controller.getSetpoint()
+        self.actual_position = self.getPosition()
+        self.save_position = round(self.actual_position) # note: this is used for the command ClimberStay (why is it rounded? idk maybe to stop climber from bakonking itself)
+        
+        SmartDashboard.putNumber("actual position", self.actual_position)
+        SmartDashboard.putNumber("save position", self.save_position)
 
         # Run Subsystem: Set New State To Subsystem
         if RobotState.isDisabled():
-            self.stop()
+            self.safe_stop()
+            # self.safe_stop()
         else:
             self.run()
         
-        # Logging: Write Post Operation Information
-        # self.m_logging.putNumber( "Climber id (at least in code)", self.m_sys_id )
+                # Logging: Log Outputs
+        FalconLogger.logOutput("/Climber/Motor Voltage from PID calculation", self.__set_voltage)
+        FalconLogger.logOutput("/Climber/Desired Position (degrees)", self.desired_position) # (up is 180, down is 0) TODO Change this comment after more testing
 
     # Run the Subsystem
     def run(self) -> None:
-        self.__set_voltage = self.pid_controller.calculate(self.getPosition("degrees"), self.desired_position )
+        self.__set_voltage = self.pid_controller.calculate(self.getPosition(), self.desired_position )
         self.__motor.setVoltage(self.__set_voltage)
 
     # Stop the Subsystem
-    def stop(self) -> None:
+    def force_stop(self) -> None:
         self.__motor.set(ClimberConstants.Speeds.STOP)
+
+    def safe_stop(self) -> None:
+        self.setPosition(self.save_position)
 
     # Set the Desired Position
     def setPosition(self, position:units.degrees):
@@ -188,7 +180,6 @@ class Climber(Subsystem):
         :param position: the desired position in degrees
         """
         self.desired_position = position
-        # self.pid_controller.setSetpoint(position)
 
     # Get Desired Position
     def getDesiredPosition(self):
@@ -213,3 +204,4 @@ class Climber(Subsystem):
         :returns: position of climber in degrees
         """
         return units.rotationsToDegrees(self.__abs_encoder.getPosition()) * ClimberConstants.Other.GEAR_RATIO
+        

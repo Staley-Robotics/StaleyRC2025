@@ -49,6 +49,7 @@ class RobotContainer:
         sysDriveTrain = SwerveDrive()
         sysVision = Vision( sysDriveTrain.getOdometry )
         self.climber = Climber.Climber( 1 )
+        self.climber.setDefaultCommand(ClimberStay.ClimberStay(self.climber))
 
         # Commands
         cmdDriveByStick = DriveByStick( sysDriveTrain, driver1.getLeftUpDown, driver1.getLeftSideToSide, driver1.getRightSideToSide )
@@ -74,14 +75,16 @@ class RobotContainer:
         self.__autoChooser = AutoBuilder.buildAutoChooser()
         SmartDashboard.putData( "Autonomous Mode", self.__autoChooser )
 
+        # Default Commands
+        # sysSample.setDefaultCommand( cmdSampleLeft )
+
+
         # Driver Controller Button Binding
         driver1.y().whileTrue( cmdAlgaeGrab )
         driver1.b().whileTrue( cmdAlgaeEject )
         driver1.back().onTrue( cmd.runOnce( sysDriveTrain.resetOdometry() ) )
         driver1.a().whileTrue(ClimberClimb.ClimberClimb(self.climber))
         driver1.x().whileTrue(ClimberNotClimb.ClimberNotClimb(self.climber))
-        driver1.a().whileFalse(ClimberStay.ClimberStay(self.climber))
-        driver1.x().whileFalse(ClimberStay.ClimberStay(self.climber))
 
     # Get Autonomous Command
     def getAutonomousCommand(self) -> Command:
