@@ -1,0 +1,61 @@
+{
+  "version": "2025.0",
+  "waypoints": [
+    {
+      "anchor": {
+        "x": 1.6894951249993277,
+        "y": 7.429456016570803
+      },
+      "prevControl": null,
+      "nextControl": {
+        "x": 2.2717364147841304,
+        "y": 6.881906676475838
+      },
+      "isLocked": false,
+      "linkedName": "A"
+    },
+    {
+      "anchor": {
+        "x": 3.9758228018040245,
+        "y": 5.211695076356303
+      },
+      "prevControl": {
+        "x": 2.941129183780286,
+        "y": 6.148136176986413
+      },
+      "nextControl": null,
+      "isLocked": false,
+      "linkedName": "C12"
+    }
+  ],
+  "rotationTargets": [],
+  "constraintZones": [],
+  "pointTowardsZones": [],
+  "eventMarkers": [
+    {
+      "name": "L4 Elevator",
+      "waypointRelativePos": 0.7530452436194902,
+      "endWaypointRelativePos": null,
+      "command": null
+    }
+  ],
+  "globalConstraints": {
+    "maxVelocity": 3.0,
+    "maxAcceleration": 3.0,
+    "maxAngularVelocity": 540.0,
+    "maxAngularAcceleration": 720.0,
+    "nominalVoltage": 12.0,
+    "unlimited": false
+  },
+  "goalEndState": {
+    "velocity": 0,
+    "rotation": -59.99999999999999
+  },
+  "reversed": false,
+  "folder": "Coral Deposit",
+  "idealStartingState": {
+    "velocity": 0,
+    "rotation": -53.0
+  },
+  "useDefaultConstraints": true
+}
