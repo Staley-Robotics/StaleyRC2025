@@ -1,0 +1,54 @@
+{
+  "version": "2025.0",
+  "waypoints": [
+    {
+      "anchor": {
+        "x": 7.567383535879629,
+        "y": 1.9018008535879618
+      },
+      "prevControl": null,
+      "nextControl": {
+        "x": 8.38787237170106,
+        "y": 1.6729875444788134
+      },
+      "isLocked": false,
+      "linkedName": "S3"
+    },
+    {
+      "anchor": {
+        "x": 3.710441421662959,
+        "y": 3.001151122437149
+      },
+      "prevControl": {
+        "x": 2.3470288957868304,
+        "y": 2.4630855015345983
+      },
+      "nextControl": null,
+      "isLocked": false,
+      "linkedName": "C8"
+    }
+  ],
+  "rotationTargets": [],
+  "constraintZones": [],
+  "pointTowardsZones": [],
+  "eventMarkers": [],
+  "globalConstraints": {
+    "maxVelocity": 3.0,
+    "maxAcceleration": 3.0,
+    "maxAngularVelocity": 540.0,
+    "maxAngularAcceleration": 720.0,
+    "nominalVoltage": 12.0,
+    "unlimited": false
+  },
+  "goalEndState": {
+    "velocity": 0,
+    "rotation": 59.99999999999999
+  },
+  "reversed": false,
+  "folder": "Starting Deposit",
+  "idealStartingState": {
+    "velocity": 0,
+    "rotation": 180.0
+  },
+  "useDefaultConstraints": true
+}

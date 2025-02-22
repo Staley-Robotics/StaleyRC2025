@@ -14,7 +14,7 @@ class RobotContainer:
     RobotContainer is the Initial Container for an FRC Robot
     """
     # Variable Declaration
-    __autoChooser:SendableChooser = SendableChooser()
+    __autoChooser:SendableChooser = None
 
     # Initialization
     def __init__(self):
@@ -33,8 +33,8 @@ class RobotContainer:
         cmdDriveByNote = DriveByNote( sysDriveTrain, sysVisionCamera, driver1.getLeftUpDown, driver1.getLeftSideToSide )
 
         # Autonomous Chooser
-        self.__autoChooser.setDefaultOption( "1 - None", cmd.none() )
-        SmartDashboard.putData( "Autonomous Mode", self.__autoChooser )
+        # self.__autoChooser.setDefaultOption( "1 - None", cmd.none() )
+        # SmartDashboard.putData( "Autonomous Mode", self.__autoChooser )
 
         # Default Commands
         sysDriveTrain.setDefaultCommand( cmdDriveByStick )

@@ -75,24 +75,9 @@ class SwerveDrive(Subsystem):
        
         # Path Planner
         robotConfig = RobotConfig.fromGUISettings()
-        # moduleConfig = ModuleConfig(
-        #     wheelRadiusMeters = SwerveModuleConstants.Drive.kWheelRadius,
-        #     maxDriveVelocityMPS = SwerveDriveConstants.kMaxSpeed,
-        #     wheelCOF = 1.0,
-        #     driveMotor = DCMotor.NEO(1),
-        #     driveCurrentLimit = 40.0,
-        #     numMotors = 1
-        # )
-        # robotConfig = RobotConfig(
-        #     massKG = lbsToKilograms( SwerveDriveConstants.kWeightLbs ),
-        #     MOI = 6.893,
-        #     moduleConfig = moduleConfig,
-        #     moduleOffsets = self.__kinematics.getModules(),
-        #     trackwidthMeters = None
-        # )
         AutoBuilder.configure(
-            pose_supplier = self.__odometry.getPose,
-            reset_pose = self.__odometry.resetPose,
+            pose_supplier = self.__visionOdometry.getEstimatedPosition,
+            reset_pose = self.__visionOdometry.resetPose,
             robot_relative_speeds_supplier = self.getChassisSpeeds,
             output = lambda speeds, feedforwards: self.runChassisSpeeds(speeds),
             controller = PPHolonomicDriveController(
