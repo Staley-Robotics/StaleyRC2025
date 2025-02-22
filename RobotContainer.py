@@ -66,17 +66,13 @@ class RobotContainer:
         cmdAwaitVisionData.schedule()
 
         # PathPlanner Setup
-        try:
-            # PathPlanner Register Named Commands
-            NamedCommands.registerCommand('Pickup', cmd.waitSeconds(0.25) )
-            NamedCommands.registerCommand('LaunchSpeaker', cmd.waitSeconds(0.25) )
+        # PathPlanner Register Named Commands
+        NamedCommands.registerCommand('Pickup', cmd.waitSeconds(0.25) )
+        NamedCommands.registerCommand('LaunchSpeaker', cmd.waitSeconds(0.25) )
 
-            # Autonomous Chooser
-            self.__autoChooser = AutoBuilder.buildAutoChooser( "None" )
-            SmartDashboard.putData( "Autonomous Mode", self.__autoChooser )
-        except Exception as e:
-            print( "ERROR: PathPlanner Named Commands and Chooser")
-            print( e )
+        # Autonomous Chooser
+        self.__autoChooser = AutoBuilder.buildAutoChooser()
+        SmartDashboard.putData( "Autonomous Mode", self.__autoChooser )
 
         # Driver Controller Button Binding
         driver1.a().whileTrue( cmdAlgaeGrab )

@@ -89,28 +89,24 @@ class SwerveDrive(Subsystem):
         SmartDashboard.putData("Field", self.__field)
        
         # Path Planner
-        try:
-            robotConfig = RobotConfig.fromGUISettings()
-            AutoBuilder.configure(
-                pose_supplier = self.__odometry.getPose,
-                reset_pose = self.__odometry.resetPose,
-                robot_relative_speeds_supplier = self.getChassisSpeeds,
-                output = lambda speeds, feedforwards: self.runChassisSpeeds(speeds),
-                controller = PPHolonomicDriveController(
-                    PIDConstants(5.0, 0.0, 0.0),
-                    PIDConstants(5.0, 0.0, 0.0)
-                ),
-                robot_config = robotConfig,
-                should_flip_path = self.shouldFlipPath,
-                drive_subsystem = self
-            )
+        robotConfig = RobotConfig.fromGUISettings()
+        AutoBuilder.configure(
+            pose_supplier = self.__odometry.getPose,
+            reset_pose = self.__visionOdometry.resetPose,
+            robot_relative_speeds_supplier = self.getChassisSpeeds,
+            output = lambda speeds, feedforwards: self.runChassisSpeeds(speeds),
+            controller = PPHolonomicDriveController(
+                PIDConstants(5.0, 0.0, 0.0),
+                PIDConstants(5.0, 0.0, 0.0)
+            ),
+            robot_config = robotConfig,
+            should_flip_path = self.shouldFlipPath,
+            drive_subsystem = self
+        )
 
-            #PathPlannerLogging.setLogCurrentPoseCallback( self.__field.setRobotPose )
-            PathPlannerLogging.setLogTargetPoseCallback( self.__field.getObject('targetPose').setPose )
-            PathPlannerLogging.setLogActivePathCallback( self.__field.getObject('path').setPoses )
-        except Exception as e:
-            print( "ERROR! SwerveDrive PathPlanner Setup" )
-            print( e )
+        #PathPlannerLogging.setLogCurrentPoseCallback( self.__field.setRobotPose )
+        PathPlannerLogging.setLogTargetPoseCallback( self.__field.getObject('targetPose').setPose )
+        PathPlannerLogging.setLogActivePathCallback( self.__field.getObject('path').setPoses )
 
     def shouldFlipPath(self) -> bool:
         return DriverStation.getAlliance() == DriverStation.Alliance.kRed
