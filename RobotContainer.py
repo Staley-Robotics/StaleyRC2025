@@ -23,7 +23,7 @@ class RobotContainer:
     # Variable Declaration
     __autoChooser:SendableChooser = SendableChooser()
 
-    # Initializationn
+    # Initialization
     def __init__(self):
         """
         Initializes RobotContainer
@@ -42,13 +42,14 @@ class RobotContainer:
         # cmdSampleLeft = SampleCommand(sysSample, driver1.getLeftX )
         cmdSetPivotPosition = SetPivotPosition( sysCoralManipulatorPivot, lambda: driver1.getLeftUpDown())
         cmdRunCoralWheel = CoralWheelOpenControl( sysCoralManipulatorWheel, driver1.getRightUpDown )
-        
+
         cmdAlgaeGrab = AlgaeGrabCommand( sysAlgae )
         cmdAlgaeDefault = AlgaeHoldCommand( sysAlgae )
         cmdAlgaeEject = AlgaeEjectCommand( sysAlgae )
-        
+
         sysDriveTrain = SwerveDrive()
         sysVision = Vision( sysDriveTrain.getOdometry )
+        self.climber = Climber.Climber( 1 )
 
         # Commands
         cmdDriveByStick = DriveByStick( sysDriveTrain, driver1.getLeftUpDown, driver1.getLeftSideToSide, driver1.getRightSideToSide )
@@ -75,9 +76,13 @@ class RobotContainer:
         SmartDashboard.putData( "Autonomous Mode", self.__autoChooser )
 
         # Driver Controller Button Binding
-        driver1.a().whileTrue( cmdAlgaeGrab )
+        driver1.y().whileTrue( cmdAlgaeGrab )
         driver1.b().whileTrue( cmdAlgaeEject )
         driver1.back().onTrue( cmd.runOnce( sysDriveTrain.resetOdometry() ) )
+        driver1.a().whileTrue(ClimberClimb.ClimberClimb(self.climber))
+        driver1.x().whileTrue(ClimberNotClimb.ClimberNotClimb(self.climber))
+        driver1.a().whileFalse(ClimberStay.ClimberStay(self.climber))
+        driver1.x().whileFalse(ClimberStay.ClimberStay(self.climber))
 
     # Get Autonomous Command
     def getAutonomousCommand(self) -> Command:
