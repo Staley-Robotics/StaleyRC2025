@@ -27,9 +27,7 @@ class SetPivotPosition(Command):
     # Periodic
     def execute(self) -> None:
         #stupid scaling code 
-        self.pivot.setSetpoint(min(max(
-            (self.pivot.getSetpoint() + (self.m_getValue()/10)),
-            CoralManipulatorPivot.PivotConstants.min), CoralManipulatorPivot.PivotConstants.max))# * (self.pivot.PivotConstants.max-self.pivot.PivotConstants.max)) +self.pivot.PivotConstants.min )
+        self.pivot.setSetpoint( self.pivot.getSetpoint() + (self.m_getValue()/5))
 
     # On End
     def end(self, interrupted:bool) -> None:
