@@ -6,7 +6,7 @@ from wpilib import SmartDashboard, RobotBase, RobotState, Mechanism2d, Color8Bit
 from wpilib.simulation import ElevatorSim, RoboRioSim, BatterySim
 from enum import Enum
 from util import FalconLogger
-from rev import SparkMax, SparkBase, SparkMaxConfig, ClosedLoopConfig, ClosedLoopSlot, SparkMaxSim
+from rev import SparkMax, SparkBase, SparkMaxConfig, ClosedLoopConfig, ClosedLoopSlot, SparkMaxSim, LimitSwitchConfig
 
 class ElevatorPositions(Enum):
     TROUGH = 0.0
@@ -29,7 +29,7 @@ class ElevatorConstants:
     _elevatorHeight = 3
     _elevatorWidth = 3
 
-    _gearing = 1.0
+    _gearing = 0.25
     _mass = 10.0
     _drumRadius = 0.25
     _rotsPerInch = 1.0
@@ -46,6 +46,10 @@ class Elevator(Subsystem):
 
         self.__encoderLead = self.__motorLead.getEncoder()
 
+        self.__limitTop = self.__motorLead.getReverseLimitSwitch()
+        self.__limitBottom = self.__motorLead.getForwardLimitSwitch()
+
+
         self.__motorLeadConfig = SparkMaxConfig()
         self.__motorLeadConfig.encoder.positionConversionFactor(1).velocityConversionFactor(1)
         self.__motorLeadConfig.closedLoop.setFeedbackSensor(
@@ -54,6 +58,11 @@ class Elevator(Subsystem):
             ElevatorConstants._kI, ClosedLoopSlot.kSlot0).D(
             ElevatorConstants._kD, ClosedLoopSlot.kSlot0).velocityFF(
             ElevatorConstants._kFF, ClosedLoopSlot.kSlot0).outputRange(-1, 1, ClosedLoopSlot.kSlot0)
+        
+        self.__motorLeadConfig.limitSwitch.forwardLimitSwitchType(LimitSwitchConfig.Type.kNormallyOpen)
+        self.__motorLeadConfig.limitSwitch.forwardLimitSwitchType(LimitSwitchConfig.Type.kNormallyClosed)
+        self.__motorLeadConfig.limitSwitch.forwardLimitSwitchEnabled(False)
+        self.__motorLeadConfig.limitSwitch.reverseLimitSwitchEnabled(True)
 
         self.__motorLead.configure(self.__motorLeadConfig, SparkBase.ResetMode.kResetSafeParameters, SparkBase.PersistMode.kNoPersistParameters)
         self.__motorFollowConfig = SparkMaxConfig().follow(0, False)
@@ -100,6 +109,9 @@ class Elevator(Subsystem):
         FalconLogger.logInput("Elevator/MotorOutput", self.__motorLead.getAppliedOutput()) # TODO: check if this is the voltage
         FalconLogger.logInput("Elevator/MotorPositionRots", self.__encoderLead.getPosition())
         FalconLogger.logInput("Elevator/MotorVelocity", self.__encoderLead.getVelocity())
+        FalconLogger.logInput("Elevator/TopLimitSwitch", self.__limitTop.get())
+        FalconLogger.logInput("Elevator/BottomLimitSwitch", self.__limitBottom.get())
+
 
         FalconLogger.logOutput("Elevator/CurrentHeightIN", self.get())
         FalconLogger.logOutput("Elevator/TargetHeightIN", self.getSetpoint())
@@ -144,12 +156,6 @@ class Elevator(Subsystem):
     def get(self) -> float:
         return self.__encoderLead.getPosition()
 
-    # TODO: reimplement these so that calculations are mainly for setting, not writing for logging
-    def inchesToElevatorPosition(self, pos: float) -> float:
-        return (pos * 4) - 8
-
-    def elevatorPositionToInches(self, pos: float) -> float:
-        return (pos + 8) / 4
     
     # per 0.020 seconds
     def calculateSimMotorRots(self) -> float:
