@@ -1,7 +1,7 @@
 # Imports
 from .SampleSubsystem import *
 from .Swerve.SwerveDrive import *
-from .Vision import *
+from .LimelightVision import *
 
 # Classes to Import
 __all__ = [

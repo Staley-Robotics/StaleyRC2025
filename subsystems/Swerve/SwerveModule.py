@@ -32,7 +32,7 @@ class SwerveModuleConstants:
     
     class Turn:
         kGearRatio:float = 1 / (150/7)
-        kP:float = 50#2.5 # 25.0
+        kP:float = 20#2.5 # 25.0
         kI:float = 0.05
         kD:float = 0
         kMaxAngularVelocity:float = math.pi

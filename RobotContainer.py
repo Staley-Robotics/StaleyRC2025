@@ -36,7 +36,7 @@ class RobotContainer:
 
         # Commands
         cmdDriveByStick = DriveByStick( sysDriveTrain, driver1.getLeftUpDown, driver1.getLeftSideToSide, driver1.getRightSideToSide, driver1.getHID().getPOV )
-        cmdAwaitVisionData = AwaitVisionData( sysVision.has_recieved_first_botpose_data, sysDriveTrain.resetOdometry, sysVision.get_last_pose )
+        cmdAwaitVisionData = AwaitVisionData( lambda: sysVision.has_recieved_data, sysDriveTrain.resetOdometry, sysVision.get_last_pose )
 
         # Autonomous Chooser
         # self.__autoChooser.setDefaultOption( "1 - None", cmd.none() )
