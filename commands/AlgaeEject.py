@@ -32,9 +32,7 @@ class AlgaeEjectCommand(Command):
 
     # Is Finished
     def isFinished(self) -> bool:
-        if self.Algae.atSetpoint():
-            return True
-        return False
+        return not self.Algae.hasAlgae()
 
     # Run When Disabled
     def runsWhenDisabled(self) -> bool:
