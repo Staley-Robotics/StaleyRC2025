@@ -20,15 +20,15 @@ class ClimberNotClimb(Command):
 
     # Periodic
     def execute(self) -> None:
-        self.m_subsystem.setPosition(0)
+        self.m_subsystem.setSpeed(ClimberConstants.Speeds.BACKWARD)
 
     # On End
     def end(self, interrupted:bool) -> None:
-        self.m_subsystem.safe_stop()
+        self.m_subsystem.stop()
 
     # Is Finished
     def isFinished(self) -> bool:
-        return self.m_subsystem.atSetpoint()
+        return self.m_subsystem.isOutOfRange()
 
     # Run When Disabled
     def runsWhenDisabled(self) -> bool:

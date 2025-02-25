@@ -3,8 +3,8 @@ from wpilib import SendableChooser, SmartDashboard
 from commands2 import Command, cmd
 
 # Local Imports
-from subsystems import SampleSubsystem, Climber
-from commands import ClimberNotClimb, SampleCommand, ClimberClimb, ClimberStay
+from subsystems import Climber
+from commands import ClimberNotClimb, ClimberClimb
 from util import FalconXboxController
 
 class RobotContainer:
@@ -20,33 +20,22 @@ class RobotContainer:
         Initializes RobotContainer
         """
 
-
         # Driver Controller
         driver1 = FalconXboxController( 0 )
 
         # Declare Subsystems
-        # sysSample = SampleSubsystem( 0 )
         self.climber = Climber.Climber( 1 )
-        self.climber.setDefaultCommand(ClimberStay.ClimberStay(self.climber))
-
-        # Commands
-        # cmdSampleLeft = SampleCommand(sysSample, driver1.getLeftX )
-        # cmdSampleRight = SampleCommand(sysSample, driver1.getRightX )
-
 
         # Autonomous Chooser
         self.__autoChooser.setDefaultOption( "1 - None", cmd.none() )
         SmartDashboard.putData( "Autonomous Mode", self.__autoChooser )
 
         # Default Commands
-        # sysSample.setDefaultCommand( cmdSampleLeft )
-
+        # self.climber.setDefaultCommand(ClimberStay.ClimberStay(self.climber))
 
         # Driver Controller Button Binding
-        # driver1.a().whileTrue( cmdSampleRight )
         driver1.a().whileTrue(ClimberClimb.ClimberClimb(self.climber)) # z on keyboard
         driver1.x().whileTrue(ClimberNotClimb.ClimberNotClimb(self.climber)) # c on keyboard
-        # driver1.b().onTrue(ClimberStay.ClimberStay(self.climber)) # x on keyboard
 
     # Get Autonomous Command
     def getAutonomousCommand(self) -> Command:
