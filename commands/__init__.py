@@ -10,6 +10,7 @@ from .AlgaeEject import *
 from .ClimberClimb import *
 from .ClimberNotClimb import *
 from .ClimberStay import *
+from .ElevatorToPos import ElevatorToPos
 
 # Classes to Import
 __all__ = [
@@ -23,5 +24,6 @@ __all__ = [
     "AlgaeEjectCommand",
     "ClimberClimb",
     "ClimberNotClimb",
-    "ClimberStay"
+    "ClimberStay",
+    "ElevatorToPos"
 ]
