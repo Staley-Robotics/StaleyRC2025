@@ -47,7 +47,8 @@ class RobotContainer:
         cmdAlgaeDefault = AlgaeHoldCommand( sysAlgae )
         cmdAlgaeEject = AlgaeEjectCommand( sysAlgae )
 
-        cmdElevatorTo = lambda number: ElevatorToPos(sysElevator, number)
+        cmdElevatorTo0 = ElevatorToPos(sysElevator, 0)
+        cmdElevatorTo10 = ElevatorToPos(sysElevator, 10)
 
         sysDriveTrain = SwerveDrive()
         sysVision = Vision( sysDriveTrain.getOdometry )
@@ -88,8 +89,8 @@ class RobotContainer:
         driver1.back().onTrue( cmd.runOnce( sysDriveTrain.resetOdometry() ) )
         driver1.a().whileTrue(ClimberClimb(self.climber))
         driver1.x().whileTrue(ClimberNotClimb(self.climber))
-        driver1.leftBumper().onTrue(cmdElevatorTo(0))
-        driver1.rightBumper().onTrue(cmdElevatorTo(10))
+        driver1.pov(0).onTrue(cmdElevatorTo0)
+        driver1.pov(90).onTrue(cmdElevatorTo10)
 
     # Get Autonomous Command
     def getAutonomousCommand(self) -> Command:

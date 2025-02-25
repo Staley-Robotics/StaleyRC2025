@@ -40,7 +40,7 @@ class Elevator(Subsystem):
     def __init__(self):
 
         self.__motorLead = SparkMax(0, SparkBase.MotorType.kBrushless)
-        self.__motorFollow = SparkMax(1, SparkBase.MotorType.kBrushless)
+        self.__motorFollow = SparkMax(16, SparkBase.MotorType.kBrushless)
 
         self.__pidController = self.__motorLead.getClosedLoopController()
 
