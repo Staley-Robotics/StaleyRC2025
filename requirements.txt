@@ -9,7 +9,8 @@ robotpy[phoenix5]
 robotpy[rev]
 robotpy[pathplannerlib]
 
-# phoenix6==25.0.0b4
-# robotpy-pathplannerlib==2025.1.1
+## Others
 robotpy-urcl==2025.0.1
-# robotpy-rev==2025.0.0b4
+
+# This is required for running 'robotpy sync' on nkc macs
+certifi; platform_system=="Darwin"
