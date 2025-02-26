@@ -21,7 +21,8 @@ class ClimberStay(Command):
 
     # Periodic
     def execute(self) -> None:
-        self.m_subsystem.setPosition(self.m_subsystem.save_position)
+        self.m_subsystem.safe_stop()
+        # self.m_subsystem.force_stop()
 
     # On End
     def end(self, interrupted:bool) -> None:

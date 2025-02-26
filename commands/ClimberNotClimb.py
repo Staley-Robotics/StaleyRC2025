@@ -25,6 +25,7 @@ class ClimberNotClimb(Command):
     # On End
     def end(self, interrupted:bool) -> None:
         self.m_subsystem.safe_stop()
+        # self.m_subsystem.force_stop()
 
     # Is Finished
     def isFinished(self) -> bool:

@@ -91,12 +91,10 @@ class Climber(Subsystem):
         self.base = self.root.appendLigament("base", 2, 90, color=Color8Bit(Color.kBrown))
         self.arm = self.base.appendLigament("arm", 1, 90, color=Color8Bit(Color.kGreen))
 
-        SmartDashboard.putData("Mech2d", self.mech)
+        SmartDashboard.putData("Climber Mechanism2D", self.mech)
 
         # consider adding limit switches to motor while running at full speed rather than track rotation?
         # TODO Ask Tyler what how to limit switch?? Or other programmer like Ben ...
-
-        # self.m_logging = NetworkTableInstance.getDefault().getTable("/Logging/Climber")
 
 
     # Simulation Periodic Loop
@@ -106,11 +104,10 @@ class Climber(Subsystem):
         Get voltage from motors (in volts)
         Apply output to sim class (sim class will be a single jointed arm)
         Apply sim output to to motor sim object
-
         """
 
 
-        output = units.radiansToRotations(self.__motor.getAppliedOutput()) * 12 * 60 # note: self.__motor.getAppliedOutput() outputs in radians per sec
+        output = units.radiansToRotations(self.__motor.get()) * 12 * 60 # note: self.__motor.getAppliedOutput() outputs in radians per sec
         # note: multiplied by 12 because output needs to be in volts
         # note: multiplied by 60 because conversion from radians per SEC to rotations per MIN
 
@@ -123,6 +120,8 @@ class Climber(Subsystem):
         self.__sim_abs_encoder.iterate(sim_velocity * ClimberConstants.Simulation.GEAR_RATIO_SIM, 0.02)
         self.__sim_rel_encoder.iterate(sim_velocity, 0.02) # TODO add gear ratio (check if gear ratio should be * to or / by sim_velocity) IF NEEDED after testing
         # note: iterate must be done on absolute encoder, relative encoder, and motor
+
+        # self.__motor_sim.setVelocity(sim_velocity)
 
         SmartDashboard.putNumber("sim_motor_output (rotations per minute)", output)
         SmartDashboard.putNumber("sim_velocity", sim_velocity)
@@ -153,7 +152,7 @@ class Climber(Subsystem):
         # Run Subsystem: Set New State To Subsystem
         if RobotState.isDisabled():
             self.safe_stop()
-            # self.safe_stop()
+            # self.force_stop()
         else:
             self.run()
         
