@@ -2,7 +2,7 @@ from commands2 import Subsystem
 from wpilib import RobotState
 from ntcore import NetworkTable, NetworkTableInstance
 
-from rev import SparkMax
+from rev import SparkMax, SparkMaxConfig
 
 from util import FalconLogger
 
@@ -20,18 +20,25 @@ class CoralManipulatorWheel(Subsystem):
     def __init__(self, sysId:int, motor_port:int) -> None:
         self.m_sys_id = sysId
 
+        # motor
         self.motor = SparkMax( motor_port, SparkMax.MotorType.kBrushless )
-        self.encoder = self.motor.getAbsoluteEncoder()
 
-        self.motor_speed:self.WheelSpeeds = self.WheelSpeeds.STOP
+        # config
+        motorConfig = SparkMaxConfig()
+        motorConfig.setIdleMode( SparkMaxConfig.IdleMode.kBrake )
+        self.motor.configure( motorConfig, SparkMax.ResetMode.kResetSafeParameters, SparkMax.PersistMode.kPersistParameters )
+
+        # setup
+        self.motor_speed:CoralManipulatorWheel.WheelSpeeds = self.WheelSpeeds.STOP
 
         self.stalled_frames = 0
+        self.free_spin = False
 
     # Periodic Loop
     def periodic(self) -> None:
         # Logging: Write Current Subsystem State
         FalconLogger.logInput('/CoralManipulatorWheel/motorOutputCurrent', self.motor.getOutputCurrent())
-        FalconLogger.logInput('/CoralManipulatorWheel/motorVelocity', self.encoder.getVelocity())
+        FalconLogger.logInput('/CoralManipulatorWheel/motorVelocity', self.motor.getEncoder().getVelocity())
 
         # Run Subsystem: Set New State To Subsystem
         if RobotState.isDisabled():

@@ -13,6 +13,7 @@ from ntcore.util import ntproperty
 from rev import SparkMax, SparkMaxSim, SparkMaxConfig
 from phoenix6.hardware import CANcoder
 from phoenix6.configs import CANcoderConfiguration
+from phoenix6.signals.spn_enums import SensorDirectionValue
 
 from math import pi
 
@@ -52,7 +53,6 @@ class CoralManipulatorPivot(Subsystem):
 
         ## Motor Init
         # using NEO 550
-        self.encoder = CANcoder( encoder_port, 'rio' )
         self.pivotMotor = SparkMax( motor_port, SparkMax.MotorType.kBrushless )
         # config
         motorConfig = SparkMaxConfig()
@@ -61,7 +61,13 @@ class CoralManipulatorPivot(Subsystem):
 
         ## Encoder Init
         self.encoder = CANcoder( encoder_port, 'canivore1' )
+        #config
+        encoderConfig = CANcoderConfiguration()
+        encoderConfig.magnet_sensor.magnet_offset = 0 # TODO: measure and place here when built
+        encoderConfig.magnet_sensor.sensor_direction = SensorDirectionValue.CLOCKWISE_POSITIVE # TODO: check when thing is built
+        # encoderConfig.magnet_sensor.absolute_sensor_discontinuity_point = ... # NOTE: probably need to use this
 
+        ## Controller
         self.controller = PIDController(
             self.PivotConstants.kP,
             self.PivotConstants.kI,
