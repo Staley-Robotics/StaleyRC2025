@@ -1,5 +1,5 @@
 from commands2 import Command, Subsystem
-from subsystems.AlgaeSubsystem import AlgaeManipulator, AlgaeManipulatorPositions, IntakeState
+from subsystems.Algae import AlgaeManipulator, AlgaeManipulatorPositions, IntakeState
 
 class AlgaeEjectCommand(Command):
     # Variable Declaration

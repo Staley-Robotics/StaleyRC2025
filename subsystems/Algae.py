@@ -67,6 +67,9 @@ class AlgaeManipulatorConstants:
 
 
 class AlgaeManipulator(Subsystem):
+    """
+    The AlgaeManipulator subsystem is responsible for controlling the pivot and intake of the robot where Algae is concerned
+    """
     # Motors (Neo and 775pro, at 25:1 and 10.3333:1 respectively)
     __pivotMotorOne: SparkMax = None
     __pivotMotorTwo: SparkMax = None
@@ -75,7 +78,7 @@ class AlgaeManipulator(Subsystem):
     __intakeMotor: TalonSRX = None
     intakeState = IntakeState.OFF
 
-    __irBeam:DigitalInput = None
+    __irBeam: DigitalInput = None
 
     def __init__(self):
         # Motor
@@ -95,10 +98,11 @@ class AlgaeManipulator(Subsystem):
 
         # 775pro
         self.__intakeMotor = TalonSRX(25)
-        # Zero Motor
+        # Zero the motor
         self.voltOut = VoltageOut(0, use_timesync=True)
         self.dutyOut = DutyCycleOut(0, use_timesync=True)
 
+        # Mechanism 2d stuff
         self.mech = Mechanism2d(3, 3, Color8Bit(0, 0, 0))
         self.root = self.mech.getRoot("Pivot", 2, 0.5)
         self.manipulator = self.root.appendLigament("Manipulator", 1, 0, 0.5, Color8Bit(255, 255, 255))
@@ -116,39 +120,32 @@ class AlgaeManipulator(Subsystem):
             # Intake Simulation
             self.simIntake = TalonFX(25, "canivore1")
 
-        # Mechanism Graphics / Logging NOT IMPLEMENTED YET
-        # self.mech = Mechanism2d(28, 28, Color8Bit(0, 0, 0))
-        #
-        #
-        #
-
         # IR Beam
         self.__irBeam = DigitalInput(3)
 
         # Shuffleboard
         Shuffleboard.getTab("AlgaeManipulator").add("AlgaeManipulator", self)
-        # Shuffleboard.getTab("AlgaeManipulator").add("AlgaeManipulatorMech", self.mech)
 
     def periodic(self) -> None:
-        # Input Logging
+        # Input Logging - Neo - Pivot
         FalconLogger.logInput("AlgaeManipulator/Pivot/MotorInput", self.__pivotMotorOne.get())
         FalconLogger.logInput("AlgaeManipulator/Pivot/MotorOutput", self.__pivotMotorOne.getAppliedOutput())
         FalconLogger.logInput("AlgaeManipulator/Pivot/MotorPosition_abs",
                               self.__pivotMotorOne.getAbsoluteEncoder().getPosition())
 
-        # Input Logging
+        # Input Logging - 775pro - Intake
         FalconLogger.logInput("AlgaeManipulator/Intake/MotorOutputPercent", self.__intakeMotor.getMotorOutputPercent())
         FalconLogger.logInput("AlgaeManipulator/Intake/MotorVoltage", self.__intakeMotor.getMotorOutputVoltage())
 
-        # Input Logging
+        # Input Logging - IR Beam
         FalconLogger.logInput("AlgaeManipulator/IRBeam", self.__irBeam.get())
 
         # Run
         if RobotState.isDisabled():
             self.stop()
-
-        # Intake
-        self.__intakeMotor.set(TalonSRXControlMode.PercentOutput, self.intakeState.value)
+        else:
+            # Intake
+            self.__intakeMotor.set(TalonSRXControlMode.PercentOutput, self.intakeState.value)
 
         # Output Logging
         FalconLogger.logOutput("AlgaeManipulator/Pivot/TargetAngle", self.getSetpoint())
@@ -176,10 +173,16 @@ class AlgaeManipulator(Subsystem):
         self.simIntake.sim_state.add_rotor_position(velocity * 0.02)
 
     def stop(self) -> None:
+        """
+        Stops the manipulator from moving and the intake from rotating
+        """
         self.setSetpoint(self.getMeasurement(), True)
         self.__intakeMotor.set(TalonSRXControlMode.PercentOutput, 0.0)
 
     def setSetpoint(self, setpoint: degrees, overrideRange: bool = False):
+        """
+        Sets the setpoint for the manipulator, accepts degrees
+        """
         # Limits the specific range (Protects mechanism)
         if not overrideRange:
             setpoint = min(max(setpoint, AlgaeManipulatorPositions.MIN), AlgaeManipulatorPositions.MAX)
@@ -187,19 +190,34 @@ class AlgaeManipulator(Subsystem):
         self.__pivotController.setReference(degreesToRotations(setpoint), SparkBase.ControlType.kPosition)
 
     def getMeasurement(self) -> float:
+        """
+        Returns the current position of the manipulator in degrees
+        """
         return rotationsToDegrees(self.__pivotMotorOne.getAbsoluteEncoder().getPosition())
 
     def atSetpoint(self, positionDeg: float = None) -> bool:
+        """
+        Returns if the manipulator is at the setpoint
+        """
         if positionDeg is None:
             positionDeg = self.getMeasurement()
         return self.pivotSetpoint == positionDeg
 
     def getSetpoint(self) -> float:
+        """
+        Returns the current setpoint of the manipulator in degrees
+        """
         return self.pivotSetpoint
 
     def setIntake(self, state: IntakeState):
+        """
+        Sets the state of the intake, uses the
+        """
         self.intakeState = state
         self.__intakeMotor.set(TalonSRXControlMode.PercentOutput, state.value)
 
     def hasAlgae(self) -> bool:
+        """
+        Returns if the intake has a ball
+        """
         return not self.__irBeam.get()

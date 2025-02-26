@@ -1,7 +1,7 @@
 import typing
 
 from commands2 import Command, Subsystem
-from subsystems.AlgaeSubsystem import AlgaeManipulator, AlgaeManipulatorPositions, IntakeState
+from subsystems.Algae import AlgaeManipulator, AlgaeManipulatorPositions, IntakeState
 
 class AlgaeGrabCommand(Command):
     # Variable Declaration
