@@ -21,7 +21,7 @@ class ClimberClimb(Command):
 
     # Periodic
     def execute(self) -> None:
-        self.Climber.setPosition(180)
+        self.Climber.setPosition(90)
 
     # On End
     def end(self, interrupted: bool) -> None:

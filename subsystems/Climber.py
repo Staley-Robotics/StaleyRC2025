@@ -105,7 +105,7 @@ class Climber(Subsystem):
         """
         Get voltage from motors (in volts)
         Apply output to sim class (sim class will be a single jointed arm)
-        Apply sim output to to motor sim object
+        Apply sim output to motor sim object
 
         """
 
