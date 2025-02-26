@@ -4,7 +4,7 @@ from .CoralManipulatorPivot import *
 from .CoralManipulatorWheel import *
 from .Algae import *
 from .Swerve.SwerveDrive import *
-from .Vision import *
+from .LimelightVision import *
 from .Climber import *
 from .Elevator import *
 # Classes to Import

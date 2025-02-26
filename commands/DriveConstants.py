@@ -1,6 +1,12 @@
 from wpimath.filter import SlewRateLimiter
+from math import pi
 
-class Constants:
+class DriveConstants:
+
+    kWeightLbs = 120.0
+    kMaxSpeed = 4.4
+    kMaxRotationSpeed = pi*3.6
+    kMaxAcceleration = pi * 2
     class Limiters:
         translationRate = 2.5
         translationRateClose = 1.5
@@ -15,3 +21,4 @@ class Constants:
         srl_tX_close = SlewRateLimiter( translationRateClose )
         srl_tY_close = SlewRateLimiter( translationRateClose )
         srl_rO_close = SlewRateLimiter( omegaRateClose )
+    

@@ -6,6 +6,8 @@ from .CoralWheelOpenControl import *
 from .AlgaeGrab import *
 from .AlgaeHold import *
 from .DriveByStick import *
+from .DriveByStickRotate import *
+from .FollowPathSelect import *
 from .AwaitVisionData import *
 from .AlgaeEject import *
 from .ClimberClimb import *
@@ -32,4 +34,7 @@ __all__ = [
     "SetCoralWheelSpeed",
     "ElevatorToPos",
     "ElevatorByStick"
+    "DriveByStickRotate",
+    "AwaitVisionData",
+    "FollowPathSelect"
 ]

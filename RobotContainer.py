@@ -9,7 +9,7 @@ from subsystems import *
 from commands import *
 from util import FalconXboxController
 
-from pathplannerlib.auto import AutoBuilder, NamedCommands
+from pathplannerlib.auto import AutoBuilder, NamedCommands, PathPlannerPath
 
 class RobotContainer:
     """
@@ -107,7 +107,7 @@ class RobotContainer:
         NamedCommands.registerCommand('LaunchSpeaker', cmd.waitSeconds(0.25) )
 
         # Autonomous Chooser
-        self.__autoChooser = AutoBuilder.buildAutoChooser()
+        self.__autoChooser = AutoBuilder.buildAutoChooser( "Auto Practice" )
         SmartDashboard.putData( "Autonomous Mode", self.__autoChooser )
 
 
