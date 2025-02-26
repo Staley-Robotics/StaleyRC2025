@@ -84,7 +84,7 @@ class Climber(Subsystem):
         """
 
 
-        output = units.radiansToRotations(self.__motor.getAppliedOutput()) * 12 * 60 # note: self.__motor.getAppliedOutput() outputs in radians per sec
+        output = units.radiansToRotations(self.__motor.get()) * 12 * 60 # note: self.__motor.get() gets speed which can be between -1.0 and 1.0, this was: self.__motor.getAppliedOutput(), which outputs in radians per sec)
         # note: multiplied by 12 because output needs to be in volts
         # note: multiplied by 60 because conversion from radians per SEC to rotations per MIN
 
@@ -101,7 +101,7 @@ class Climber(Subsystem):
         SmartDashboard.putNumber("sim_motor_output (rotations per minute)", output)
         SmartDashboard.putNumber("sim_velocity", sim_velocity)
 
-        self.arm.setAngle(self.__sim_jointed_arm.getAngleDegrees() - 90) # - 90 because 0 is up for mechanismsms
+        self.arm.setAngle(self.__sim_jointed_arm.getAngleDegrees() - 90) # note: - 90 is done because 0 is up for mechanismsms
 
         SmartDashboard.putNumber("sim_angle", self.__sim_jointed_arm.getAngleDegrees())
         SmartDashboard.putNumber("sim_mech_arm_angle", self.arm.getAngle())
@@ -162,8 +162,14 @@ class Climber(Subsystem):
         """
         return units.rotationsToDegrees(self.__abs_encoder.getPosition()) * ClimberConstants.Other.GEAR_RATIO
         
-    def isOutOfRange(self) -> bool:
+    def reachedClimbedLimit(self) -> bool:
         """
-        Returns if climber is beyond 0 (flat) or 180 (flat, but other side of joint) degrees
+        Returns true if climber's position is more than 180 (rotated inward (left in sim)/opposite of starting position all the way)
         """
-        return self.getPosition() < 0 or self.getPosition() > 180
+        return self.getPosition() > 180
+    
+    def reachedOpenLimit(self) -> bool:
+        """
+        Returns if climber's position is less than 0 (rotated outward (right in sim)/starting position all the way)
+        """
+        return self.getPosition() < 0

@@ -28,7 +28,7 @@ class ClimberNotClimb(Command):
 
     # Is Finished
     def isFinished(self) -> bool:
-        return self.m_subsystem.isOutOfRange()
+        return self.m_subsystem.reachedOpenLimit()
 
     # Run When Disabled
     def runsWhenDisabled(self) -> bool:
