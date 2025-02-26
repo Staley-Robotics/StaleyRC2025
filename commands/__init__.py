@@ -10,7 +10,8 @@ from .AlgaeEject import *
 from .ClimberClimb import *
 from .ClimberNotClimb import *
 from .ClimberStay import *
-from .ElevatorToPos import ElevatorToPos
+from .ElevatorToPos import *
+from .ElevatorByStick import *
 
 # Classes to Import
 __all__ = [
@@ -25,5 +26,6 @@ __all__ = [
     "ClimberClimb",
     "ClimberNotClimb",
     "ClimberStay",
-    "ElevatorToPos"
+    "ElevatorToPos",
+    "ElevatorByStick"
 ]

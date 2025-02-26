@@ -49,6 +49,7 @@ class RobotContainer:
 
         cmdElevatorTo0 = ElevatorToPos(sysElevator, 0)
         cmdElevatorTo10 = ElevatorToPos(sysElevator, 10)
+        cmdElevatorByStuck = ElevatorByStick(sysElevator, lambda: driver1.getRightUpDown())
 
         sysDriveTrain = SwerveDrive()
         sysVision = Vision( sysDriveTrain.getOdometry )
@@ -84,13 +85,14 @@ class RobotContainer:
 
 
         # Driver Controller Button Binding
-        driver1.y().whileTrue( cmdAlgaeGrab )
+        # driver1.y().whileTrue( cmdAlgaeGrab )
         driver1.b().whileTrue( cmdAlgaeEject )
         driver1.back().onTrue( cmd.runOnce( sysDriveTrain.resetOdometry() ) )
         driver1.a().whileTrue(ClimberClimb(self.climber))
         driver1.x().whileTrue(ClimberNotClimb(self.climber))
         driver1.pov(0).onTrue(cmdElevatorTo0)
         driver1.pov(90).onTrue(cmdElevatorTo10)
+        driver1.y().whileTrue( cmdElevatorByStuck )
 
     # Get Autonomous Command
     def getAutonomousCommand(self) -> Command:
