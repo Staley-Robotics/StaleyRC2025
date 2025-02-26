@@ -4,6 +4,8 @@ import math
 from wpilib import SmartDashboard
 
 from wpimath import applyDeadband
+from wpimath.controller import ProfiledPIDControllerRadians
+from wpimath.trajectory import TrapezoidProfileRadians
 from wpimath.units import degrees
 from commands2 import Command
 
@@ -11,7 +13,7 @@ from util import FalconLogger
 from .DriveConstants import *
 from subsystems import SwerveDrive
 
-class DriveByStick(Command):
+class DriveByStickRotate(Command):
     # Deadband
     kDeadband = 0.04
 
@@ -23,16 +25,28 @@ class DriveByStick(Command):
                   mySubsystem:SwerveDrive,
                   frcFwd: typing.Callable[[], float] = lambda: 0.0,
                   frcLeft: typing.Callable[[], float] = lambda: 0.0,
-                  frcRotation: typing.Callable[[], float] = lambda: 0.0,
+                  frcSnapAngle: typing.Callable[[], degrees] = lambda: -1
                 ) -> None:
         # Command Attributes
         self.__subsystem:SwerveDrive = mySubsystem
         self.setName( "DriveByStick" )
         self.addRequirements( mySubsystem )
 
+        self.turn_PID = ProfiledPIDControllerRadians(
+            2, 0, 0,
+            TrapezoidProfileRadians.Constraints(
+                DriveConstants.kMaxRotationSpeed,
+                DriveConstants.kMaxAcceleration
+            )
+        )
+        self.turn_PID.enableContinuousInput(0, pi * 2)
+        SmartDashboard.putData( '/Swerve/HTurnPID', self.turn_PID )
+
+        self.desired_angle = mySubsystem.getRobotAngle().radians()
+
         self.__getX = frcFwd
         self.__getY = frcLeft
-        self.__getRotation = frcRotation
+        self.__getSnapAngle = frcSnapAngle
 
     # On Start
     def initialize(self) -> None:
@@ -72,7 +86,19 @@ class DriveByStick(Command):
 
     # calls __getRotation lambda with Slew Rate Limiter Integration
     def getR(self, close:bool = False) -> float:
-        r = self.__getRotation()
-        r_normal = DriveConstants.Limiters.srl_rO.calculate( r )
-        r_close = DriveConstants.Limiters.srl_rO_close.calculate( r )
-        return r_normal if not close else r_close
+        # Check if D-PAD (POV) input is active.
+        pov = self.__getSnapAngle()
+        if pov != -1:
+            self.desired_angle = math.radians(pov)
+        
+        # Get current angle
+        current_angle = self.__subsystem.getRobotAngle().radians()
+
+        # calculate
+        rotation_speed = self.turn_PID.calculate( current_angle, self.desired_angle )
+
+        # log
+        FalconLogger.logOutput('/Swerve/currentAngle', current_angle)
+        FalconLogger.logOutput('/Swerve/desiredAngle', self.desired_angle)
+
+        return rotation_speed

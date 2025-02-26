@@ -176,7 +176,7 @@ class SwerveModule:
         currentRotation = self.__getTurnEncoderRotation()
         self.__setpoint = desiredState
         self.__setpoint.optimize( currentRotation )
-        self.__setpoint.cosineScale( currentRotation ) # Smooth Out Turning
+        # self.__setpoint.cosineScale( currentRotation ) # Smooth Out Turning
 
     def getState(self) -> SwerveModuleState:
         driveVelocity = self.__getDriveWheelVelocity( self.__driveMotor.get_velocity().value )

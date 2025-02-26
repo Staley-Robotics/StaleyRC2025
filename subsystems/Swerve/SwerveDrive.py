@@ -25,7 +25,7 @@ from util import FalconLogger
 class SwerveDriveConstants:
     kWeightLbs = 120.0
     kMaxSpeed = 4.4
-    kRotationSpeed = math.pi*3.6
+    kMaxRotationSpeed = math.pi*3.6
 
 class SwerveDrive(Subsystem):
     # Variable Declaration
@@ -209,7 +209,7 @@ class SwerveDrive(Subsystem):
 
         xSpeed = x * self.__DriveMaxSpeedPercent * SwerveDriveConstants.kMaxSpeed
         ySpeed = y * self.__DriveMaxSpeedPercent * SwerveDriveConstants.kMaxSpeed
-        omegaSpeed = omega * self.__DriveMaxRotationPercent * SwerveDriveConstants.kRotationSpeed
+        omegaSpeed = omega * self.__DriveMaxRotationPercent * SwerveDriveConstants.kMaxRotationSpeed
 
         cSpeed = (
             ChassisSpeeds.fromFieldRelativeSpeeds( xSpeed, ySpeed, omegaSpeed, self.getRobotAngle() )
@@ -263,18 +263,21 @@ class SwerveDrive(Subsystem):
 
     def getChassisSpeeds(self) -> ChassisSpeeds:
         return self.__kinematics.toChassisSpeeds( self.__getModuleStates() )
+    
+    def getPose(self) -> Pose2d:
+        return self.__visionOdometry.getEstimatedPosition()
 
     def getMaxSpeed(self) -> float:
         return SwerveDriveConstants.kMaxSpeed
     
     def getMaxRotation(self) -> float:
-        return SwerveDriveConstants.kRotationSpeed
+        return SwerveDriveConstants.kMaxRotationSpeed
 
     def getDriverMaxSpeed(self) -> float:
         return SwerveDriveConstants.kMaxSpeed * self.__DriveMaxSpeedPercent
     
     def getDriverMaxRotation(self) -> float:
-        return SwerveDriveConstants.kRotationSpeed * self.__DriveMaxRotationPercent
+        return SwerveDriveConstants.kMaxRotationSpeed * self.__DriveMaxRotationPercent
 
     def getFieldRelative(self) -> bool:
         return self.__DriveFieldRelative
