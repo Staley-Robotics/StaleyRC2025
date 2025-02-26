@@ -9,11 +9,7 @@ from subsystems import *
 from commands import *
 from util import FalconXboxController
 
-try:
-    from pathplannerlib.auto import AutoBuilder, NamedCommands
-except Exception as e:
-    print("ERROR: PlanPlanner Includes")
-    print( e )
+from pathplannerlib.auto import AutoBuilder, NamedCommands
 
 class RobotContainer:
     """
@@ -36,7 +32,6 @@ class RobotContainer:
 
         sysAlgae = AlgaeManipulator()
         sysElevator = Elevator()
-
         sysClimber = Climber( 15 )
 
         # Put Subsystems on NetworkTables
@@ -45,7 +40,9 @@ class RobotContainer:
         SmartDashboard.putData( '/Subsystems/CoralPivot', sysCoralManipulatorPivot )
         SmartDashboard.putData( '/Subsystems/CoralWheel', sysCoralManipulatorWheel )
         SmartDashboard.putData( '/Subsystems/Algae', sysAlgae )
+        SmartDashboard.putData( '/Subsystems/Elevator', sysElevator )
         SmartDashboard.putData( '/Subsystems/Climber', sysClimber )
+
 
         ## Driver Controller
         driver1 = FalconXboxController( 0, squaredInputs=ntproperty("/Settings/Driver1/SquaredInputs", True) )
@@ -62,6 +59,7 @@ class RobotContainer:
         cmdAlgaeDefault = AlgaeHoldCommand( sysAlgae )
         cmdAlgaeEject = AlgaeEjectCommand( sysAlgae )
 
+        # Elevator
         cmdElevatorTo0 = ElevatorToPos(sysElevator, 0)
         cmdElevatorTo10 = ElevatorToPos(sysElevator, 10)
         cmdElevatorByStuck = ElevatorByStick(sysElevator, lambda: driver1.getRightUpDown())
@@ -69,7 +67,6 @@ class RobotContainer:
         cmdElevatorTo0 = ElevatorToPos(sysElevator, 0)
         cmdElevatorTo10 = ElevatorToPos(sysElevator, 10)
         cmdElevatorByStuck = ElevatorByStick(sysElevator, lambda: driver1.getRightUpDown())
-
 
         # Climber
         cmdClimberStay = ClimberStay( sysClimber )
@@ -100,6 +97,10 @@ class RobotContainer:
         driver1.a().onTrue( cmdSetPivotPositionMAX )
         driver1.b().onTrue( cmdSetPivotPositionL1 )
 
+        driver1.pov(0).onTrue(cmdElevatorTo0)
+        driver1.pov(90).onTrue(cmdElevatorTo10)
+        driver1.y().whileTrue( cmdElevatorByStuck )
+
         ## PathPlanner Setup
         # Register Named Commands
         NamedCommands.registerCommand('Pickup', cmd.waitSeconds(0.25) )
@@ -109,19 +110,6 @@ class RobotContainer:
         self.__autoChooser = AutoBuilder.buildAutoChooser()
         SmartDashboard.putData( "Autonomous Mode", self.__autoChooser )
 
-        # Default Commands
-        # sysSample.setDefaultCommand( cmdSampleLeft )
-
-
-        # Driver Controller Button Binding
-        # driver1.y().whileTrue( cmdAlgaeGrab )
-        driver1.b().whileTrue( cmdAlgaeEject )
-        driver1.back().onTrue( cmd.runOnce( sysDriveTrain.resetOdometry() ) )
-        driver1.a().whileTrue(ClimberClimb(self.climber))
-        driver1.x().whileTrue(ClimberNotClimb(self.climber))
-        driver1.pov(0).onTrue(cmdElevatorTo0)
-        driver1.pov(90).onTrue(cmdElevatorTo10)
-        driver1.y().whileTrue( cmdElevatorByStuck )
 
     # Get Autonomous Command
     def getAutonomousCommand(self) -> Command:
