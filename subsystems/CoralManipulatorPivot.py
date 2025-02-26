@@ -23,17 +23,19 @@ class CoralManipulatorPivot(Subsystem):
     class PivotConstants:
         k_max_velocity=DCMotor.NEO550().freeSpeed * 60
         gear_ratio=1/25
-        kP=0.1
+        kP=1.75
         kI=0
-        kD=0
+        kD=0.1
     
     class PivotPositions: # NOTE: these are wrong
         # pi is straight forwards
         MIN:radians = -pi/2
         MAX:radians = pi/2
         START:radians = pi
+        SOURCE:radians = pi/4
+        HOLD:radians = pi/2
 
-        L1:radians = 5*pi/6 #Trough
+        L1:radians = -pi/6 #Trough
         L2:radians = 7*pi/6
         L3:radians = 7*pi/6
         L4_up:radians = 2*pi/3
@@ -61,9 +63,9 @@ class CoralManipulatorPivot(Subsystem):
         self.encoder = CANcoder( encoder_port, 'canivore1' )
 
         self.controller = PIDController(
-            1.75,
-            0.0,
-            0.15
+            self.PivotConstants.kP,
+            self.PivotConstants.kI,
+            self.PivotConstants.kD
         )
         self.controller.enableContinuousInput(-pi, pi)
         SmartDashboard.putData( "/CoralManipulatorPivot/PIDController", self.controller )
@@ -77,6 +79,7 @@ class CoralManipulatorPivot(Subsystem):
         stick = elevator.appendLigament('stick', 3, -90, color=Color8Bit(200,200,170))
         self.pivotArm = stick.appendLigament( 'arm', 6, 180, color=Color8Bit(20,240,20) )
         self.guide = stick.appendLigament( 'guidearm', 3, 180, color=Color8Bit(20,170,20) )
+        
         SmartDashboard.putData( '/CoralManipulatorPivot/mech2d', self.mech)
 
         ## Simulation Inits

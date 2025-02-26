@@ -27,64 +27,77 @@ class RobotContainer:
         """
         Initializes RobotContainer
         """
-        # Driver Controller
-        driver1 = FalconXboxController( 0, squaredInputs=ntproperty("/Settings/Driver1/SquaredInputs", True) )
-
-        # Declare Subsystems
+        ## Declare Subsystems
+        sysDriveTrain = SwerveDrive()
+        sysVision = Vision( sysDriveTrain.getOdometry )
 
         sysCoralManipulatorPivot = CoralManipulatorPivot( 'CoralManipulatorPivot', 12, 20 )
         sysCoralManipulatorWheel = CoralManipulatorWheel( 'CoralManipulatorWheel', 3 )
 
         sysAlgae = AlgaeManipulator()
+        
+        sysClimber = Climber( 15 )
 
-        # Commands
-        # cmdSampleLeft = SampleCommand(sysSample, driver1.getLeftX )
-        cmdSetPivotPosition = SetPivotPosition( sysCoralManipulatorPivot, lambda: driver1.getLeftUpDown())
+        # Put Subsystems on NetworkTables
+        SmartDashboard.putData( '/Subsystems/DriveTrain', sysDriveTrain )
+        SmartDashboard.putData( '/Subsystems/Vision', sysVision )
+        SmartDashboard.putData( '/Subsystems/CoralPivot', sysCoralManipulatorPivot )
+        SmartDashboard.putData( '/Subsystems/CoralWheel', sysCoralManipulatorWheel )
+        SmartDashboard.putData( '/Subsystems/Algae', sysAlgae )
+        SmartDashboard.putData( '/Subsystems/Climber', sysClimber )
+
+        ## Driver Controller
+        driver1 = FalconXboxController( 0, squaredInputs=ntproperty("/Settings/Driver1/SquaredInputs", True) )
+        
+        ## Commands
+        # Coral
+        cmdControlPivotPosition = ControlPivotPosition( sysCoralManipulatorPivot, lambda: driver1.getLeftUpDown())
         cmdRunCoralWheel = CoralWheelOpenControl( sysCoralManipulatorWheel, driver1.getRightUpDown )
+        cmdSetPivotPositionL1 = SetPivotPosition( sysCoralManipulatorPivot, CoralManipulatorPivot.PivotPositions.L1, 'Trough' )
+        cmdSetPivotPositionMAX = SetPivotPosition( sysCoralManipulatorPivot, CoralManipulatorPivot.PivotPositions.MAX, 'Up' )
 
+        # Algae
         cmdAlgaeGrab = AlgaeGrabCommand( sysAlgae )
         cmdAlgaeDefault = AlgaeHoldCommand( sysAlgae )
         cmdAlgaeEject = AlgaeEjectCommand( sysAlgae )
 
-        sysDriveTrain = SwerveDrive()
-        sysVision = Vision( sysDriveTrain.getOdometry )
-        self.climber = Climber( 15 )
-        self.climber.setDefaultCommand(ClimberStay(self.climber))
+        # Climber
+        cmdClimberStay = ClimberStay( sysClimber )
 
-        # Commands
+        # Drive
         cmdDriveByStick = DriveByStick( sysDriveTrain, driver1.getLeftUpDown, driver1.getLeftSideToSide, driver1.getRightSideToSide )
         cmdAwaitVisionData = AwaitVisionData( sysVision.has_recieved_first_botpose_data, sysDriveTrain.resetOdometry, sysVision.get_last_pose )
 
-        # Autonomous Chooser
-        # self.__autoChooser.setDefaultOption( "1 - None", cmd.none() )
-        # SmartDashboard.putData( "Autonomous Mode", self.__autoChooser )
 
-        # Default Commands
-        sysCoralManipulatorPivot.setDefaultCommand( cmdSetPivotPosition )
+        ## Default Commands
+        sysCoralManipulatorPivot.setDefaultCommand( cmdControlPivotPosition )
         sysCoralManipulatorWheel.setDefaultCommand( cmdRunCoralWheel )
         sysAlgae.setDefaultCommand( cmdAlgaeDefault )
         sysDriveTrain.setDefaultCommand( cmdDriveByStick )
+        sysClimber.setDefaultCommand( cmdClimberStay )
+
         cmdAwaitVisionData.schedule()
 
-        # PathPlanner Setup
-        # PathPlanner Register Named Commands
+        ## Driver Controller Button Binding
+        driver1.y().whileTrue( cmdAlgaeGrab )
+        driver1.b().whileTrue( cmdAlgaeEject )
+
+        driver1.back().onTrue( cmd.runOnce( sysDriveTrain.resetOdometry() ) )
+
+        driver1.a().whileTrue(ClimberClimb(sysClimber)) # TODO: move these to be created with other commands
+        driver1.x().whileTrue(ClimberNotClimb(sysClimber))
+
+        driver1.a().onTrue( cmdSetPivotPositionMAX )
+        driver1.b().onTrue( cmdSetPivotPositionL1 )
+
+        ## PathPlanner Setup
+        # Register Named Commands
         NamedCommands.registerCommand('Pickup', cmd.waitSeconds(0.25) )
         NamedCommands.registerCommand('LaunchSpeaker', cmd.waitSeconds(0.25) )
 
         # Autonomous Chooser
         self.__autoChooser = AutoBuilder.buildAutoChooser()
         SmartDashboard.putData( "Autonomous Mode", self.__autoChooser )
-
-        # Default Commands
-        # sysSample.setDefaultCommand( cmdSampleLeft )
-
-
-        # Driver Controller Button Binding
-        driver1.y().whileTrue( cmdAlgaeGrab )
-        driver1.b().whileTrue( cmdAlgaeEject )
-        driver1.back().onTrue( cmd.runOnce( sysDriveTrain.resetOdometry() ) )
-        driver1.a().whileTrue(ClimberClimb(self.climber))
-        driver1.x().whileTrue(ClimberNotClimb(self.climber))
 
     # Get Autonomous Command
     def getAutonomousCommand(self) -> Command:
