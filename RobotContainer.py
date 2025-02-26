@@ -9,11 +9,7 @@ from subsystems import *
 from commands import *
 from util import FalconXboxController
 
-try:
-    from pathplannerlib.auto import AutoBuilder, NamedCommands
-except Exception as e:
-    print("ERROR: PlanPlanner Includes")
-    print( e )
+from pathplannerlib.auto import AutoBuilder, NamedCommands, PathPlannerPath
 
 class RobotContainer:
     """
@@ -34,10 +30,13 @@ class RobotContainer:
         sysDriveTrain = SwerveDrive()
         sysVision = Vision( sysDriveTrain.getOdometry )
 
+        SmartDashboard.putData( 'Swerve', sysDriveTrain )
+
         ## Commands
         cmdDriveByStick = DriveByStick( sysDriveTrain, driver1.getLeftUpDown, driver1.getLeftSideToSide, driver1.getRightSideToSide )
         cmdDriveByStickRotate = DriveByStickRotate( sysDriveTrain, driver1.getLeftUpDown, driver1.getLeftSideToSide, driver1.getHID().getPOV )
         cmdAwaitVisionData = AwaitVisionData( lambda: sysVision.has_recieved_data, sysDriveTrain.resetOdometry, sysVision.get_last_pose )
+        cmdFollowPathSelect = FollowPathSelect( sysDriveTrain )
 
         ## Default Commands
         sysDriveTrain.setDefaultCommand( cmdDriveByStickRotate )
@@ -45,6 +44,7 @@ class RobotContainer:
 
         ## Driver Controller Button Binding
         driver1.back().onTrue( cmd.runOnce( sysDriveTrain.resetOdometry() ) )
+        driver1.a().whileTrue( cmdFollowPathSelect )#AutoBuilder.followPath(PathPlannerPath.fromPathFile('A to A1')) )
 
         ## PathPlanner Setup
         # PathPlanner Register Named Commands
@@ -52,8 +52,11 @@ class RobotContainer:
         NamedCommands.registerCommand('LaunchSpeaker', cmd.waitSeconds(0.25) )
 
         # Autonomous Chooser
-        self.__autoChooser = AutoBuilder.buildAutoChooser( "None" )
+        self.__autoChooser = AutoBuilder.buildAutoChooser( "Auto Practice" )
         SmartDashboard.putData( "Autonomous Mode", self.__autoChooser )
+
+        # FollowPaths
+        # cmdDriveByPathA_A1 = AutoBuilder.followPath('A-A1')
 
     # Get Autonomous Command
     def getAutonomousCommand(self) -> Command:

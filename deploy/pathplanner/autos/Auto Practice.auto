@@ -52,19 +52,6 @@
           "data": {
             "name": "L4 Drop Off"
           }
-        },
-        {
-          "type": "parallel",
-          "data": {
-            "commands": [
-              {
-                "type": "path",
-                "data": {
-                  "pathName": null
-                }
-              }
-            ]
-          }
         }
       ]
     }

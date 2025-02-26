@@ -50,7 +50,8 @@ class DriveByStickRotate(Command):
 
     # On Start
     def initialize(self) -> None:
-        pass
+        self.turn_PID.reset( self.__subsystem.getRobotAngle().radians() )
+        self.desired_angle = self.__subsystem.getRobotAngle().radians()
 
     # Periodic
     def execute(self) -> None:
