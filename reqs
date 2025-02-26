@@ -1,0 +1,14 @@
+## This simplifies the process of updating libraries
+# requirements.txt
+pip install -r requirements.txt
+
+echo "\n\033[1;36mSuccesfully Installed \'requirements.txt\'!\033[0m\n"
+
+# robotpy sync
+if [[ "$OSTYPE" == "darwin"* ]]; then
+    robotpy sync --use-certifi
+else
+    robotpy sync
+fi
+
+echo "\n\033[1;36mSuccesfully Ran \'robotpy sync\'!\033[0m\n"

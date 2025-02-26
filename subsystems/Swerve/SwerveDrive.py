@@ -14,14 +14,10 @@ from ntcore.util import ntproperty
 
 from phoenix6.hardware import Pigeon2
 
-try:
-    from pathplannerlib.auto import AutoBuilder
-    from pathplannerlib.controller import PPHolonomicDriveController
-    from pathplannerlib.config import RobotConfig, PIDConstants, ModuleConfig
-    from pathplannerlib.logging import PathPlannerLogging
-except Exception as e:
-    print( "ERROR! SwerveDrive PathPlanner Includes")
-    print( e )
+from pathplannerlib.auto import AutoBuilder
+from pathplannerlib.controller import PPHolonomicDriveController
+from pathplannerlib.config import RobotConfig, PIDConstants, ModuleConfig
+from pathplannerlib.logging import PathPlannerLogging
 
 from subsystems.Swerve.SwerveModule import SwerveModule, SwerveModuleConstants
 from util import FalconLogger
@@ -46,7 +42,7 @@ class SwerveDrive(Subsystem):
 
     __setpoint:ChassisSpeeds = None
     __setpointStates = [ SwerveModuleState(), SwerveModuleState(), SwerveModuleState(), SwerveModuleState() ]
-    __odometryLock = False
+    # __odometryLock = False
 
     # Initialization
     def __init__(self) -> None:
@@ -84,33 +80,28 @@ class SwerveDrive(Subsystem):
         self.stop()
 
         # Dashboards
-        Shuffleboard.getTab( "SwerveDrive" ).add( "SwerveDrive", self )
         self.__field = Field2d()
         SmartDashboard.putData("Field", self.__field)
        
         # Path Planner
-        try:
-            robotConfig = RobotConfig.fromGUISettings()
-            AutoBuilder.configure(
-                pose_supplier = self.__visionOdometry.getPose,
-                reset_pose = self.__visionOdometry.resetPose,
-                robot_relative_speeds_supplier = self.getChassisSpeeds,
-                output = lambda speeds, feedforwards: self.runChassisSpeeds(speeds),
-                controller = PPHolonomicDriveController(
-                    PIDConstants(5.0, 0.0, 0.0),
-                    PIDConstants(5.0, 0.0, 0.0)
-                ),
-                robot_config = robotConfig,
-                should_flip_path = self.shouldFlipPath,
-                drive_subsystem = self
-            )
+        robotConfig = RobotConfig.fromGUISettings()
+        AutoBuilder.configure(
+            pose_supplier = self.__visionOdometry.getEstimatedPosition,
+            reset_pose = self.__visionOdometry.resetPose,
+            robot_relative_speeds_supplier = self.getChassisSpeeds,
+            output = lambda speeds, feedforwards: self.runChassisSpeeds(speeds),
+            controller = PPHolonomicDriveController(
+                PIDConstants(5.0, 0.0, 0.0),
+                PIDConstants(5.0, 0.0, 0.0)
+            ),
+            robot_config = robotConfig,
+            should_flip_path = self.shouldFlipPath,
+            drive_subsystem = self
+        )
 
-            #PathPlannerLogging.setLogCurrentPoseCallback( self.__field.setRobotPose )
-            PathPlannerLogging.setLogTargetPoseCallback( self.__field.getObject('targetPose').setPose )
-            PathPlannerLogging.setLogActivePathCallback( self.__field.getObject('path').setPoses )
-        except Exception as e:
-            print( "ERROR! SwerveDrive PathPlanner Setup" )
-            print( e )
+        # PathPlannerLogging.setLogCurrentPoseCallback( self.__field.setRobotPose )
+        PathPlannerLogging.setLogTargetPoseCallback( self.__field.getObject('targetPose').setPose )
+        PathPlannerLogging.setLogActivePathCallback( self.__field.getObject('path').setPoses )
 
     def shouldFlipPath(self) -> bool:
         return DriverStation.getAlliance() == DriverStation.Alliance.kRed
@@ -141,58 +132,45 @@ class SwerveDrive(Subsystem):
         self.__visionOdometry.resetPosition(self.__gyro.getRotation2d(),
                                             self.__getModulePositions(),
                                             pose if pose else self.__visionOdometry.getEstimatedPosition() )
-        # self.__odometry = SwerveDrive4Odometry(
-        #     self.__kinematics,
-        #     self.__gyro.getRotation2d(),
-        #     self.__getModulePositions(),
-        #     pose
-        # )
-        # self.__visionOdometry = SwerveDrive4PoseEstimator(
-        #     self.__kinematics,
-        #     self.__gyro.getRotation2d(),
-        #     self.__getModulePositions(),
-        #     pose
-        # )
 
-    # Periodic Loop
     def periodic(self) -> None:
-        # Input Logging
+        ## Input Logging
         FalconLogger.logInput( "SwerveDrive/Gyro/yaw_d", self.__gyro.get_yaw().value )
         FalconLogger.logInput( "SwerveDrive/Gyro/pitch_d", self.__gyro.get_pitch().value  )
         FalconLogger.logInput( "SwerveDrive/Gyro/roll_d", self.__gyro.get_roll().value  )
-        FalconLogger.logInput( "SwerveDrive/OdometryLock", self.__odometryLock )
+        # FalconLogger.logInput( "SwerveDrive/OdometryLock", self.__odometryLock )
 
         # Run Subsystem: Set New State To Subsystem
         if RobotState.isDisabled():
             self.stop()
         
-        # Run SwerveModules
+        ## Run SwerveModules
         self.__modules[0].run()
         self.__modules[1].run()
         self.__modules[2].run()
         self.__modules[3].run()
         
-        # Update Odometry
+        ## Update Odometry
         pose = self.__odometry.getPose()
         vPose = self.__visionOdometry.getEstimatedPosition()
 
-        if not self.__odometryLock:
-            pose = self.__odometry.update(
-                self.__gyro.getRotation2d(),
-                self.__getModulePositions()
-            )
+        # if not self.__odometryLock:
+        pose = self.__odometry.update(
+            self.__gyro.getRotation2d(),
+            self.__getModulePositions()
+        )
 
-            # Update Vision Odometry
-            vPose = self.__visionOdometry.update(
-                self.__gyro.getRotation2d(),
-                self.__getModulePositions()
-            )
+        # Update Vision Odometry
+        vPose = self.__visionOdometry.update(
+            self.__gyro.getRotation2d(),
+            self.__getModulePositions()
+        )
         
-        # Dashboarding -- Updated Odometry to only use Blue Relative
+        ## Dashboarding -- Updated Odometry to only use Blue Relative
         self.__field.setRobotPose( pose )
         self.__field.getObject( "BlueVisionPose" ).setPose( vPose )
        
-        # Output Logging
+        ## Output Logging
         FalconLogger.logOutput( "SwerveDrive/Odometry", pose )
         FalconLogger.logOutput( "SwerveDrive/OdometryPlusVision", vPose )
         FalconLogger.logOutput( "SwerveDrive/ChassisSpeeds/Actual", self.getChassisSpeeds() )
@@ -200,7 +178,6 @@ class SwerveDrive(Subsystem):
         FalconLogger.logOutput( "SwerveDrive/SwerveModuleStates/Actual", self.__getModuleStates() )
         FalconLogger.logOutput( "SwerveDrive/SwerveModuleStates/Target", self.__getDesiredModuleStates() )
 
-    # Simulation Periodic Loop
     def simulationPeriodic(self) -> None:
         # Run SwerveModules
         self.__modules[0].runSim()
@@ -219,8 +196,6 @@ class SwerveDrive(Subsystem):
         self.runChassisSpeeds( ChassisSpeeds( 0.0, 0.0, 0.0 ) )
  
     def getRobotAngle(self) -> Rotation2d:
-        # rotateBy = 180.0 if self.shouldFlipPath() else 0.0
-        # return self.__gyro.getRotation2d().rotateBy( Rotation2d.fromDegrees(rotateBy) )
         return self.__visionOdometry.getEstimatedPosition().rotation().rotateBy(
             Rotation2d.fromDegrees(180.0 if self.shouldFlipPath() else 0.0)
         )
@@ -246,7 +221,7 @@ class SwerveDrive(Subsystem):
     # Run By Chassis Speeds
     def runChassisSpeeds(self, chassisSpeeds:ChassisSpeeds) -> None:
         self.__setpoint = ChassisSpeeds.discretize( chassisSpeeds, 0.02 )
-        self.__setpointStates = self.__kinematics.toSwerveModuleStates( self.__setpoint )
+        self.__setpointStates = self.__kinematics.toSwerveModuleStates( self.__setpoint, Translation2d(0,0) )
         self.runModuleStates( self.__setpointStates )
 
     # Run By SwerveModuleStates
@@ -258,8 +233,8 @@ class SwerveDrive(Subsystem):
         self.__modules[3].setState(newStates[3])
 
     def getOdometry(self) -> SwerveDrive4PoseEstimator:
-        if self.__odometryLock:
-            raise "Odometry Lock In Place" 
+        # if self.__odometryLock:
+        #     raise "Odometry Lock In Place" 
         return self.__visionOdometry
 
     def __getModulePositions(self) -> typing.Tuple[ SwerveModulePosition, SwerveModulePosition, SwerveModulePosition, SwerveModulePosition]:
