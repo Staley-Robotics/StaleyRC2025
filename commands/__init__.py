@@ -12,6 +12,8 @@ from .ClimberClimb import *
 from .ClimberNotClimb import *
 from .ClimberStay import *
 from .SetCoralWheelSpeed import *
+from .ElevatorToPos import *
+from .ElevatorByStick import *
 
 # Classes to Import
 __all__ = [
@@ -28,4 +30,6 @@ __all__ = [
     "ClimberNotClimb",
     "ClimberStay",
     "SetCoralWheelSpeed",
+    "ElevatorToPos",
+    "ElevatorByStick"
 ]

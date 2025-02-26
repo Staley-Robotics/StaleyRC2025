@@ -6,6 +6,7 @@ from .AlgaeSubsystem import *
 from .Swerve.SwerveDrive import *
 from .Vision import *
 from .Climber import *
+from .Elevator import *
 # Classes to Import
 __all__ = [
     "SampleSubsystem",
@@ -14,5 +15,6 @@ __all__ = [
     "AlgaeManipulator",
     "SwerveDrive",
     "Vision",
-    "Climber"
+    "Climber",
+    "Elevator"
 ]
