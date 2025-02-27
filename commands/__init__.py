@@ -33,7 +33,7 @@ __all__ = [
     "ClimberStay",
     "SetCoralWheelSpeed",
     "ElevatorToPos",
-    "ElevatorByStick"
+    "ElevatorByStick",
     "DriveByStickRotate",
     "AwaitVisionData",
     "FollowPathSelect"

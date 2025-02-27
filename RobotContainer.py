@@ -73,7 +73,8 @@ class RobotContainer:
 
         # Drive
         cmdDriveByStick = DriveByStick( sysDriveTrain, driver1.getLeftUpDown, driver1.getLeftSideToSide, driver1.getRightSideToSide )
-        cmdAwaitVisionData = AwaitVisionData( sysVision.has_recieved_first_botpose_data, sysDriveTrain.resetOdometry, sysVision.get_last_pose )
+        cmdAwaitVisionData = AwaitVisionData( lambda: sysVision.has_recieved_data, sysDriveTrain.resetOdometry, sysVision.get_last_pose )
+        cmdFollowPathSelect = FollowPathSelect( sysDriveTrain )
 
 
         ## Default Commands
@@ -100,6 +101,8 @@ class RobotContainer:
         driver1.pov(0).onTrue(cmdElevatorTo0)
         driver1.pov(90).onTrue(cmdElevatorTo10)
         driver1.y().whileTrue( cmdElevatorByStuck )
+
+        driver1.a().onTrue( cmdFollowPathSelect )
 
         ## PathPlanner Setup
         # Register Named Commands
