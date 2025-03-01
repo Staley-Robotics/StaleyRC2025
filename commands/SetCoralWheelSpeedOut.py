@@ -4,7 +4,7 @@ from commands2 import Command
 
 from subsystems import CoralManipulatorWheel
 
-class SetCoralWheelSpeed(Command):
+class SetCoralWheelSpeedOut(Command):
     def __init__(self, coralWheelSys:CoralManipulatorWheel,
                  desiredSpeed:CoralManipulatorWheel.WheelSpeeds,
                  cmdID:str):
@@ -24,4 +24,4 @@ class SetCoralWheelSpeed(Command):
         self.wheelSys.setSpeed( CoralManipulatorWheel.WheelSpeeds.STOP )
     
     def isFinished(self):
-        return False
+        return not self.wheelSys.hasCoral()

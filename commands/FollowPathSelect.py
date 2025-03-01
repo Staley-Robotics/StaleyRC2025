@@ -13,14 +13,19 @@ from util import FalconLogger
 from .DriveConstants import *
 from subsystems import SwerveDrive
 
+
 class FollowPathSelect(SelectCommand):
-    def __init__( self, sysDrive:SwerveDrive ) -> None:
+    __path = str
+
+    def __init__(self, sysDrive: SwerveDrive, path: str) -> None:
+        self.__path = path
         super().__init__(
             {
-                'A to A1':AutoBuilder.followPath( PathPlannerPath.fromPathFile('A to A1') ),
-                #pathname or identifier: path
+                'A to A1': AutoBuilder.followPath(PathPlannerPath.fromPathFile('A to A1')),
+                'Example Pickup': AutoBuilder.followPath(PathPlannerPath.fromPathFile('Example Pickup')),
+                # pathname or identifier: path
             },
-            self.choosePath #BotState.findNearestPath
+            self.choosePath  # BotState.findNearestPath
             # cmd.none()
         )
         '''
@@ -29,14 +34,14 @@ class FollowPathSelect(SelectCommand):
         () -> key,
         defaultCommand (leave empty for print err command)
         '''
-        self.addRequirements( sysDrive )
-    
+        self.addRequirements(sysDrive)
+
     def choosePath(self) -> str:
-        return 'A to A1'
+        return self.__path
 
     # Is Finished
     def isFinished(self) -> bool:
-        return False
+        return super().isFinished()
 
     # Run When Disabled
     def runsWhenDisabled(self) -> bool:

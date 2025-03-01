@@ -102,14 +102,12 @@ class RobotContainer:
         driver1.pov(90).onTrue(cmdElevatorTo10)
         driver1.y().whileTrue( cmdElevatorByStuck )
 
-        driver1.a().onTrue( cmdFollowPathSelect )
-
-        raise 'This is Ben committing A line of code' #I was told to make this in the stlye of andy, I should ask him how to do that, for now I'l just make the container bakonk itself.
+        # driver1.a().onTrue( cmdFollowPathSelect )
 
         ## PathPlanner Setup
         # Register Named Commands
-        NamedCommands.registerCommand('Pickup', cmd.waitSeconds(0.25) )
-        NamedCommands.registerCommand('LaunchSpeaker', cmd.waitSeconds(0.25) )
+        # NamedCommands.registerCommand('Pickup', cmd.waitSeconds(0.25) )
+        # NamedCommands.registerCommand('LaunchSpeaker', cmd.waitSeconds(0.25) )
 
         # Autonomous Chooser
         self.__autoChooser = AutoBuilder.buildAutoChooser( "Auto Practice" )

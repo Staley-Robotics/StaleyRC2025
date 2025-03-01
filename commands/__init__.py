@@ -13,7 +13,7 @@ from .AlgaeEject import *
 from .ClimberClimb import *
 from .ClimberNotClimb import *
 from .ClimberStay import *
-from .SetCoralWheelSpeed import *
+from .SetCoralWheelSpeedIn import *
 from .ElevatorToPos import *
 from .ElevatorByStick import *
 
@@ -31,7 +31,8 @@ __all__ = [
     "ClimberClimb",
     "ClimberNotClimb",
     "ClimberStay",
-    "SetCoralWheelSpeed",
+    "SetCoralWheelSpeedIn",
+    "SetCoralWheelSpeedOut",
     "ElevatorToPos",
     "ElevatorByStick",
     "DriveByStickRotate",

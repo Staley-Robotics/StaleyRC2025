@@ -1,5 +1,5 @@
 from commands2 import Subsystem
-from wpilib import RobotState
+from wpilib import RobotState, DigitalInput
 from ntcore import NetworkTable, NetworkTableInstance
 
 from rev import SparkMax, SparkMaxConfig
@@ -22,6 +22,9 @@ class CoralManipulatorWheel(Subsystem):
 
         # motor
         self.motor = SparkMax( motor_port, SparkMax.MotorType.kBrushless )
+
+        # limit switch
+        self.limit_switch = DigitalInput( 5 )
 
         # config
         motorConfig = SparkMaxConfig()
@@ -68,9 +71,9 @@ class CoralManipulatorWheel(Subsystem):
 
     # Set the Desired State Value
     def setSpeed(self, speed:float) -> None:
-        '''
+        """
         :param speed: percent speed the motor should run at
-        '''
+        """
         self.motor_speed = speed
 
     # Get the Desired State Value
@@ -78,4 +81,4 @@ class CoralManipulatorWheel(Subsystem):
         return self.motor_speed
     
     def hasCoral(self) -> bool:
-        return self.stalled_frames > 5
+        return self.stalled_frames > 5 or not self.limit_switch.get()
