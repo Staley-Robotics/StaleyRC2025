@@ -1,5 +1,5 @@
-from GetCoral import *
-from ToReef import *
+from .GetCoral import *
+from .ToReef import *
 
 __all__ = [
     'GetCoral',

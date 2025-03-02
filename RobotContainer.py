@@ -7,6 +7,7 @@ from ntcore.util import ntproperty
 # Local Imports
 from subsystems import *
 from commands import *
+from sequences import *
 from util import FalconXboxController
 
 from pathplannerlib.auto import AutoBuilder, NamedCommands, PathPlannerPath
@@ -74,8 +75,8 @@ class RobotContainer:
         # Drive
         cmdDriveByStick = DriveByStick( sysDriveTrain, driver1.getLeftUpDown, driver1.getLeftSideToSide, driver1.getRightSideToSide )
         cmdAwaitVisionData = AwaitVisionData( lambda: sysVision.has_recieved_data, sysDriveTrain.resetOdometry, sysVision.get_last_pose )
-        cmdFollowPathSelect = FollowPathSelect( sysDriveTrain )
-
+        # cmdFollowPathSelect = FollowPathSelect( sysDriveTrain )
+        cmdGetCoral = GetCoral(sysCoralManipulatorWheel, sysCoralManipulatorPivot, sysElevator, sysDriveTrain)
 
         ## Default Commands
         sysCoralManipulatorPivot.setDefaultCommand( cmdControlPivotPosition )
@@ -92,8 +93,10 @@ class RobotContainer:
 
         driver1.back().onTrue( cmd.runOnce( sysDriveTrain.resetOdometry() ) )
 
-        driver1.a().whileTrue(ClimberClimb(sysClimber)) # TODO: move these to be created with other commands
-        driver1.x().whileTrue(ClimberNotClimb(sysClimber))
+        # driver1.a().whileTrue(ClimberClimb(sysClimber)) # TODO: move these to be created with other commands
+        # driver1.x().whileTrue(ClimberNotClimb(sysClimber))
+
+        driver1.x().whileTrue(cmdGetCoral)
 
         driver1.a().onTrue( cmdSetPivotPositionMAX )
         driver1.b().onTrue( cmdSetPivotPositionL1 )
