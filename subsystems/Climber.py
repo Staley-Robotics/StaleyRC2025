@@ -18,13 +18,12 @@ class ClimberConstants():
 
     class Other:
         GEAR_RATIO:float = 1/75.6
-
-    class Simulation:
-        GEAR_RATIO_SIM:float = 75.6
-        ARM_LENGTH_METERS:float = 0.2667
-        ARM_MASS_KG:float = 1.35575924
         MIN_ANGLE_RADS:float = 0
         MAX_ANGLE_RADS:float = pi
+
+    class Simulation:
+        ARM_LENGTH_METERS:float = 0.2667
+        ARM_MASS:units.kilograms = 1.35575924
         IS_SIMULATING_GRAVITY:bool = False
         STARTING_ANGLE_RADS:float = 0
         # note distance per pulse = (angle per revolution) / (pulses per revolution) = (2 * PI rads) / (4096 pulses)
@@ -44,9 +43,6 @@ class Climber(Subsystem):
         self.__motor.configure(self.__motor_config, self.__motor.ResetMode.kResetSafeParameters, self.__motor.PersistMode.kPersistParameters)
         self.__abs_encoder = self.__motor.getAbsoluteEncoder()
 
-        # Init status vars
-        self.__is_climbing = False
-        self.__is_un_climbing = False
 
         # Init sim motor and sim encoders
         self.__motor_sim = SparkMaxSim(self.__motor, DCMotor.NEO(1))
@@ -56,11 +52,11 @@ class Climber(Subsystem):
 
         self.__sim_jointed_arm = SingleJointedArmSim(
             DCMotor.NEO(1),
-            ClimberConstants.Simulation.GEAR_RATIO_SIM,
-            SingleJointedArmSim.estimateMOI(ClimberConstants.Simulation.ARM_LENGTH_METERS, ClimberConstants.Simulation.ARM_MASS_KG),
+            1/ClimberConstants.Other.GEAR_RATIO,
+            SingleJointedArmSim.estimateMOI(ClimberConstants.Simulation.ARM_LENGTH_METERS, ClimberConstants.Simulation.ARM_MASS),
             ClimberConstants.Simulation.ARM_LENGTH_METERS,
-            ClimberConstants.Simulation.MIN_ANGLE_RADS,
-            ClimberConstants.Simulation.MAX_ANGLE_RADS,
+            ClimberConstants.Other.MIN_ANGLE_RADS,
+            ClimberConstants.Other.MAX_ANGLE_RADS,
             ClimberConstants.Simulation.IS_SIMULATING_GRAVITY,
             ClimberConstants.Simulation.STARTING_ANGLE_RADS,
         )
@@ -94,7 +90,7 @@ class Climber(Subsystem):
         SmartDashboard.putData("Climber Mechanism2D", self.mech)
 
         # consider adding limit switches to motor while running at full speed rather than track rotation?
-        # TODO Ask Tyler what how to limit switch?? Or other programmer like Ben ...
+        # TODO Ask Tyler what how to limit switch?? Or other programmer like Ben ... or Austin or Cameron
 
 
     # Simulation Periodic Loop
@@ -111,22 +107,20 @@ class Climber(Subsystem):
         # note: multiplied by 12 because output needs to be in volts
         # note: multiplied by 60 because conversion from radians per SEC to rotations per MIN
 
-
         self.__sim_jointed_arm.setInputVoltage(output) # note: input needs to be in rotations per minute
 
         self.__sim_jointed_arm.update(0.02)
 
         sim_velocity = self.__sim_jointed_arm.getVelocity() # note: this returns velocity in rotation per sec
-        self.__sim_abs_encoder.iterate(sim_velocity * ClimberConstants.Simulation.GEAR_RATIO_SIM, 0.02)
+        self.__sim_abs_encoder.iterate(sim_velocity * 1/ClimberConstants.Other.GEAR_RATIO, 0.02)
         self.__sim_rel_encoder.iterate(sim_velocity, 0.02) # TODO add gear ratio (check if gear ratio should be * to or / by sim_velocity) IF NEEDED after testing
         # note: iterate must be done on absolute encoder, relative encoder, and motor
 
-        # self.__motor_sim.setVelocity(sim_velocity)
+        self.arm.setAngle(self.__sim_jointed_arm.getAngleDegrees() - 90)
 
+        # Telemetry for sim/mech
         SmartDashboard.putNumber("sim_motor_output (rotations per minute)", output)
         SmartDashboard.putNumber("sim_velocity", sim_velocity)
-
-        self.arm.setAngle(self.__sim_jointed_arm.getAngleDegrees() - 90)
 
         SmartDashboard.putNumber("sim_angle", self.__sim_jointed_arm.getAngleDegrees())
         SmartDashboard.putNumber("sim_mech_arm_angle", self.arm.getAngle())
@@ -156,7 +150,7 @@ class Climber(Subsystem):
         else:
             self.run()
         
-                # Logging: Log Outputs
+        # Logging: Log Outputs
         FalconLogger.logOutput("/Climber/Motor Voltage from PID calculation", self.__set_voltage)
         FalconLogger.logOutput("/Climber/Desired Position (degrees)", self.desired_position) # (up is 180, down is 0) TODO Change this comment after more testing
 
@@ -178,7 +172,7 @@ class Climber(Subsystem):
     
         :param position: the desired position in degrees
         """
-        self.desired_position = position
+        self.desired_position = min(max(units.radiansToDegrees(ClimberConstants.Other.MIN_ANGLE_RADS), position), units.radiansToDegrees(ClimberConstants.Other.MAX_ANGLE_RADS))
 
     # Get Desired Position
     def getDesiredPosition(self):
