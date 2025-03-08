@@ -14,8 +14,10 @@ from .ClimberClimb import *
 from .ClimberNotClimb import *
 from .ClimberStay import *
 from .SetCoralWheelSpeedIn import *
+from .SetCoralWheelSpeedOut import *
 from .ElevatorToPos import *
 from .ElevatorByStick import *
+from .DriveToPose import *
 
 # Classes to Import
 __all__ = [
@@ -37,5 +39,6 @@ __all__ = [
     "ElevatorByStick",
     "DriveByStickRotate",
     "AwaitVisionData",
-    "FollowPathSelect"
+    "FollowPathSelect",
+    "DriveToPose",
 ]

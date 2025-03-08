@@ -47,7 +47,7 @@ class RobotContainer:
 
         ## Driver Controller
         driver1 = FalconXboxController( 0, squaredInputs=ntproperty("/Settings/Driver1/SquaredInputs", True) )
-        
+
         ## Commands
         # Coral
         cmdControlPivotPosition = ControlPivotPosition( sysCoralManipulatorPivot, lambda: driver1.getLeftUpDown())
@@ -77,6 +77,7 @@ class RobotContainer:
         cmdAwaitVisionData = AwaitVisionData( lambda: sysVision.has_recieved_data, sysDriveTrain.resetOdometry, sysVision.get_last_pose )
         # cmdFollowPathSelect = FollowPathSelect( sysDriveTrain )
         cmdGetCoral = GetCoral(sysCoralManipulatorWheel, sysCoralManipulatorPivot, sysElevator, sysDriveTrain)
+        cmdToReef = ToReef(sysCoralManipulatorWheel, sysCoralManipulatorPivot, sysElevator, sysDriveTrain)
 
         ## Default Commands
         sysCoralManipulatorPivot.setDefaultCommand( cmdControlPivotPosition )
@@ -96,10 +97,11 @@ class RobotContainer:
         # driver1.a().whileTrue(ClimberClimb(sysClimber)) # TODO: move these to be created with other commands
         # driver1.x().whileTrue(ClimberNotClimb(sysClimber))
 
-        driver1.x().whileTrue(cmdGetCoral)
+        driver1.x().whileTrue( cmdGetCoral )
+        driver1.a().whileTrue( cmdToReef )
 
-        driver1.a().onTrue( cmdSetPivotPositionMAX )
-        driver1.b().onTrue( cmdSetPivotPositionL1 )
+        # driver1.a().onTrue( cmdSetPivotPositionMAX )
+        # driver1.b().onTrue( cmdSetPivotPositionL1 )
 
         driver1.pov(0).onTrue(cmdElevatorTo0)
         driver1.pov(90).onTrue(cmdElevatorTo10)

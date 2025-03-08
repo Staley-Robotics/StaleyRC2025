@@ -11,7 +11,8 @@ class GetCoral(SequentialCommandGroup):
                  drive: SwerveDrive):
         super().__init__(
             ParallelCommandGroup(
-                FollowPathSelect(drive, "Example Pickup"),
+                # FollowPathSelect(drive, "Example Pickup"),
+                DriveToPose(drive, 'Right-Outer'),
                 ElevatorToPos(elevator, 0),
                 SetPivotPosition(coralPivot, CoralManipulatorPivot.PivotPositions.SOURCE, 'Source'),
             ),
@@ -19,4 +20,4 @@ class GetCoral(SequentialCommandGroup):
         )
 
         self.setName("GetCoral")
-        self.addRequirements(CoralManipulatorWheel, CoralManipulatorPivot, Elevator, SwerveDrive)
+        self.addRequirements(coralManipulator, coralPivot, elevator, drive)

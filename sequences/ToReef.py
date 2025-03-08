@@ -11,7 +11,7 @@ class ToReef(SequentialCommandGroup):
                  drive: SwerveDrive):
         super().__init__(
             ParallelCommandGroup(
-                FollowPathSelect(drive, 'A to A1'),
+                DriveToPose(drive, 'Reef State'),
                 ElevatorToPos(elevator, 20),
                 SetPivotPosition(coralPivot, CoralManipulatorPivot.PivotPositions.L2, 'L2'),
             ),
@@ -19,4 +19,4 @@ class ToReef(SequentialCommandGroup):
         )
 
         self.setName("ToReef")
-        self.addRequirements([CoralManipulatorWheel, CoralManipulatorPivot, Elevator, SwerveDrive])
+        self.addRequirements(coralManipulator, coralPivot, elevator, drive)
