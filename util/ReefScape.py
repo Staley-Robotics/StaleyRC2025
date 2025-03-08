@@ -40,8 +40,18 @@ class ReefTarget(Enum):
 
 
 class ReefSide(Enum):
-    LEFT = auto()
-    RIGHT = auto()
+    ONE = auto()
+    TWO = auto()
+    THREE = auto()
+    FOUR = auto()
+    FIVE = auto()
+    SIX = auto()
+    SEVEN = auto()
+    EIGHT = auto()
+    NINE = auto()
+    TEN = auto()
+    ELEVEN = auto()
+    TWELVE = auto()
 
 
 class RobotState(Enum):
@@ -65,7 +75,6 @@ class ReefScape(Subsystem):
             cls._instance = ReefScape()
         return cls._instance
 
-
     # Robot information variables
     _current_mode: RobotMode = RobotMode.NONE
     _current_region: RobotRegion = RobotRegion.NONE
@@ -75,7 +84,7 @@ class ReefScape(Subsystem):
     _current_source_side: SourceSide = SourceSide.AUTO
     _current_select: SourceSelect = SourceSelect.OUTER
     _current_height: ReefTarget = ReefTarget.L2
-    _current_reef_side: ReefSide = ReefSide.LEFT
+    _current_reef_side: ReefSide = ReefSide.ONE
 
     __log: NetworkTable = NetworkTableInstance.getDefault().getTable("/")
 
@@ -133,7 +142,35 @@ class ReefScape(Subsystem):
         self._current_state = state
         self.__log.putString("RobotState", str(state))
 
-    def setNextTarget(self):
+    def setNextSide(self):
+        match self._current_reef_side:
+            case ReefSide.ONE:
+                self._current_reef_side = ReefSide.TWO
+            case ReefSide.TWO:
+                self._current_reef_side = ReefSide.THREE
+            case ReefSide.THREE:
+                self._current_reef_side = ReefSide.FOUR
+            case ReefSide.FOUR:
+                self._current_reef_side = ReefSide.FIVE
+            case ReefSide.FIVE:
+                self._current_reef_side = ReefSide.SIX
+            case ReefSide.SIX:
+                self._current_reef_side = ReefSide.SEVEN
+            case ReefSide.SEVEN:
+                self._current_reef_side = ReefSide.EIGHT
+            case ReefSide.EIGHT:
+                self._current_reef_side = ReefSide.NINE
+            case ReefSide.NINE:
+                self._current_reef_side = ReefSide.TEN
+            case ReefSide.TEN:
+                self._current_reef_side = ReefSide.ELEVEN
+            case ReefSide.ELEVEN:
+                self._current_reef_side = ReefSide.TWELVE
+            case ReefSide.TWELVE:
+                self._current_reef_side = ReefSide.ONE
+        self.__log.putString("ReefSide", str(self._current_reef_side))
+
+    def setNextHeight(self):
         match self._current_height:
             case ReefTarget.L1:
                 self._current_height = ReefTarget.L2
@@ -142,20 +179,34 @@ class ReefScape(Subsystem):
             case ReefTarget.L3:
                 self._current_height = ReefTarget.R4
             case ReefTarget.R4:
-                match self._current_reef_side:
-                    case ReefSide.LEFT:
-                        self._current_reef_side = ReefSide.RIGHT
-                        self._current_height = ReefTarget.L1
-                    case ReefSide.RIGHT:
-                        self._current_reef_side = ReefSide.LEFT
-                        self._current_height = ReefTarget.L1
+                self._current_height = ReefTarget.L1
+        self.__log.putString("ReefHeight", str(self._current_height))
 
     def getTarget(self):
-        return self._current_height, self._current_reef_side
+        """
+        Returns ONE through TWELVE
+        """
+        return self._current_reef_side
 
-    def setTarget(self, height: ReefTarget, side: ReefSide):
-        self._current_height = height
+    def setTarget(self, side: ReefSide):
+        """
+        Sets the target to ONE through TWELVE
+        """
         self._current_reef_side = side
+        self.__log.putString("ReefSide", str(side))
+
+    def setHeight(self, height: ReefTarget):
+        """
+        Sets the height to L1, L2, L3, or R4
+        """
+        self._current_height = height
+        self.__log.putString("ReefHeight", str(height))
+
+    def getHeight(self):
+        """
+        Returns L1, L2, L3, or R4
+        """
+        return self._current_height
 
     def getMode(self):
         """
@@ -212,8 +263,9 @@ class ReefScape(Subsystem):
         self.__log.putString("SourceSide", str(self._current_source_side))
 
     # Getters and Setters for what the robot has, and where the elevator is
+
     def setHasCoral(self, hasCoral: Callable[[], bool]):
-        self.__lamdaGetHasCoral = hasCoral
+        self.__hasCoral = hasCoral
 
     def setHasAlgae(self, hasAlgae: Callable[[], bool]):
         self.__lamdaGetHasAlgae = hasAlgae
@@ -222,8 +274,9 @@ class ReefScape(Subsystem):
         self.__lamdaElevatorAtPosition = atPosition
 
     # Lambdas
+
     def getHasCoral(self):
-        return self.__lamdaGetHasCoral()
+        return self.__hasCoral
 
     def getHasAlgae(self):
         return self.__lamdaGetHasAlgae()

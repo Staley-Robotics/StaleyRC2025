@@ -11,7 +11,7 @@ class ToReef(SequentialCommandGroup):
                  drive: SwerveDrive):
         super().__init__(
             ParallelCommandGroup(
-                DriveToPose(drive, 'Reef State'),
+                DriveToPose(drive),
                 ElevatorToPos(elevator, 20),
                 SetPivotPosition(coralPivot, CoralManipulatorPivot.PivotPositions.L2, 'L2'),
             ),

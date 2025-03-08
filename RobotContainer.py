@@ -29,7 +29,7 @@ class RobotContainer:
         ReefScapeState = ReefScape.getInstance()
         ReefScapeState.setSourceSide(SourceSide.RIGHT)
         ReefScapeState.setSourceSelect(SourceSelect.OUTER)
-        ReefScapeState.setHasCoral(lambda: False)
+        ReefScapeState.setHasCoral(False)
 
         ## Declare Subsystems
         sysDriveTrain = SwerveDrive()
@@ -85,7 +85,7 @@ class RobotContainer:
         cmdAwaitVisionData = AwaitVisionData( lambda: sysVision.has_recieved_data, sysDriveTrain.resetOdometry, sysVision.get_last_pose )
         # cmdFollowPathSelect = FollowPathSelect( sysDriveTrain )
         cmdGetCoral = GetCoral(sysCoralManipulatorWheel, sysCoralManipulatorPivot, sysElevator, sysDriveTrain)
-        # cmdToReef = ToReef(sysCoralManipulatorWheel, sysCoralManipulatorPivot, sysElevator, sysDriveTrain)
+        cmdToReef = ToReef(sysCoralManipulatorWheel, sysCoralManipulatorPivot, sysElevator, sysDriveTrain)
 
         ## Default Commands
         sysCoralManipulatorPivot.setDefaultCommand( cmdControlPivotPosition )
@@ -109,14 +109,20 @@ class RobotContainer:
         # driver1.x().whileTrue(ClimberNotClimb(sysClimber))
 
         driver1.x().whileTrue( cmdGetCoral )
-        # driver1.a().whileTrue( cmdToReef )
+        driver1.a().whileTrue( cmdToReef )
+
+        driver1.pov(0).onTrue(cmd.runOnce(lambda: ReefScape.getInstance().setHasCoral(True)))
+        driver1.pov(180).onTrue(cmd.runOnce(lambda: ReefScape.getInstance().setHasCoral(False)))
+
+        driver1.pov(45).onTrue(cmd.runOnce(lambda: ReefScapeState.setNextSide()))
+        driver1.pov(90).onTrue(cmd.runOnce(lambda: ReefScapeState.setNextHeight()))
 
         # driver1.a().onTrue( cmdSetPivotPositionMAX )
         # driver1.b().onTrue( cmdSetPivotPositionL1 )
 
-        driver1.pov(0).onTrue(cmdElevatorTo0)
-        driver1.pov(90).onTrue(cmdElevatorTo10)
-        driver1.y().whileTrue( cmdElevatorByStuck )
+        # driver1.pov(0).onTrue(cmdElevatorTo0)
+        # driver1.pov(90).onTrue(cmdElevatorTo10)
+        # driver1.y().whileTrue( cmdElevatorByStuck )
 
         # driver1.a().onTrue( cmdFollowPathSelect )
 
