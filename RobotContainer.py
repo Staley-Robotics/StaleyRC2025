@@ -8,7 +8,7 @@ from ntcore.util import ntproperty
 from subsystems import *
 from commands import *
 from sequences import *
-from util import FalconXboxController
+from util import FalconXboxController, ReefScape, SourceSelect, SourceSide
 
 from pathplannerlib.auto import AutoBuilder, NamedCommands, PathPlannerPath
 
@@ -24,6 +24,13 @@ class RobotContainer:
         """
         Initializes RobotContainer
         """
+
+        ## Configure State
+        ReefScapeState = ReefScape.getInstance()
+        ReefScapeState.setSourceSide(SourceSide.RIGHT)
+        ReefScapeState.setSourceSelect(SourceSelect.OUTER)
+        ReefScapeState.setHasCoral(lambda: False)
+
         ## Declare Subsystems
         sysDriveTrain = SwerveDrive()
         sysVision = Vision( sysDriveTrain.getOdometry )
@@ -43,6 +50,7 @@ class RobotContainer:
         SmartDashboard.putData( '/Subsystems/Algae', sysAlgae )
         SmartDashboard.putData( '/Subsystems/Elevator', sysElevator )
         SmartDashboard.putData( '/Subsystems/Climber', sysClimber )
+        SmartDashboard.putData( '/ReefScape', ReefScapeState )
 
 
         ## Driver Controller
@@ -77,7 +85,7 @@ class RobotContainer:
         cmdAwaitVisionData = AwaitVisionData( lambda: sysVision.has_recieved_data, sysDriveTrain.resetOdometry, sysVision.get_last_pose )
         # cmdFollowPathSelect = FollowPathSelect( sysDriveTrain )
         cmdGetCoral = GetCoral(sysCoralManipulatorWheel, sysCoralManipulatorPivot, sysElevator, sysDriveTrain)
-        cmdToReef = ToReef(sysCoralManipulatorWheel, sysCoralManipulatorPivot, sysElevator, sysDriveTrain)
+        # cmdToReef = ToReef(sysCoralManipulatorWheel, sysCoralManipulatorPivot, sysElevator, sysDriveTrain)
 
         ## Default Commands
         sysCoralManipulatorPivot.setDefaultCommand( cmdControlPivotPosition )
@@ -89,8 +97,11 @@ class RobotContainer:
         cmdAwaitVisionData.schedule()
 
         ## Driver Controller Button Binding
-        driver1.y().whileTrue( cmdAlgaeGrab )
-        driver1.b().whileTrue( cmdAlgaeEject )
+        # driver1.y().whileTrue( cmdAlgaeGrab )
+        # driver1.b().whileTrue( cmdAlgaeEject )
+
+        driver1.b().onTrue(cmd.runOnce(lambda: ReefScapeState.changeSourceSide()))
+        driver1.y().onTrue(cmd.runOnce(lambda: ReefScapeState.changeSourceSelect()))
 
         driver1.back().onTrue( cmd.runOnce( sysDriveTrain.resetOdometry() ) )
 
@@ -98,7 +109,7 @@ class RobotContainer:
         # driver1.x().whileTrue(ClimberNotClimb(sysClimber))
 
         driver1.x().whileTrue( cmdGetCoral )
-        driver1.a().whileTrue( cmdToReef )
+        # driver1.a().whileTrue( cmdToReef )
 
         # driver1.a().onTrue( cmdSetPivotPositionMAX )
         # driver1.b().onTrue( cmdSetPivotPositionL1 )

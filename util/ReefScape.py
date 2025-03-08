@@ -11,6 +11,7 @@ class RobotMode(Enum):
     DEMO = auto()
     NONE = auto()
 
+
 class RobotRegion(Enum):
     NONE = auto()
     ALGAE = auto()
@@ -18,15 +19,18 @@ class RobotRegion(Enum):
     REEF = auto()
     SOURCE = auto()
 
+
 class SourceSide(Enum):
     LEFT = auto()
     RIGHT = auto()
     AUTO = auto()
 
+
 class SourceSelect(Enum):
     OUTER = auto()
     INNER = auto()
     MIDDLE = auto()
+
 
 class ReefTarget(Enum):
     L1 = auto()
@@ -34,9 +38,11 @@ class ReefTarget(Enum):
     L3 = auto()
     R4 = auto()
 
+
 class ReefSide(Enum):
     LEFT = auto()
     RIGHT = auto()
+
 
 class RobotState(Enum):
     NONE = auto()
@@ -50,6 +56,16 @@ class RobotState(Enum):
 
 
 class ReefScape(Subsystem):
+    # Singleton Instance
+    _instance = None
+
+    @classmethod
+    def getInstance(cls):
+        if cls._instance is None:
+            cls._instance = ReefScape()
+        return cls._instance
+
+
     # Robot information variables
     _current_mode: RobotMode = RobotMode.NONE
     _current_region: RobotRegion = RobotRegion.NONE
@@ -61,7 +77,7 @@ class ReefScape(Subsystem):
     _current_height: ReefTarget = ReefTarget.L2
     _current_reef_side: ReefSide = ReefSide.LEFT
 
-    __log:NetworkTable = NetworkTableInstance.getDefault().getTable("/")
+    __log: NetworkTable = NetworkTableInstance.getDefault().getTable("/")
 
     def __init__(self):
         self.setHasCoral(lambda: False)
@@ -69,17 +85,17 @@ class ReefScape(Subsystem):
         self.elevatorAtPosition(lambda: False)
 
         # Logging for the robot
-        self.__log.putString( "RobotMode", str(self._current_mode))
-        self.__log.putString( "RobotRegion", str(self._current_region))
-        self.__log.putString( "RobotState", str(self._current_state))
+        self.__log.putString("RobotMode", str(self._current_mode))
+        self.__log.putString("RobotRegion", str(self._current_region))
+        self.__log.putString("RobotState", str(self._current_state))
 
         # Logging for the source
-        self.__log.putString( "SourceSide", str(self._current_source_side))
-        self.__log.putString( "SourceSelect", str(self._current_select))
+        self.__log.putString("SourceSide", str(self._current_source_side))
+        self.__log.putString("SourceSelect", str(self._current_select))
 
         # Logging for the reef
-        self.__log.putString( "ReefHeight", str(self._current_height))
-        self.__log.putString( "ReefSide", str(self._current_reef_side))
+        self.__log.putString("ReefHeight", str(self._current_height))
+        self.__log.putString("ReefSide", str(self._current_reef_side))
 
     def periodic(self) -> None:
         match self.getState():
@@ -110,18 +126,13 @@ class ReefScape(Subsystem):
                 if not self.getHasCoral() or not self.getHasAlgae():
                     self.setState(RobotState.DEFAULT)
 
-
-
-    @classmethod
     def getState(self):
         return self._current_state
 
-    @classmethod
-    def setState(self, state:RobotState):
-        self.__log.putString("RobotState", str(state))
+    def setState(self, state: RobotState):
         self._current_state = state
+        self.__log.putString("RobotState", str(state))
 
-    @classmethod
     def setNextTarget(self):
         match self._current_height:
             case ReefTarget.L1:
@@ -139,35 +150,75 @@ class ReefScape(Subsystem):
                         self._current_reef_side = ReefSide.LEFT
                         self._current_height = ReefTarget.L1
 
-    @classmethod
     def getTarget(self):
         return self._current_height, self._current_reef_side
 
-    @classmethod
-    def setTarget(self, height:ReefTarget, side:ReefSide):
+    def setTarget(self, height: ReefTarget, side: ReefSide):
         self._current_height = height
         self._current_reef_side = side
 
-    @classmethod
     def getMode(self):
+        """
+        Returns either TEST, COMPETITION, DEMO, or NONE
+        """
         return self._current_mode
 
-    def setMode(self, mode:RobotMode):
-        self.__log.putString("RobotMode", str(mode))
+    def setMode(self, mode: RobotMode):
         self._current_mode = mode
+        self.__log.putString("RobotMode", str(mode))
 
-    @classmethod
     def getRegion(self):
+        """
+        Returns either ALGAE, BARGE, REEF, or SOURCE
+        """
         return self._current_region
 
+    def getSourceSide(self):
+        """
+        Returns either LEFT, RIGHT, or AUTO
+        """
+        return self._current_source_side
+
+    def getSourceSelect(self):
+        """
+        Returns either OUTER, INNER, or MIDDLE
+        """
+        return self._current_select
+
+    def setSourceSide(self, side: SourceSide):
+        self._current_source_side = side
+        self.__log.putString("SourceSide", str(side))
+
+    def setSourceSelect(self, select: SourceSelect):
+        self._current_select = select
+        self.__log.putString("SourceSelect", str(select))
+
+    def changeSourceSelect(self):
+        match self._current_select:
+            case SourceSelect.OUTER:
+                self._current_select = SourceSelect.MIDDLE
+            case SourceSelect.MIDDLE:
+                self._current_select = SourceSelect.INNER
+            case SourceSelect.INNER:
+                self._current_select = SourceSelect.OUTER
+        self.__log.putString("SourceSelect", str(self._current_select))
+
+    def changeSourceSide(self):
+        match self._current_source_side:
+            case SourceSide.LEFT:
+                self._current_source_side = SourceSide.RIGHT
+            case SourceSide.RIGHT:
+                self._current_source_side = SourceSide.LEFT
+        self.__log.putString("SourceSide", str(self._current_source_side))
+
     # Getters and Setters for what the robot has, and where the elevator is
-    def setHasCoral(self, hasCoral:Callable[[],bool]):
+    def setHasCoral(self, hasCoral: Callable[[], bool]):
         self.__lamdaGetHasCoral = hasCoral
 
-    def setHasAlgae(self, hasAlgae:Callable[[],bool]):
+    def setHasAlgae(self, hasAlgae: Callable[[], bool]):
         self.__lamdaGetHasAlgae = hasAlgae
 
-    def elevatorAtPosition(self, atPosition:Callable[[],bool]):
+    def elevatorAtPosition(self, atPosition: Callable[[], bool]):
         self.__lamdaElevatorAtPosition = atPosition
 
     # Lambdas
@@ -179,4 +230,3 @@ class ReefScape(Subsystem):
 
     def getElevatorAtPosition(self):
         return self.__lamdaElevatorAtPosition()
-

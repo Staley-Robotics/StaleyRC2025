@@ -9,5 +9,12 @@ __all__ = [
     "FalconLogger",
     "FalconXboxController",
     "NTTunableFloat",
-    "ReefScape"
+    "ReefScape",
+    "SourceSelect",
+    "SourceSide",
+    "RobotMode",
+    "RobotRegion",
+    "RobotState",
+    "ReefTarget",
+    "ReefSide"
 ]
