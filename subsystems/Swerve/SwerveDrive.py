@@ -68,13 +68,13 @@ class SwerveDrive(Subsystem):
             self.__kinematics,
             self.__gyro.getRotation2d(),
             self.__getModulePositions(),
-            Pose2d()
+            Pose2d(8.7, 4, Rotation2d(0)) # This is where we would set an initial pose on the field
         )
         self.__visionOdometry = SwerveDrive4PoseEstimator(
             self.__kinematics,
             self.__gyro.getRotation2d(),
             self.__getModulePositions(),
-            Pose2d()
+            Pose2d(8.7, 4, Rotation2d(0)) # This is where we would set an initial pose on the field
         )
 
         self.stop()

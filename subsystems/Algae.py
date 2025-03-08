@@ -130,8 +130,9 @@ class AlgaeManipulator(Subsystem):
         # Input Logging - Neo - Pivot
         FalconLogger.logInput("AlgaeManipulator/Pivot/MotorInput", self.__pivotMotorOne.get())
         FalconLogger.logInput("AlgaeManipulator/Pivot/MotorOutput", self.__pivotMotorOne.getAppliedOutput())
-        FalconLogger.logInput("AlgaeManipulator/Pivot/MotorPosition_abs",
-                              self.__pivotMotorOne.getAbsoluteEncoder().getPosition())
+        FalconLogger.logInput("AlgaeManipulator/Pivot/MotorPosition_abs_r", self.__pivotMotorOne.getAbsoluteEncoder().getPosition())
+        FalconLogger.logInput("AlgaeManipulator/Pivot/MotorTemp_c", self.__pivotMotorOne.getMotorTemperature())
+        FalconLogger.logInput("AlgaeManipulator/Pivot/MotorCurrent_a", self.__pivotMotorOne.getOutputCurrent())
 
         # Input Logging - 775pro - Intake
         FalconLogger.logInput("AlgaeManipulator/Intake/MotorOutputPercent", self.__intakeMotor.getMotorOutputPercent())

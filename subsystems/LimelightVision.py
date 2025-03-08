@@ -13,7 +13,7 @@ class Limelight:
         ## Subsystem setup
         self.sysID = sysID
         self.get_odometry = odometryGetter
-    
+
         ## Networktable setup
         table = NetworkTableInstance.getDefault().getTable(sysID)
         self.poseSub = table.getDoubleArrayTopic('botpose_wpiblue').subscribe([])
@@ -23,10 +23,10 @@ class Limelight:
 
     def array2d_to_botpose(self, data:list[float]) -> Pose2d:
         '''
-        converts the array2d object recieved from the limelight into a Pose2d object
+        converts the array2d object received from the limelight into a Pose2d object
         '''
         return Pose2d( data[0], data[1], degreesToRadians(data[5]) )
-    
+
     def update_botpose(self) -> Pose2d | None:
         '''
         adds all new vision data on this camera to SS's odometry class
@@ -61,16 +61,15 @@ class Vision(Subsystem):
     def __init__(self, odometryGetter:typing.Callable[[], SwerveDrive4PoseEstimator]):
         self.camera = Limelight( 'limelight-one', odometryGetter)
 
-        self.has_recieved_data = False
+        self.has_received_data = False
         self.last_pose = Pose2d()
-    
+
     def periodic(self):
         output = self.camera.update_botpose()
         if output:
             self.last_pose = output
-        # self.has_recieved_data = self.camera.update_botpose() or self.has_recieved_data # works with bool return from update
-    
+        # self.has_received_data = self.camera.update_botpose() or self.has_received_data # works with bool return from update
+
     def get_last_pose(self) -> Pose2d:
         return self.last_pose
-    
-    
+

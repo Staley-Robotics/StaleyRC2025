@@ -27,7 +27,7 @@ class CoralManipulatorPivot(Subsystem):
         kP=1.75
         kI=0
         kD=0.1
-    
+
     class PivotPositions: # NOTE: these are wrong
         # pi is straight forwards
         MIN:radians = -pi/2
@@ -85,7 +85,7 @@ class CoralManipulatorPivot(Subsystem):
         stick = elevator.appendLigament('stick', 3, -90, color=Color8Bit(200,200,170))
         self.pivotArm = stick.appendLigament( 'arm', 6, 180, color=Color8Bit(20,240,20) )
         self.guide = stick.appendLigament( 'guidearm', 3, 180, color=Color8Bit(20,170,20) )
-        
+
         SmartDashboard.putData( '/CoralManipulatorPivot/mech2d', self.mech)
 
         ## Simulation Inits
@@ -101,7 +101,7 @@ class CoralManipulatorPivot(Subsystem):
                 True,
                 self.PivotPositions.START,
              )
-            
+
             self.simMotor = SparkMaxSim( self.pivotMotor, DCMotor.NEO550() )
             self.simEncoder = self.simMotor.getAbsoluteEncoderSim()
             self.simEncoder.setPositionConversionFactor(pi/2)
@@ -110,21 +110,26 @@ class CoralManipulatorPivot(Subsystem):
     # Periodic Loop
     def periodic(self) -> None:
         # Logging - Write Measured Values
-        FalconLogger.logInput('/CoralManipulatorPivot/MeasuredPositionRadians', self.getMeasuredPosition())
+        FalconLogger.logInput("CoralManipulatorPivot/MotorInput", self.pivotMotor.get())
+        FalconLogger.logInput("CoralManipulatorPivot/MotorOutput_v", self.pivotMotor.getAppliedOutput())
+        FalconLogger.logInput("CoralManipulatorPivot/MotorPosition_abs_r", self.pivotMotor.getAbsoluteEncoder().getPosition())
+        FalconLogger.logInput("CoralManipulatorPivot/MotorTemp_c", self.pivotMotor.getMotorTemperature())
+        FalconLogger.logInput("CoralManipulatorPivot/MotorCurrent_a", self.pivotMotor.getOutputCurrent())
 
         # Run Subsystem
         if RobotState.isDisabled():
             self.stop()
         else:
             self.run()
-        
+
         # Mech2d
         self.pivotArm.setAngle( radiansToDegrees(self.getMeasuredPosition()) )
         self.guide.setAngle( radiansToDegrees(self.getSetpoint()) )
-        
+
         # Logging - Write Calculated Values
         FalconLogger.logOutput('/CoralManipulatorPivot/DesiredPosition', self.desiredPosition)
-    
+        FalconLogger.logOutput('/CoralManipulatorPivot/ActualPosition_R', self.getMeasuredPosition())
+
     def simulationPeriodic(self):
         ## Simulate
         self.armSim.setInputVoltage( self.pivotMotor.get() * self.simMotor.getBusVoltage() )
@@ -148,9 +153,12 @@ class CoralManipulatorPivot(Subsystem):
 
     def getSetpoint(self) -> radians:
         return self.desiredPosition
-    
+
     def atSetpoint(self) -> bool:
         return abs(self.desiredPosition - self.getMeasuredPosition()) < self.tolerance # figure out tolerance
 
     def getMeasuredPosition(self) -> radians:
+        """
+        Get the current position of the pivot in radians
+        """
         return rotationsToRadians(self.encoder.get_position().value)

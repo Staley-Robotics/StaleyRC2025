@@ -20,7 +20,7 @@ class ElevatorConstants:
     _kD = 0.0
     _kG = 0.0 # force to overcome gravity
     _kS = 0.0 # force to overcome friction
-    _kV = 0.0 # Apply __ voltage for target velocitr
+    _kV = 0.0 # Apply __ voltage for target velocity
     _kFF = 0.0 # Feed Forward
 
     _kOffset = 0.0
@@ -45,6 +45,7 @@ class Elevator(Subsystem):
         self.__pidController = self.__motorLead.getClosedLoopController()
 
         self.__encoderLead = self.__motorLead.getEncoder()
+        self.__encoderFollow = self.__motorFollow.getEncoder()
 
         self.__limitTop = self.__motorLead.getReverseLimitSwitch()
         self.__limitBottom = self.__motorLead.getForwardLimitSwitch()
@@ -105,15 +106,29 @@ class Elevator(Subsystem):
 
 
     def periodic(self):
-        FalconLogger.logInput("Elevator/MotorInput", self.__motorLead.get()) # current speed of motor
-        FalconLogger.logInput("Elevator/MotorOutput", self.__motorLead.getAppliedOutput()) # TODO: check if this is the voltage
-        FalconLogger.logInput("Elevator/MotorPositionRots", self.__encoderLead.getPosition())
-        FalconLogger.logInput("Elevator/MotorVelocity", self.__encoderLead.getVelocity())
+        # Lead motor
+        FalconLogger.logInput("Elevator/Lead/MotorInput", self.__motorLead.get()) # current speed of motor
+        FalconLogger.logInput("Elevator/Lead/MotorOutput", self.__motorLead.getAppliedOutput())
+        FalconLogger.logInput("Elevator/Lead/MotorPosition_r", self.__encoderLead.getPosition())
+        FalconLogger.logInput("Elevator/Lead/MotorVelocity_rpm", self.__encoderLead.getVelocity())
+        FalconLogger.logInput("Elevator/Lead/MotorCurrent_a", self.__motorLead.getOutputCurrent())
+        FalconLogger.logInput("Elevator/Lead/MotorTemp_c", self.__motorLead.getMotorTemperature())
+
+        # Follow motor
+        FalconLogger.logInput("Elevator/Follow/MotorInput", self.__motorFollow.get())  # current speed of motor
+        FalconLogger.logInput("Elevator/Follow/MotorOutput", self.__motorFollow.getAppliedOutput())
+        FalconLogger.logInput("Elevator/Follow/MotorPosition_r", self.__encoderFollow.getPosition())
+        FalconLogger.logInput("Elevator/Follow/MotorVelocity_rpm", self.__encoderFollow.getVelocity())
+        FalconLogger.logInput("Elevator/Follow/MotorCurrent_a", self.__motorFollow.getOutputCurrent())
+        FalconLogger.logInput("Elevator/Follow/MotorTemp_c", self.__motorFollow.getMotorTemperature())
+
+        # Limit Switches
         FalconLogger.logInput("Elevator/TopLimitSwitch", self.__limitTop.get())
         FalconLogger.logInput("Elevator/BottomLimitSwitch", self.__limitBottom.get())
 
+        # Using Hardware based PID so no run function is needed. May need to look into a stop function though for disabled
 
-        FalconLogger.logOutput("Elevator/CurrentHeightIN", self.get())
+        FalconLogger.logOutput("Elevator/CurrentHeightIN", self.getPosition())
         FalconLogger.logOutput("Elevator/TargetHeightIN", self.getSetpoint())
     
     #TODO: Check if correct, feel like something is missing here
@@ -151,9 +166,12 @@ class Elevator(Subsystem):
         return abs(margin) <= ElevatorConstants._kTolerance
     
     def stop(self) -> None:
-        self.setSetpoint(self.get())
+        self.setSetpoint(self.getPosition())
 
-    def get(self) -> float:
+    def getPosition(self) -> float:
+        """
+        Get the current position of the elevator
+        """
         return self.__encoderLead.getPosition()
 
     

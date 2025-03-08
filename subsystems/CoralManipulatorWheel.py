@@ -40,8 +40,8 @@ class CoralManipulatorWheel(Subsystem):
     # Periodic Loop
     def periodic(self) -> None:
         # Logging: Write Current Subsystem State
-        FalconLogger.logInput('/CoralManipulatorWheel/motorOutputCurrent', self.motor.getOutputCurrent())
-        FalconLogger.logInput('/CoralManipulatorWheel/motorVelocity', self.motor.getEncoder().getVelocity())
+        FalconLogger.logInput('CoralManipulatorWheel/motorOutputCurrent', self.motor.getOutputCurrent())
+        FalconLogger.logInput('CoralManipulatorWheel/motorVelocity', self.motor.getEncoder().getVelocity())
 
         # Run Subsystem: Set New State To Subsystem
         if RobotState.isDisabled():
@@ -50,20 +50,13 @@ class CoralManipulatorWheel(Subsystem):
             self.run()
         
         # Logging: Write Post Operation Information
-        FalconLogger.logOutput('/CoralManipulatorWheel/motorSetSpeed', self.motor_speed)
-        FalconLogger.logOutput('/CoralManipulatorWheel/hasCoral', self.hasCoral())
+        FalconLogger.logOutput('CoralManipulatorWheel/motorSetSpeed', self.motor_speed)
+        FalconLogger.logOutput('CoralManipulatorWheel/hasCoral', self.hasCoral())
 
     # Run the Subsystem
     def run(self) -> None:
         self.motor.set( self.motor_speed )
 
-        # output current / desired speed should account for only checking this when importing the coral
-        # the velocity check should account for the motor not actually moving
-        ##NOTE: need to run coral through the prototype to try and get some numbers
-        # if self.motor.getOutputCurrent() > 0 and abs(self.encoder.getVelocity()) < 0.5: 
-        #     self.stalled_frames += 1
-        # else:
-        #     self.stalled_frames = 0
 
     # Stop the Subsystem
     def stop(self) -> None:

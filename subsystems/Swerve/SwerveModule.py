@@ -29,7 +29,7 @@ class SwerveModuleConstants:
         kD:float = 0
         kS:float = 0 #0.1
         kV:float = 0.115#2.8235 #0.13
-    
+
     class Turn:
         kGearRatio:float = 1 / (150/7)
         kP:float = 20#2.5 # 25.0
@@ -39,7 +39,7 @@ class SwerveModuleConstants:
         kMaxAngularAcceleration:float = math.pi
         kS:float = 0
         kV:float = 0
-    
+
     class KrakenSim:
         kMaxRps:float = radiansToRotations( DCMotor.krakenX60(1).freeSpeed )# * kSecondsPerMinute
 
@@ -64,7 +64,7 @@ class SwerveModule:
     def __init__(self, moduleId:int, driveId:int, turnId:int, encoderId:int, encoderOffset:float):
         ## Subsystem setup
         self.moduleId = moduleId
-        
+
         ## Drive Motor
         # basic config
         driveMotorCfg = TalonFXConfiguration()
@@ -113,7 +113,7 @@ class SwerveModule:
         # motor init
         self.__turnMotor = TalonFX( turnId, "canivore1" )
         self.__turnMotor.configurator.apply(turnMotorCfg)
-        
+
         # CANcoder Simulation Setup
         self.__turnEncoderSim = self.__turnEncoder.sim_state
 
@@ -121,7 +121,7 @@ class SwerveModule:
         self.__setpoint = SwerveModuleState(0, self.__getTurnEncoderRotation())
 
         # Dashboards
-    
+
     # def updatePID(self):
     #     turnConfig = SparkMaxConfig()
     #     driveConfig = SparkMaxConfig()
@@ -137,16 +137,22 @@ class SwerveModule:
         FalconLogger.logInput( f"{logPath}/DriveInput", self.__driveMotor.get() )
         FalconLogger.logInput( f"{logPath}/DriveOutput", self.__driveMotor.get_motor_voltage().value )
         FalconLogger.logInput( f"{logPath}/DrivePosition_r", self.__driveMotor.get_position().value )
-        FalconLogger.logInput( f"{logPath}/DriveVelocity_rpm", self.__driveMotor.get_velocity().value )
+        FalconLogger.logInput( f"{logPath}/DriveVelocity_rps", self.__driveMotor.get_velocity().value )
+        FalconLogger.logInput( f"{logPath}/DriveCurrent_a", self.__driveMotor.get_torque_current().value )
+        FalconLogger.logInput( f"{logPath}/DriveTemp_c", self.__driveMotor.get_device_temp().value )
 
         FalconLogger.logInput( f"{logPath}/TurnInput", self.__turnMotor.get() )
         FalconLogger.logInput( f"{logPath}/TurnOutput", self.__turnMotor.get_motor_voltage().value )
         FalconLogger.logInput( f"{logPath}/TurnPosition_r", self.__turnMotor.get_position().value )
-        FalconLogger.logInput( f"{logPath}/TurnVelocity_rpm", self.__turnMotor.get_velocity().value )
+        FalconLogger.logInput( f"{logPath}/TurnVelocity_rps", self.__turnMotor.get_velocity().value )
+        FalconLogger.logInput( f"{logPath}/TurnCurrent_a", self.__turnMotor.get_torque_current().value )
+        FalconLogger.logInput( f"{logPath}/TurnTemp_c", self.__turnMotor.get_device_temp().value )
 
         FalconLogger.logInput( f"{logPath}/EncoderPositionAbs_r", self.__turnEncoder.get_absolute_position().value )
         FalconLogger.logInput( f"{logPath}/EncoderPositionRel_r", self.__turnEncoder.get_position().value )
         FalconLogger.logInput( f"{logPath}/EncoderVelocity_rps", self.__turnEncoder.get_velocity().value )
+
+
 
         # Set Drive Motor
         desiredMotorVelocity = self.__calcDesiredMotorVelocity( self.__setpoint.speed )
@@ -184,7 +190,7 @@ class SwerveModule:
             driveVelocity,
             self.__getTurnEncoderRotation()
         )
-    
+
     def getDesiredState(self) -> SwerveModuleState:
         return self.__setpoint
 

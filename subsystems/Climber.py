@@ -139,16 +139,15 @@ class Climber(Subsystem):
     # Periodic Loop
     def periodic(self) -> None:
         # Logging: Log Inputs
-        FalconLogger.logInput("/Climber/Current Position (degrees)", self.getPosition())
-        FalconLogger.logInput("/Climber/Speed (degrees per sec)", self.getSpeed())
-        FalconLogger.logInput("/Climber/Motor Voltage from motor", self.__motor.getBusVoltage() * self.__motor.getAppliedOutput())
+        FalconLogger.logInput("Climber/MotorInput", self.__motor.get())
+        FalconLogger.logInput("Climber/MotorOutput", self.__motor.getAppliedOutput())
+        FalconLogger.logInput("Climber/MotorPosition_abs_r", self.__motor.getAbsoluteEncoder().getPosition())
+        FalconLogger.logInput("Climber/MotorTemp_c", self.__motor.getMotorTemperature())
+        FalconLogger.logInput("Climber/MotorCurrent_a", self.__motor.getOutputCurrent())
 
         # Update some variables
         self.actual_position = self.getPosition()
         self.save_position = round(self.actual_position) # note: this is used for the command ClimberStay (why is it rounded? idk maybe to stop climber from bakonking itself)
-        
-        SmartDashboard.putNumber("actual position", self.actual_position)
-        SmartDashboard.putNumber("save position", self.save_position)
 
         # Run Subsystem: Set New State To Subsystem
         if RobotState.isDisabled():
@@ -158,8 +157,8 @@ class Climber(Subsystem):
             self.run()
         
                 # Logging: Log Outputs
-        FalconLogger.logOutput("/Climber/Motor Voltage from PID calculation", self.__set_voltage)
-        FalconLogger.logOutput("/Climber/Desired Position (degrees)", self.desired_position) # (up is 180, down is 0) TODO Change this comment after more testing
+        FalconLogger.logOutput("Climber/TargetPosition", self.desired_position)
+        FalconLogger.logOutput("Climber/ActualPosition", self.actual_position) # (up is 180, down is 0) TODO Change this comment after more testing
 
     # Run the Subsystem
     def run(self) -> None:
