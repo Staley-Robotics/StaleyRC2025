@@ -4,13 +4,14 @@ robotpy-installer==2025.0.3
 ### RobotPy
 robotpy==2025.3.1.1
 robotpy[commands2]
-robotpy[phoenix6]
+#robotpy[phoenix6]
 robotpy[phoenix5]
 robotpy[rev]
 robotpy[pathplannerlib]
 
 ## Others
 robotpy-urcl==2025.0.1
+phoenix6==25.3.1
 
 # This is required for running 'robotpy sync' on nkc macs
-certifi; platform_system=="Darwin"
+#certifi; platform_system=="Darwin"
