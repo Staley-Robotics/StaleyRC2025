@@ -68,7 +68,7 @@ class Vision(Subsystem):
         output = self.camera.update_botpose()
         if output:
             self.last_pose = output
-        # self.has_received_data = self.camera.update_botpose() or self.has_received_data # works with bool return from update
+        self.has_received_data = self.camera.update_botpose() or self.has_received_data # works with bool return from update
 
     def get_last_pose(self) -> Pose2d:
         return self.last_pose

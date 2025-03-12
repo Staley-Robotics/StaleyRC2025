@@ -25,12 +25,6 @@ class RobotContainer:
         Initializes RobotContainer
         """
 
-        ## Configure State
-        ReefScapeState = ReefScape.getInstance()
-        ReefScapeState.setSourceSide(SourceSide.RIGHT)
-        ReefScapeState.setSourceSelect(SourceSelect.OUTER)
-        ReefScapeState.setHasCoral(False)
-
         ## Declare Subsystems
         sysDriveTrain = SwerveDrive()
         sysVision = Vision( sysDriveTrain.getOdometry )
@@ -42,6 +36,12 @@ class RobotContainer:
         sysElevator = Elevator()
         sysClimber = Climber( 15 )
 
+        ## Configure State
+        ReefScapeState = ReefScape.getInstance()
+        ReefScapeState.setHasCoral( sysCoralManipulatorWheel.hasCoral )
+        ReefScapeState.setGetRobotPose( sysDriveTrain.getPose )
+        ReefScapeState.setHasAlgae( sysAlgae.hasAlgae )
+
         # Put Subsystems on NetworkTables
         SmartDashboard.putData( '/Subsystems/DriveTrain', sysDriveTrain )
         SmartDashboard.putData( '/Subsystems/Vision', sysVision )
@@ -51,7 +51,6 @@ class RobotContainer:
         SmartDashboard.putData( '/Subsystems/Elevator', sysElevator )
         SmartDashboard.putData( '/Subsystems/Climber', sysClimber )
         SmartDashboard.putData( '/ReefScape', ReefScapeState )
-
 
         ## Driver Controller
         driver1 = FalconXboxController( 0, squaredInputs=ntproperty("/Settings/Driver1/SquaredInputs", True) )
@@ -69,12 +68,12 @@ class RobotContainer:
         cmdAlgaeEject = AlgaeEjectCommand( sysAlgae )
 
         # Elevator
-        cmdElevatorTo0 = ElevatorToPos(sysElevator, 0)
-        cmdElevatorTo10 = ElevatorToPos(sysElevator, 10)
+        # cmdElevatorTo0 = ElevatorToPos(sysElevator, lambda: 0)
+        # cmdElevatorTo10 = ElevatorToPos(sysElevator, lambda: 10)
         cmdElevatorByStuck = ElevatorByStick(sysElevator, lambda: driver1.getRightUpDown())
 
-        cmdElevatorTo0 = ElevatorToPos(sysElevator, 0)
-        cmdElevatorTo10 = ElevatorToPos(sysElevator, 10)
+        # cmdElevatorTo0 = ElevatorToPos(sysElevator, lambda: 0)
+        # cmdElevatorTo10 = ElevatorToPos(sysElevator, lambda: 10)
         cmdElevatorByStuck = ElevatorByStick(sysElevator, lambda: driver1.getRightUpDown())
 
         # Climber
@@ -94,21 +93,23 @@ class RobotContainer:
         sysDriveTrain.setDefaultCommand( cmdDriveByStick )
         sysClimber.setDefaultCommand( cmdClimberStay )
 
-        cmdAwaitVisionData.schedule()
+        #cmdAwaitVisionData.schedule()
 
         ## Driver Controller Button Binding
         # driver1.y().whileTrue( cmdAlgaeGrab )
         # driver1.b().whileTrue( cmdAlgaeEject )
 
-        driver1.b().onTrue(cmd.runOnce(lambda: ReefScapeState.changeSourceSide()))
-        driver1.y().onTrue(cmd.runOnce(lambda: ReefScapeState.changeSourceSelect()))
+        #driver1.b().onTrue(cmd.runOnce(lambda: ReefScapeState.changeSourceSide()))
+        #driver1.y().onTrue(cmd.runOnce(lambda: ReefScapeState.changeSourceSelect()))
 
         driver1.back().onTrue( cmd.runOnce( sysDriveTrain.resetOdometry() ) )
 
         # driver1.a().whileTrue(ClimberClimb(sysClimber)) # TODO: move these to be created with other commands
         # driver1.x().whileTrue(ClimberNotClimb(sysClimber))
 
-        driver1.x().whileTrue( cmdGetCoral )
+        driver1.x().toggleOnTrue( ElevatorToPos( sysElevator, lambda: ElevatorPositions.L4 ) ) #whileTrue( cmdGetCoral )
+        driver1.y().toggleOnTrue( ElevatorToPos( sysElevator, lambda: ElevatorPositions.MIN ) ) #whileTrue( cmdGetCoral )
+        #driver1.x().toggleOnFalse( ElevatorToPos( sysElevator, lambda: ElevatorPositions.MIN ) )
         driver1.a().whileTrue( cmdToReef )
 
         driver1.pov(0).onTrue(cmd.runOnce(lambda: ReefScape.getInstance().setHasCoral(True)))
@@ -116,6 +117,11 @@ class RobotContainer:
 
         driver1.pov(45).onTrue(cmd.runOnce(lambda: ReefScapeState.setNextSide()))
         driver1.pov(90).onTrue(cmd.runOnce(lambda: ReefScapeState.setNextHeight()))
+
+        driver1.leftBumper().whileTrue( DriveToPose( sysDriveTrain, lambda: ReefScapeState.getSourcePose( SourceSide.LEFT ) ) )
+        driver1.rightBumper().whileTrue( DriveToPose( sysDriveTrain, lambda: ReefScapeState.getSourcePose( SourceSide.RIGHT ) ) )
+        driver1.start().whileTrue( DriveToPose( sysDriveTrain, ReefScapeState.getSourcePose ) )
+        driver1.back().whileTrue( DriveToPose( sysDriveTrain, ReefScapeState.getReefPose ) )
 
         # driver1.a().onTrue( cmdSetPivotPositionMAX )
         # driver1.b().onTrue( cmdSetPivotPositionL1 )

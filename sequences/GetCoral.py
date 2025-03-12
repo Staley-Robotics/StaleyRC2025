@@ -13,8 +13,8 @@ class GetCoral(SequentialCommandGroup):
         super().__init__(
             ParallelCommandGroup(
                 # FollowPathSelect(drive, "Example Pickup"),
-                DriveToPose(drive),
-                ElevatorToPos(elevator, 0),
+                DriveToPose(drive, ReefScape.getReefPose ),
+                ElevatorToPos(elevator, lambda: ElevatorPositions.COLLECT ),
                 SetPivotPosition(coralPivot, CoralManipulatorPivot.PivotPositions.SOURCE, 'Source'),
             ),
             SetCoralWheelSpeedIn(coralManipulator, CoralManipulatorWheel.WheelSpeeds.IN, 'Intake'),

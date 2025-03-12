@@ -12,7 +12,7 @@ class ToReef(SequentialCommandGroup):
         super().__init__(
             ParallelCommandGroup(
                 DriveToPose(drive),
-                ElevatorToPos(elevator, 20),
+                ElevatorToPos(elevator, lambda: ElevatorPositions.L4 ),
                 SetPivotPosition(coralPivot, CoralManipulatorPivot.PivotPositions.L2, 'L2'),
             ),
             SetCoralWheelSpeedOut(coralManipulator, CoralManipulatorWheel.WheelSpeeds.OUT, 'OUT'),

@@ -6,35 +6,37 @@ from wpilib import SmartDashboard, RobotBase, RobotState, Mechanism2d, Color8Bit
 from wpilib.simulation import ElevatorSim, RoboRioSim, BatterySim
 from enum import Enum
 from util import FalconLogger
-from rev import SparkMax, SparkBase, SparkMaxConfig, ClosedLoopConfig, ClosedLoopSlot, SparkMaxSim, LimitSwitchConfig
+from rev import SparkMax, SparkBase, SparkMaxConfig, ClosedLoopConfig, ClosedLoopSlot, SparkMaxSim, LimitSwitchConfig, EncoderConfig
 
-class ElevatorPositions(Enum):
-    TROUGH = 0.0
-    LOW_CORAL = 0.0
-    MED_CORAL = 0.0
-    HIGH_CORAL = 0.0
+class ElevatorPositions: #(Enum):
+    MIN:inches = 33.0
+    COLLECT:inches = 37.0
+    L1:inches = 34.0
+    L2:inches = 45.0
+    L3:inches = 60.0
+    L4:inches = 70.0
+    MAX:inches = 72.00
 
 class ElevatorConstants:
-    _kP = 1.0
+    _kP = 2.0
     _kI = 0.0
-    _kD = 0.0
+    _kD = 0.1
     _kG = 0.0 # force to overcome gravity
     _kS = 0.0 # force to overcome friction
     _kV = 0.0 # Apply __ voltage for target velocity
     _kFF = 0.0 # Feed Forward
 
     _kOffset = 0.0
-    _kTolerance = 0.0
+    _kTolerance = 0.125
 
-    _elevatorHeight = 3
-    _elevatorWidth = 3
+    _beltGearDiameter_in = 2.256
 
-    _gearing = 0.25
+    _gearing = 4 #1 / 4
     _mass = 10.0
-    _drumRadius = 0.25
-    _rotsPerInch = 1.0
-    _minLength = 0
-    _maxLength = 0.5
+    _drumRadius = _beltGearDiameter_in / 2 # 0.25
+    _rotsPerInch = 1 / ( _beltGearDiameter_in * math.pi )
+    _minLength = 33.00
+    _maxLength = 72.00
 
 class Elevator(Subsystem):
     def __init__(self):
@@ -51,55 +53,82 @@ class Elevator(Subsystem):
         self.__limitBottom = self.__motorLead.getForwardLimitSwitch()
 
 
-        self.__motorLeadConfig = SparkMaxConfig()
-        self.__motorLeadConfig.encoder.positionConversionFactor(1).velocityConversionFactor(1)
-        self.__motorLeadConfig.closedLoop.setFeedbackSensor(
-            ClosedLoopConfig.FeedbackSensor.kPrimaryEncoder
-        ).P(ElevatorConstants._kP, ClosedLoopSlot.kSlot0).I(
-            ElevatorConstants._kI, ClosedLoopSlot.kSlot0).D(
-            ElevatorConstants._kD, ClosedLoopSlot.kSlot0).velocityFF(
-            ElevatorConstants._kFF, ClosedLoopSlot.kSlot0).outputRange(-1, 1, ClosedLoopSlot.kSlot0)
+        motorLcfg = SparkMaxConfig()
+        motorFcfg = SparkMaxConfig()
+
+        motorLcfg.setIdleMode( SparkMaxConfig.IdleMode.kBrake )
         
-        self.__motorLeadConfig.limitSwitch.forwardLimitSwitchType(LimitSwitchConfig.Type.kNormallyOpen)
-        self.__motorLeadConfig.limitSwitch.forwardLimitSwitchType(LimitSwitchConfig.Type.kNormallyClosed)
-        self.__motorLeadConfig.limitSwitch.forwardLimitSwitchEnabled(False)
-        self.__motorLeadConfig.limitSwitch.reverseLimitSwitchEnabled(True)
+        motorFcfg.setIdleMode( SparkMaxConfig.IdleMode.kBrake )
+        motorFcfg.follow( self.__motorLead.getDeviceId() , False )
 
-        self.__motorLead.configure(self.__motorLeadConfig, SparkBase.ResetMode.kResetSafeParameters, SparkBase.PersistMode.kNoPersistParameters)
-        self.__motorFollowConfig = SparkMaxConfig().follow(0, False)
-        self.__motorFollow.configure(self.__motorFollowConfig, SparkBase.ResetMode.kResetSafeParameters, SparkBase.PersistMode.kNoPersistParameters)
+        en_cfg = EncoderConfig()
+        en_cfg.positionConversionFactor(1).velocityConversionFactor(1)
+        
+        cl_cfg = ClosedLoopConfig()
+        cl_cfg = cl_cfg.setFeedbackSensor( ClosedLoopConfig.FeedbackSensor.kPrimaryEncoder )
+        cl_cfg = cl_cfg.pidf(
+            ElevatorConstants._kP,
+            ElevatorConstants._kI,
+            ElevatorConstants._kD,
+            ElevatorConstants._kFF,
+            ClosedLoopSlot.kSlot0
+        )
+        cl_cfg = cl_cfg.outputRange( -1.0, 1.0, ClosedLoopSlot.kSlot0 )
+        
+        ls_cfg = LimitSwitchConfig()
+        ls_cfg.forwardLimitSwitchType(LimitSwitchConfig.Type.kNormallyOpen)
+        ls_cfg.reverseLimitSwitchType(LimitSwitchConfig.Type.kNormallyClosed)
+        ls_cfg.forwardLimitSwitchEnabled(False)
+        ls_cfg.reverseLimitSwitchEnabled(True)
+                
+        motorLcfg.apply( cl_cfg )
+        motorLcfg.apply( ls_cfg )
+        motorLcfg.apply( en_cfg )
 
-        self.__gearbox = DCMotor.NEO(2)
-        self.__motorSim = SparkMaxSim(self.__motorLead, self.__gearbox)
+        motorFcfg.apply( cl_cfg )
+        motorFcfg.apply( ls_cfg )
+        motorFcfg.apply( en_cfg )
+
+        self.__motorLead.configure(motorLcfg, SparkBase.ResetMode.kResetSafeParameters, SparkBase.PersistMode.kNoPersistParameters)
+        self.__motorFollow.configure(motorFcfg, SparkBase.ResetMode.kResetSafeParameters, SparkBase.PersistMode.kNoPersistParameters)
+        
+        # Simulation
+        self.__motorSimLead = SparkMaxSim(self.__motorLead, DCMotor.NEO(1))
+        self.__motorSimLeadEncoder = self.__motorSimLead.getRelativeEncoderSim()
+        self.__motorSimFollow = SparkMaxSim(self.__motorFollow, DCMotor.NEO(1))
+        self.__motorSimFollowEncoder = self.__motorSimFollow.getRelativeEncoderSim()
         self.__elevatorSim = ElevatorSim(
-            self.__gearbox,
+            DCMotor.NEO(2),
             ElevatorConstants._gearing,
             ElevatorConstants._mass,
-            ElevatorConstants._drumRadius,
-            ElevatorConstants._minLength,
-            ElevatorConstants._maxLength,
-            True,
-            0,
-            [0.01, 0.00]
+            inchesToMeters( ElevatorConstants._drumRadius ),
+            inchesToMeters( ElevatorConstants._minLength ),
+            inchesToMeters( ElevatorConstants._maxLength ),
+            False,
+            inchesToMeters( ElevatorConstants._minLength ),
+            #[0.01, 0.00]
         )
+        self.__motorSimLead.enable()
+        self.__motorSimFollow.enable()
 
+        # Mechanism
         self.mech = Mechanism2d(
             30,
-            50,
+            100,
             Color8Bit(Color.kBlueViolet)
         )
 
         self.mechRoot = self.mech.getRoot(
-            "ElevatorRoot",
-            10,
-            10
+            "ElevatorTarget",
+            20,
+            0
         )
 
-        self.__setpoint = 0.0
+        self.__setpoint = ElevatorConstants._minLength
 
-        self.mechBase = self.mechRoot.appendLigament("ElevatorBase", 10, 0, color=Color8Bit(Color.kRed))
-        self.mechElevator = self.mechBase.appendLigament("ElevatorImmutable", 10, 90, color=Color8Bit(Color.kRed))
-        self.mechElevatorMutable = self.mechElevator.appendLigament("ElevatorMutable", 0, 0)
+        self.mechBase = self.mechRoot.appendLigament("ElevatorBase", ElevatorConstants._minLength, 90, lineWidth = 10, color=Color8Bit(Color.kRed))
+        self.mechElevatorTarget = self.mechBase.appendLigament("ElevatorTarget", self.__setpoint - ElevatorConstants._minLength, 5, lineWidth = 10, color = Color8Bit(Color.kYellow))
+        self.mechElevatorActual = self.mechBase.appendLigament("ElevatorActual", self.getPosition() - ElevatorConstants._minLength, 355, lineWidth = 6, color = Color8Bit(Color.kGreen))
 
         SmartDashboard.putData("Elevator", self)
         SmartDashboard.putData("ElevatorMech", self.mech)
@@ -126,7 +155,10 @@ class Elevator(Subsystem):
         FalconLogger.logInput("Elevator/TopLimitSwitch", self.__limitTop.get())
         FalconLogger.logInput("Elevator/BottomLimitSwitch", self.__limitBottom.get())
 
+        self.setSetpoint( self.getSetpoint() )
         # Using Hardware based PID so no run function is needed. May need to look into a stop function though for disabled
+        self.mechElevatorTarget.setLength( self.getSetpoint() - ElevatorConstants._minLength )
+        self.mechElevatorActual.setLength( self.getPosition() - ElevatorConstants._minLength )
 
         FalconLogger.logOutput("Elevator/CurrentHeightIN", self.getPosition())
         FalconLogger.logOutput("Elevator/TargetHeightIN", self.getSetpoint())
@@ -134,49 +166,79 @@ class Elevator(Subsystem):
     #TODO: Check if correct, feel like something is missing here
     def simulationPeriodic(self):
         #TODO: check if deadband needed
-        self.__motorSim.setBusVoltage(RobotController.getBatteryVoltage())
-        self.__elevatorSim.setInput([self.__motorSim.getAppliedOutput() * RoboRioSim.getVInVoltage()])
+        self.__elevatorSim.setInputVoltage( self.__motorSimLead.getAppliedOutput() * 12.0 )
         self.__elevatorSim.update(0.020)
-        self.__motorSim.iterate(
-            radiansPerSecondToRotationsPerMinute(self.__elevatorSim.getVelocity()),
+
+        velocity_mps = self.__elevatorSim.getVelocity()
+        velocity_ips = metersToInches( velocity_mps )
+        velocity_rotps = velocity_ips * ElevatorConstants._rotsPerInch
+        velocity_rotps_motor = velocity_rotps * ElevatorConstants._gearing
+        velocity_rotpm_motor = velocity_rotps_motor * 60
+        velocity_radps = velocity_ips / ( ElevatorConstants._beltGearDiameter_in / 2.0 )
+        velocity_RPM = radiansPerSecondToRotationsPerMinute( velocity_radps ) * ElevatorConstants._gearing
+
+        FalconLogger.logOutput("Elevator/Sim_Velocity_ips", metersToInches( self.__elevatorSim.getVelocity() ) )
+        FalconLogger.logOutput("Elevator/Sim_Velocity_RPM_motor", velocity_RPM )
+        FalconLogger.logOutput("Elevator/Sim_Height_i", self.__elevatorSim.getPositionInches() )
+
+        # Lead Motor
+        self.__motorSimLead.iterate(
+            velocity_rotpm_motor, #radiansPerSecondToRotationsPerMinute(self.__elevatorSim.getVelocity()),
             RoboRioSim.getVInVoltage(),
             0.020
         )
-        RoboRioSim.setVInVoltage(
-            BatterySim.calculate([self.__elevatorSim.getCurrentDraw()])
+        # self.__motorSimLeadEncoder.iterate(
+        #     velocity_rotpm_motor, #radiansPerSecondToRotationsPerMinute(self.__elevatorSim.getVelocity()),
+        #     0.020
+        # )
+
+        # # Follower Motor
+        self.__motorSimFollow.iterate(
+            velocity_rotps_motor, #radiansPerSecondToRotationsPerMinute(self.__elevatorSim.getVelocity()),
+            RoboRioSim.getVInVoltage(),
+            0.020
         )
-        self.mechElevatorMutable.setLength(
-            self.__elevatorSim.getPosition()
-        )
+        # self.__motorSimFollowEncoder.iterate(
+        #     velocity_rotpm_motor, #radiansPerSecondToRotationsPerMinute(self.__elevatorSim.getVelocity()),
+        #     0.020
+        # )
 
         
-    def getSetpoint(self) -> float:
+    def getSetpoint(self) -> inches:
         return self.__setpoint
     
-    def setSetpoint(self, sp: float) -> None:
-        self.__setpoint = sp
+    def setSetpoint(self, sp: inches, override: bool = False ) -> None:
+        if override: self.__setpoint
+        else: self.__setpoint = min( max( sp, ElevatorConstants._minLength ), ElevatorConstants._maxLength )
+
+        motorPosition = ( sp - ElevatorConstants._minLength ) * ElevatorConstants._rotsPerInch * ElevatorConstants._gearing
+
         self.__pidController.setReference(
-            sp,
+            motorPosition,
             SparkBase.ControlType.kPosition, 
             ClosedLoopSlot.kSlot0
         )
 
-    def atSetpoint(self) -> bool:
-        margin = self.__encoderLead.getPosition()
-        return abs(margin) <= ElevatorConstants._kTolerance
-    
-    def stop(self) -> None:
-        self.setSetpoint(self.getPosition())
-
-    def getPosition(self) -> float:
+    def getPosition(self) -> inches:
         """
         Get the current position of the elevator
         """
-        return self.__encoderLead.getPosition()
+        rot = self.__encoderLead.getPosition()
+        rotDrum = rot / ElevatorConstants._gearing
+        motInches = rotDrum / ElevatorConstants._rotsPerInch
+        phyInches = motInches + ElevatorConstants._minLength
+        return phyInches #self.__encoderLead.getPosition()
 
+    def atSetpoint(self) -> bool:
+        sp = self.getSetpoint()
+        cur = self.getPosition()
+        return abs(cur - sp) <= ElevatorConstants._kTolerance
+    
+    def stop(self) -> None:
+        self.setSetpoint( self.getPosition() )
     
     # per 0.020 seconds
-    def calculateSimMotorRots(self) -> float:
-        # for 3V, 100 rps
-        mv = self.__motorSim.getAppliedOutput()
-        return (mv/3) * 1.5
+    # def calculateSimMotorRots(self) -> float:
+    #     # for 3V, 100 rps
+    #     mv = self.__motorSim.getAppliedOutput()
+    #     return (mv/3) * 1.5

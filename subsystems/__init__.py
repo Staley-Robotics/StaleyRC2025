@@ -17,4 +17,5 @@ __all__ = [
     "Vision",
     "Climber",
     "Elevator",
+    "ElevatorPositions"
 ]
