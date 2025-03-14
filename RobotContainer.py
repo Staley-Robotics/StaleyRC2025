@@ -71,11 +71,7 @@ class RobotContainer:
         # Elevator
         cmdElevatorTo0 = ElevatorToPos(sysElevator, 0)
         cmdElevatorTo10 = ElevatorToPos(sysElevator, 10)
-        cmdElevatorByStuck = ElevatorByStick(sysElevator, lambda: driver1.getRightUpDown())
-
-        cmdElevatorTo0 = ElevatorToPos(sysElevator, 0)
-        cmdElevatorTo10 = ElevatorToPos(sysElevator, 10)
-        cmdElevatorByStuck = ElevatorByStick(sysElevator, lambda: driver1.getRightUpDown())
+        cmdElevatorByStick = ElevatorByStick(sysElevator, lambda: driver1.getRightSideToSide())
 
         # Climber
         cmdClimberStay = ClimberStay( sysClimber )
@@ -93,6 +89,7 @@ class RobotContainer:
         sysAlgae.setDefaultCommand( cmdAlgaeDefault )
         sysDriveTrain.setDefaultCommand( cmdDriveByStick )
         sysClimber.setDefaultCommand( cmdClimberStay )
+        sysElevator.setDefaultCommand( cmdElevatorByStick )
 
         cmdAwaitVisionData.schedule()
 
@@ -120,8 +117,8 @@ class RobotContainer:
         # driver1.a().onTrue( cmdSetPivotPositionMAX )
         # driver1.b().onTrue( cmdSetPivotPositionL1 )
 
-        # driver1.pov(0).onTrue(cmdElevatorTo0)
-        # driver1.pov(90).onTrue(cmdElevatorTo10)
+        # driver1.a().onTrue(cmdElevatorTo0)
+        # driver1.b().onTrue(cmdElevatorTo10)
         # driver1.y().whileTrue( cmdElevatorByStuck )
 
         # driver1.a().onTrue( cmdFollowPathSelect )

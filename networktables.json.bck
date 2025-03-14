@@ -1,8 +1,24 @@
 [
   {
+    "name": "/Settings/Elevator/ControlSpeed",
+    "type": "int",
+    "value": 2,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "ControlSpeed",
+    "type": "int",
+    "value": 1,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
     "name": "/CoralManipulatorPivot/AtPostionTolerance",
     "type": "double",
-    "value": 0.15707963267948966,
+    "value": 0.19,
     "properties": {
       "persistent": true
     }
