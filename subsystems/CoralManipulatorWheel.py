@@ -13,13 +13,8 @@ class CoralManipulatorWheel(Subsystem):
         IN = -1
         OUT = 1
 
-    # Variable Declaration
-    m_sys_id:int = None
-
     # Initialization
-    def __init__(self, sysId:int, motor_port:int) -> None:
-        self.m_sys_id = sysId
-
+    def __init__(self, motor_port:int) -> None:
         # motor
         self.motor = SparkMax( motor_port, SparkMax.MotorType.kBrushless )
 

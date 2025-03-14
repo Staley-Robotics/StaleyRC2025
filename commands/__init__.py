@@ -1,46 +1,55 @@
-# Imports
-from .SampleCommand import *
-from .ControlPivotPosition import *
-from .ControlPivotPosition import *
-from .SetPivotPosition import *
-from .CoralWheelOpenControl import *
-from .AlgaeGrab import *
-from .AlgaeHold import *
-from .DriveByStick import *
-from .DriveByStickRotate import *
-from .FollowPathSelect import *
-from .AwaitVisionData import *
-from .AlgaeEject import *
-from .ClimberClimb import *
-from .ClimberNotClimb import *
-from .ClimberStay import *
-from .SetCoralWheelSpeedIn import *
-from .SetCoralWheelSpeedOut import *
-from .ElevatorToPos import *
-from .ElevatorByStick import *
-from .DriveToPose import *
+from .Algae.AlgaeEject import *
+from .Algae.AlgaeGrab import *
+from .Algae.AlgaeHold import *
+
+from .Climber.ClimberAway import *
+from .Climber.ClimberClimb import *
+from .Climber.ClimberNotClimb import *
+from .Climber.ClimberStay import *
+
+from .Coral.SetCoralWheelSpeed import *
+from .Coral.CoralWheelIn import *
+from .Coral.CoralWheelOut import *
+from .Coral.SetPivotPosition import *
+
+from .Drive.AwaitVisionData import *
+from .Drive.DriveByStick import *
+from .Drive.DriveByStickRotate import *
+from .Drive.DriveToPose import *
+from .Drive.FollowPathSelect import *
+
+from .Elevator.ElevatorByStick import *
+from .Elevator.ElevatorResync import *
+from .Elevator.ElevatorToPos import *
+
+from .Testing.ControlPivotPosition import *
+from .Testing.CoralWheelOpenControl import *
 
 # Classes to Import
 __all__ = [
-    "SampleCommand",
-    "ControlPivotPosition",
-    "ControlPivotPosition",
-    "SetPivotPosition",
-    "CoralWheelOpenControl",
-    "AlgaeGrabCommand",
-    "AlgaeHoldCommand",
-    "DriveByStick",
-    "AwaitVisionData",
-    "AlgaeEjectCommand",
+    "AlgaeEject",
+    "AlgaeGrab",
+    "AlgaeHold",
+
+    "ClimberAway",
     "ClimberClimb",
     "ClimberNotClimb",
     "ClimberStay",
-    "SetCoralWheelSpeedIn",
-    "SetCoralWheelSpeedOut",
-    "ElevatorToPos",
-    "ElevatorByStick",
-    "DriveByStickRotate",
+
+    "CoralWheelIn",
+    "CoralWheelOut",
+    "SetPivotPosition",
+
     "AwaitVisionData",
-    "FollowPathSelect",
+    "DriveByStick",
+    "DriveByStickRotate",
     "DriveToPose",
+    "FollowPathSelect",
+
+    "ElevatorByStick",
+    "ElevatorResync",
+    "ElevatorToPos",
+
+    "CoralWheelOpenControl",
+    "ControlPivotPosition",
 ]

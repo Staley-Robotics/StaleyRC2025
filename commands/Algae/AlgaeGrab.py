@@ -1,26 +1,25 @@
+import typing
+
 from commands2 import Command, Subsystem
 from subsystems.Algae import AlgaeManipulator, AlgaeManipulatorPositions, IntakeState
 
-class AlgaeEjectCommand(Command):
+class AlgaeGrab(Command):
     # Variable Declaration
     Algae:AlgaeManipulator = None
 
     # Initialization
     def __init__( self,
-                  mySubsystem:Subsystem,
+                  mySubsystem:AlgaeManipulator,
                 ) -> None:
         # Command Attributes
         self.Algae:AlgaeManipulator = mySubsystem
-        self.setName( "AlgaeEject" )
+        self.setName( "AlgaeGrab" )
         self.addRequirements( mySubsystem )
 
     # On Start
     def initialize(self) -> None:
-        if not self.Algae.hasAlgae():
-            self.cancel()
-        else:
-            self.Algae.setIntake(IntakeState.OUT)
-            self.Algae.setSetpoint(AlgaeManipulatorPositions.PLACE)
+        self.Algae.setIntake(IntakeState.IN)
+        self.Algae.setSetpoint(AlgaeManipulatorPositions.GRAB)
 
     # Periodic
     def execute(self) -> None:
@@ -32,7 +31,8 @@ class AlgaeEjectCommand(Command):
 
     # Is Finished
     def isFinished(self) -> bool:
-        return not self.Algae.hasAlgae()
+        return self.Algae.hasAlgae()
+
 
     # Run When Disabled
     def runsWhenDisabled(self) -> bool:

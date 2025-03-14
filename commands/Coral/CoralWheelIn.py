@@ -4,18 +4,15 @@ from commands2 import Command
 
 from subsystems import CoralManipulatorWheel
 
-class SetCoralWheelSpeedIn(Command):
-    def __init__(self, coralWheelSys:CoralManipulatorWheel,
-                 desiredSpeed:CoralManipulatorWheel.WheelSpeeds,
-                 cmdID:str):
+class CoralWheelIn(Command):
+    def __init__(self, coralWheelSys:CoralManipulatorWheel) -> None:
         self.wheelSys = coralWheelSys
-        self.desiredSpeed = desiredSpeed
 
         self.addRequirements(coralWheelSys)
-        self.setName( f'{self.__class__.__name__}:{cmdID}' )
+        self.setName( f'{self.__class__.__name__}' )
     
     def initialize(self):
-        self.wheelSys.setSpeed( self.desiredSpeed )
+        self.wheelSys.setSpeed( CoralManipulatorWheel.WheelSpeeds.IN )
     
     def execute(self):
         pass

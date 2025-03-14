@@ -15,7 +15,7 @@ class ToReef(SequentialCommandGroup):
                 ElevatorToPos(elevator, 20),
                 SetPivotPosition(coralPivot, CoralManipulatorPivot.PivotPositions.L2, 'L2'),
             ),
-            SetCoralWheelSpeedOut(coralManipulator, CoralManipulatorWheel.WheelSpeeds.OUT, 'OUT'),
+            CoralWheelOut(coralManipulator, CoralManipulatorWheel.WheelSpeeds.OUT, 'OUT'),
         )
 
         self.setName("ToReef")

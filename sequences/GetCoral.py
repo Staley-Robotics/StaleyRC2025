@@ -17,7 +17,7 @@ class GetCoral(SequentialCommandGroup):
                 ElevatorToPos(elevator, 0),
                 SetPivotPosition(coralPivot, CoralManipulatorPivot.PivotPositions.SOURCE, 'Source'),
             ),
-            SetCoralWheelSpeedIn(coralManipulator, CoralManipulatorWheel.WheelSpeeds.IN, 'Intake'),
+            CoralWheelIn(coralManipulator),
         )
 
         self.setName("GetCoral")

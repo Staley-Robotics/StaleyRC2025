@@ -85,7 +85,9 @@ class AlgaeManipulator(Subsystem):
         # Neo
         self.__pivotMotorOne = SparkMax(1, SparkMax.MotorType.kBrushless)
         self.__pivotMotorTwo = SparkMax(2, SparkMax.MotorType.kBrushless)
+
         self.__pivotController = self.__pivotMotorOne.getClosedLoopController()
+        
         self.sparkConfig = SparkMaxConfig()
         self.sparkConfig.closedLoop.pidf(AlgaeManipulatorConstants.pivot_kP, AlgaeManipulatorConstants.pivot_kI,
                                          AlgaeManipulatorConstants.pivot_kD, AlgaeManipulatorConstants.pivot_kFF)
