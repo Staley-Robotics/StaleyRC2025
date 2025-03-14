@@ -54,6 +54,7 @@ class RobotContainer:
 
         ## Driver Controller
         driver1 = FalconXboxController( 0, squaredInputs=ntproperty("/Settings/Driver1/SquaredInputs", True) )
+        driver2 = FalconXboxController( 1 )
 
         ## Commands
         # Coral
@@ -70,11 +71,7 @@ class RobotContainer:
         # Elevator
         # cmdElevatorTo0 = ElevatorToPos(sysElevator, lambda: 0)
         # cmdElevatorTo10 = ElevatorToPos(sysElevator, lambda: 10)
-        cmdElevatorByStuck = ElevatorByStick(sysElevator, lambda: driver1.getRightUpDown())
-
-        # cmdElevatorTo0 = ElevatorToPos(sysElevator, lambda: 0)
-        # cmdElevatorTo10 = ElevatorToPos(sysElevator, lambda: 10)
-        cmdElevatorByStuck = ElevatorByStick(sysElevator, lambda: driver1.getRightUpDown())
+        cmdElevatorByStick = ElevatorByStick(sysElevator, lambda: driver2.getLeftUpDown())
 
         # Climber
         cmdClimberStay = ClimberStay( sysClimber )
@@ -93,6 +90,8 @@ class RobotContainer:
         sysDriveTrain.setDefaultCommand( cmdDriveByStick )
         sysClimber.setDefaultCommand( cmdClimberStay )
 
+        sysElevator.setDefaultCommand( cmdElevatorByStick )
+
         #cmdAwaitVisionData.schedule()
 
         ## Driver Controller Button Binding
@@ -109,7 +108,7 @@ class RobotContainer:
 
         driver1.x().toggleOnTrue( ElevatorToPos( sysElevator, lambda: ElevatorPositions.L4 ) ) #whileTrue( cmdGetCoral )
         driver1.y().toggleOnTrue( ElevatorToPos( sysElevator, lambda: ElevatorPositions.MIN ) ) #whileTrue( cmdGetCoral )
-        #driver1.x().toggleOnFalse( ElevatorToPos( sysElevator, lambda: ElevatorPositions.MIN ) )
+        driver1.b().toggleOnTrue( ElevatorToPos( sysElevator, lambda: ElevatorPositions.L2 ) )
         driver1.a().whileTrue( cmdToReef )
 
         driver1.pov(0).onTrue(cmd.runOnce(lambda: ReefScape.getInstance().setHasCoral(True)))
