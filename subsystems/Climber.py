@@ -40,7 +40,7 @@ class Climber(Subsystem):
         # Init motor and abs encoder
         self.__motor:SparkMax = SparkMax(self.__sys_id, SparkMax.MotorType.kBrushless)
         self.__motor_config:SparkMaxConfig = SparkMaxConfig()
-        self.__motor_config.setIdleMode(idleMode=SparkMaxConfig.IdleMode.kBrake)
+        self.__motor_config = self.__motor_config.setIdleMode(idleMode=SparkMaxConfig.IdleMode.kBrake)
         self.__motor.configure(self.__motor_config, self.__motor.ResetMode.kResetSafeParameters, self.__motor.PersistMode.kPersistParameters)
         self.__abs_encoder = self.__motor.getAbsoluteEncoder()
 
@@ -72,7 +72,7 @@ class Climber(Subsystem):
         self.__set_voltage = 0
 
         # PID setup
-        self.kP = 1
+        self.kP = .4
         self.kI = 0
         self.kD = 0
         self.kIZone = 0
