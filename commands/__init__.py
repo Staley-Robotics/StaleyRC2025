@@ -1,6 +1,7 @@
 # Imports
 from .SampleCommand import *
 from .ControlPivotPosition import *
+from .ControlPivotPosition import *
 from .SetPivotPosition import *
 from .CoralWheelOpenControl import *
 from .AlgaeGrab import *
@@ -22,6 +23,7 @@ from .DriveToPose import *
 # Classes to Import
 __all__ = [
     "SampleCommand",
+    "ControlPivotPosition",
     "ControlPivotPosition",
     "SetPivotPosition",
     "CoralWheelOpenControl",
