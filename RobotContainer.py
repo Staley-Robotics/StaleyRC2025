@@ -3,8 +3,9 @@ from wpilib import SendableChooser, SmartDashboard
 from commands2 import Command, cmd
 
 # Local Imports
-from subsystems import SampleSubsystem
-from commands import SampleCommand
+#from subsystems import SampleSubsystem
+from subsystems import *
+#from commands import SampleCommand
 from util import FalconXboxController
 
 class RobotContainer:
@@ -23,21 +24,10 @@ class RobotContainer:
         driver1 = FalconXboxController( 0 )
 
         # Declare Subsystems
-        sysSample = SampleSubsystem( 0 )
-
-        # Commands
-        cmdSampleLeft = SampleCommand(sysSample, driver1.getLeftX )
-        cmdSampleRight = SampleCommand(sysSample, driver1.getRightX )
-
-        # Autonomous Chooser
-        self.__autoChooser.setDefaultOption( "1 - None", cmd.none() )
-        SmartDashboard.putData( "Autonomous Mode", self.__autoChooser )
-
-        # Default Commands
-        sysSample.setDefaultCommand( cmdSampleLeft )
+        self.sysSwerve = SwerveTest()
 
         # Driver Controller Button Binding
-        driver1.a().whileTrue( cmdSampleRight )
+        driver1.leftBumper().onTrue( cmd.runOnce( self.toggleDefaults ) )
 
     # Get Autonomous Command
     def getAutonomousCommand(self) -> Command:
@@ -46,3 +36,11 @@ class RobotContainer:
         """
         chooserValue = self.__autoChooser.getSelected()
         return chooserValue if isinstance( chooserValue, Command ) else cmd.none()
+
+    def toggleDefaults(self):
+        if self.sysSwerve.getDefaultCommand() != None:
+            self.sysSwerve.removeDefaultCommand()
+            self.sysSwerve.getCurrentCommand().cancel()
+            # add next
+        else:
+            self.sysSwerve.setDefaultCommand( SwerveDefault( self.sysSwerve ) )
