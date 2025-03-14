@@ -82,7 +82,7 @@ class RobotContainer:
 
         # Drive
         cmdDriveByStick = DriveByStick( sysDriveTrain, driver1.getLeftUpDown, driver1.getLeftSideToSide, driver1.getRightSideToSide )
-        cmdAwaitVisionData = AwaitVisionData( lambda: sysVision.has_recieved_data, sysDriveTrain.resetOdometry, sysVision.get_last_pose )
+        cmdAwaitVisionData = AwaitVisionData( lambda: sysVision.has_received_data, sysDriveTrain.resetOdometry, sysVision.get_last_pose )
         # cmdFollowPathSelect = FollowPathSelect( sysDriveTrain )
         cmdGetCoral = GetCoral(sysCoralManipulatorWheel, sysCoralManipulatorPivot, sysElevator, sysDriveTrain)
         cmdToReef = ToReef(sysCoralManipulatorWheel, sysCoralManipulatorPivot, sysElevator, sysDriveTrain)
