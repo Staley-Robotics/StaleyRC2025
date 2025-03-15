@@ -15,14 +15,14 @@ class ElevatorByStick(Command):
         self.__elevator = elevatorSubsystem
         self.getPos = pos
 
-        self.setPos = Elevator.ElevatorPositions.MIDDLE
+        self.setPos = Elevator.ElevatorPositions.BOTTOM
 
 
         self.setName("ElevatorByStick")
         self.addRequirements(self.__elevator)
 
     def initialize(self):
-        pass
+        self.getPos = self.__elevator.getSetpoint()
 
     def execute(self):
         self.setPos = max(min(self.setPos + self.getPos() * self.controlSpeed, Elevator.ElevatorPositions.TOP),Elevator.ElevatorPositions.BOTTOM)

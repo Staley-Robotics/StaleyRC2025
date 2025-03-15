@@ -11,7 +11,7 @@ from wpimath.units import radians, rotationsToRadians, rotationsToDegrees, radia
 from ntcore import NetworkTable, NetworkTableInstance
 from ntcore.util import ntproperty
 
-from rev import SparkMax, SparkMaxSim, SparkMaxConfig, AlternateEncoderConfig, ClosedLoopConfig, ClosedLoopSlot, AbsoluteEncoderConfig, AbsoluteEncoder
+from rev import SparkMax, SparkMaxSim, SparkMaxConfig, AlternateEncoderConfig, ClosedLoopConfig, ClosedLoopSlot, AbsoluteEncoderConfig, AbsoluteEncoder, SparkClosedLoopController
 from phoenix6.hardware import CANcoder
 from phoenix6.configs import CANcoderConfiguration
 
@@ -24,14 +24,14 @@ class CoralManipulatorPivot(Subsystem):
     class PivotConstants:
         k_max_velocity=DCMotor.NEO550().freeSpeed * 60
         gear_ratio=25
-        kP=1
+        kP=2.0
         kI=0
-        kD=0
-        kFF=0.0
+        kD=0.1
+        kArbFF=0.5
     
     class PivotPositions: # NOTE: these are wrong
-        MIN:degrees = -110
-        MAX:degrees = 110
+        MIN:degrees = -90
+        MAX:degrees = 90
         START:degrees = -90
         SOURCE:degrees = 45
         HOLD:degrees = 90
@@ -43,7 +43,7 @@ class CoralManipulatorPivot(Subsystem):
         L4_down:degrees = 30
 
     # Variable Declaration
-
+  
     tolerance = pi / 10 #ntproperty("/CoralManipulatorPivot/AtPostionTolerance", pi/20, persistent=True)
 
 
@@ -53,7 +53,7 @@ class CoralManipulatorPivot(Subsystem):
         self.pivotMotor = SparkMax( motor_port, SparkMax.MotorType.kBrushless )
         # config
         motorConfig = SparkMaxConfig()
-        motorConfig = motorConfig.setIdleMode( SparkMaxConfig.IdleMode.kCoast )
+        motorConfig = motorConfig.setIdleMode( SparkMaxConfig.IdleMode.kBrake ).inverted( True )
 
         encoderConfig = AbsoluteEncoderConfig()
         encoderConfig = encoderConfig.setSparkMaxDataPortConfig()
@@ -68,14 +68,13 @@ class CoralManipulatorPivot(Subsystem):
         
 
         closedLoopConfig = ClosedLoopConfig()
-        closedLoopConfig = closedLoopConfig.pidf(
+        closedLoopConfig = closedLoopConfig.pid(
             self.PivotConstants.kP,
             self.PivotConstants.kI,
             self.PivotConstants.kD,
-            self.PivotConstants.kFF,
             ClosedLoopSlot.kSlot0
         )
-        closedLoopConfig = closedLoopConfig.positionWrappingInputRange(-0.5, 0.5).positionWrappingEnabled( True )
+        closedLoopConfig = closedLoopConfig.positionWrappingInputRange(0, 1).positionWrappingEnabled( True )
         closedLoopConfig = closedLoopConfig.setFeedbackSensor( ClosedLoopConfig.FeedbackSensor.kAbsoluteEncoder )
 
         motorConfig.apply(encoderConfig)
@@ -139,8 +138,9 @@ class CoralManipulatorPivot(Subsystem):
 
         # Run Subsystem
         if RobotState.isDisabled():
-            # self.stop()
-            pass
+            self.stop()
+        else:
+            self.run()
         # No run bc hardware PID
 
         # Mech2d
@@ -177,14 +177,23 @@ class CoralManipulatorPivot(Subsystem):
 
     def stop(self) -> None:
         self.setSetpoint(self.getPosition())
-
-    def setSetpoint(self, value:degrees) -> None:
-        self.desiredPosition = min(max(value, CoralManipulatorPivot.PivotPositions.MIN), CoralManipulatorPivot.PivotPositions.MAX)
+    
+    def run(self) -> None:
         self.controller.setReference(
             degreesToRotations(self.desiredPosition),
             SparkMax.ControlType.kPosition,
-            ClosedLoopSlot.kSlot0
-            )
+            ClosedLoopSlot.kSlot0,
+            self.PivotConstants.kArbFF,
+            SparkClosedLoopController.ArbFFUnits.kVoltage
+        )
+
+    def setSetpoint(self, value:degrees) -> None:
+        self.desiredPosition = value#min(max(value, CoralManipulatorPivot.PivotPositions.MIN), CoralManipulatorPivot.PivotPositions.MAX)
+        # self.controller.setReference(
+        #     degreesToRotations(self.desiredPosition),
+        #     SparkMax.ControlType.kPosition,
+        #     ClosedLoopSlot.kSlot0
+        #     )
 
     def getSetpoint(self) -> degrees:
         return self.desiredPosition
@@ -196,4 +205,11 @@ class CoralManipulatorPivot(Subsystem):
         """
         Returns the current position of the pivot in degrees (from the encoder)
         """
-        return rotationsToDegrees(self.encoder.getPosition())
+        val = rotationsToDegrees(self.encoder.getPosition())
+        
+        if val > 180:
+            val -= 360
+        elif val < -180:
+            val += 360
+            
+        return val

@@ -46,9 +46,9 @@ class RobotContainer:
 
         # cmdCoralIn = CoralWheelIn( sysCoralWheel )
         # cmdCoralOut = CoralWheelOut( sysCoralWheel )
+        cmdCoralPivotControl = ControlPivotPosition( sysCoralPivot, driver1.getRightUpDown )
 
-        # defaults
-        # sysCoralPivot.setDefaultCommand(cmdCoralPivotControl)
+        # default commands
 
 
         ## Controls
@@ -60,6 +60,7 @@ class RobotContainer:
         driver1.pov(0).onTrue(cmdSetPivotl1)
         driver1.pov(45).onTrue(cmdSetPivotL2)
         driver1.pov(90).onTrue(cmdSetPivotL3)
+        driver1.a().toggleOnTrue(cmdCoralPivotControl)
 
 
     # Get Autonomous Command
