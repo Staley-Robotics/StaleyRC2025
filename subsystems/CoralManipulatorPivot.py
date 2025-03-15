@@ -11,7 +11,7 @@ from wpimath.units import radians, rotationsToRadians, rotationsToDegrees, radia
 from ntcore import NetworkTable, NetworkTableInstance
 from ntcore.util import ntproperty
 
-from rev import SparkMax, SparkMaxSim, SparkMaxConfig, AlternateEncoderConfig, ClosedLoopConfig, ClosedLoopSlot
+from rev import SparkMax, SparkMaxSim, SparkMaxConfig, AlternateEncoderConfig, ClosedLoopConfig, ClosedLoopSlot, AbsoluteEncoderConfig, AbsoluteEncoder
 from phoenix6.hardware import CANcoder
 from phoenix6.configs import CANcoderConfiguration
 
@@ -55,11 +55,17 @@ class CoralManipulatorPivot(Subsystem):
         motorConfig = SparkMaxConfig()
         motorConfig = motorConfig.setIdleMode( SparkMaxConfig.IdleMode.kCoast )
 
-        encoderConfig = AlternateEncoderConfig()
+        encoderConfig = AbsoluteEncoderConfig()
+        encoderConfig = encoderConfig.setSparkMaxDataPortConfig()
+        #encoderConfig = encoderConfig.startPulseUs(1).endPulseUs(1024)
         encoderConfig = encoderConfig.inverted( False )
-        encoderConfig = encoderConfig.positionConversionFactor(1/25).velocityConversionFactor(1/25)
-        encoderConfig = encoderConfig.countsPerRevolution(8192)
+        encoderConfig = encoderConfig.positionConversionFactor(1).velocityConversionFactor(1)
+        encoderConfig = encoderConfig.zeroOffset( encoder_offset )
+        # encoderConfig = AlternateEncoderConfig()
+        # encoderConfig = encoderConfig.positionConversionFactor(1/25).velocityConversionFactor(1/25)
+        # encoderConfig = encoderConfig.countsPerRevolution(8192)
         # encoderConfig = encoderConfig.zeroOffset(encoder_offset)
+        
 
         closedLoopConfig = ClosedLoopConfig()
         closedLoopConfig = closedLoopConfig.pidf(
@@ -69,8 +75,8 @@ class CoralManipulatorPivot(Subsystem):
             self.PivotConstants.kFF,
             ClosedLoopSlot.kSlot0
         )
-        closedLoopConfig = closedLoopConfig.positionWrappingInputRange(-180, 180).positionWrappingEnabled( True )
-        closedLoopConfig = closedLoopConfig.setFeedbackSensor( ClosedLoopConfig.FeedbackSensor.kAlternateOrExternalEncoder )
+        closedLoopConfig = closedLoopConfig.positionWrappingInputRange(-0.5, 0.5).positionWrappingEnabled( True )
+        closedLoopConfig = closedLoopConfig.setFeedbackSensor( ClosedLoopConfig.FeedbackSensor.kAbsoluteEncoder )
 
         motorConfig.apply(encoderConfig)
         motorConfig.apply(closedLoopConfig)
@@ -78,9 +84,10 @@ class CoralManipulatorPivot(Subsystem):
         self.pivotMotor.configure( motorConfig, SparkMax.ResetMode.kResetSafeParameters, SparkMax.PersistMode.kPersistParameters )
 
         ## Encoder
-        self.encoder = self.pivotMotor.getAlternateEncoder()
+        # self.encoder = self.pivotMotor.getAlternateEncoder()
+        self.encoder = self.pivotMotor.getAbsoluteEncoder()
 
-        self.encoder.setPosition(degreesToRotations(-90))
+        # self.encoder.setPosition(degreesToRotations(-90))
 
         ## Control
         self.controller = self.pivotMotor.getClosedLoopController()

@@ -31,7 +31,7 @@ class RobotContainer:
         '''
         ## Initialize Subsystems
         # sysCoralWheel = CoralManipulatorWheel( 8 )
-        sysCoralPivot = CoralManipulatorPivot( 7, 0.0 )
+        sysCoralPivot = CoralManipulatorPivot( 7, 0.7794115 )
 
         ## Initialize Commands
         # create controller objects
