@@ -32,6 +32,9 @@ class RobotContainer:
         ## Controller Mapping Mode
         control_mode: str = "Practice"  # Can be "Comp", "Practice", or "Test"
 
+        ## Initialize State
+        ReefScapeState = ReefScape.getInstance()
+
         ## Controllers
         self.driver1 = FalconXboxController(0, squaredInputs=True)
         self.driver2 = FalconXboxController(1, squaredInputs=True)
@@ -43,7 +46,7 @@ class RobotContainer:
         self.sysCoralPivot = CoralManipulatorPivot( 7, 0.7794115 )
         self.sysAlgae      = AlgaeManipulator()
         self.sysClimber    = Climber( 3, 4, 0.9024424 )
-        
+
         ## PathPlanner / Autonomous
 
         ## Initialize Control Scheme
@@ -82,7 +85,7 @@ class RobotContainer:
 
         # Climber
         self.sysClimber.setDefaultCommand( ClimberUp( self.sysClimber ) )
-        self.driver1.x().onTrue( ClimberOut( self.sysClimber ) ) 
+        self.driver1.x().onTrue( ClimberOut( self.sysClimber ) )
         self.driver1.y().toggleOnTrue( ClimberOpenControl( self.sysClimber, self.driver1.getTriggers ) )# NOTE: use self.driver1.getRightTriggerAxis ) ) to only allow open loop to contract climber
 
         ## Driver 2 TODO: update for control board + controller
@@ -119,9 +122,9 @@ class RobotContainer:
 
         # Climber
         self.sysClimber.setDefaultCommand( ClimberUp( self.sysClimber ) )
-        self.driver1.x().whileTrue( ClimberOut( self.sysClimber ) ) 
+        self.driver1.x().whileTrue( ClimberOut( self.sysClimber ) )
         self.driver1.y().whileTrue( ClimberClimb( self.sysClimber ) )
-        
+
         # Coral Pivot
         #self.sysCoralPivot.setDefaultCommand()
         self.driver1.povDown().toggleOnTrue( SetPivotPosition( self.sysCoralPivot, CoralPivotPositions.L1, "L1" ) )
@@ -130,7 +133,7 @@ class RobotContainer:
         self.driver1.povUpLeft().toggleOnTrue( SetPivotPosition( self.sysCoralPivot, CoralPivotPositions.L4_up, "L4u" ) )
         self.driver1.povUpRight().toggleOnTrue( SetPivotPosition( self.sysCoralPivot, CoralPivotPositions.L4_down, "L4d" ) )
         self.driver1.start().toggleOnTrue( SetPivotPosition( self.sysCoralPivot, CoralPivotPositions.START, "Start" ) )
-        
+
         # Elevator
         #self.sysElevator.setDefaultCommand()
         self.driver2.a().toggleOnTrue( ElevatorToPos( self.sysElevator, ElevatorPositions.BOTTOM ) )
@@ -141,7 +144,7 @@ class RobotContainer:
         # defaults
         #self.sysCoralPivot.setDefaultCommand(cmdCoralPivotControl)
         # sysClimber.setDefaultCommand(cmdClimberStay)
-        
+
         #self.sysDriveTrain.setDefaultCommand(cmdDriveByStick)
 
         ### Controls
@@ -155,7 +158,7 @@ class RobotContainer:
         ## CLimber
         # driver2.y().toggleOnTrue(cmdClimberPosition)
         # Only necessary climber commands (as of now): ClimberClimb (climber goes in), ClimberNotClimb (climber goes out), ClimberAway (climber goes straight up)
-        
+
 
         ## Elevator
         # driver1.a().toggleOnTrue( cmdElevatorByStick )

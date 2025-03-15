@@ -43,14 +43,14 @@ class RobotContainer:
         sysClimber = Climber( 15 )
 
         # Put Subsystems on NetworkTables
-        SmartDashboard.putData( '/Subsystems/DriveTrain', sysDriveTrain )
-        SmartDashboard.putData( '/Subsystems/Vision', sysVision )
-        SmartDashboard.putData( '/Subsystems/CoralPivot', sysCoralManipulatorPivot )
-        SmartDashboard.putData( '/Subsystems/CoralWheel', sysCoralManipulatorWheel )
-        SmartDashboard.putData( '/Subsystems/Algae', sysAlgae )
-        SmartDashboard.putData( '/Subsystems/Elevator', sysElevator )
-        SmartDashboard.putData( '/Subsystems/Climber', sysClimber )
-        SmartDashboard.putData( '/ReefScape', ReefScapeState )
+        SmartDashboard.putData( 'Subsystems/DriveTrain', sysDriveTrain )
+        SmartDashboard.putData( 'Subsystems/Vision', sysVision )
+        SmartDashboard.putData( 'Subsystems/CoralPivot', sysCoralManipulatorPivot )
+        SmartDashboard.putData( 'Subsystems/CoralWheel', sysCoralManipulatorWheel )
+        SmartDashboard.putData( 'Subsystems/Algae', sysAlgae )
+        SmartDashboard.putData( 'Subsystems/Elevator', sysElevator )
+        SmartDashboard.putData( 'Subsystems/Climber', sysClimber )
+        SmartDashboard.putData( 'ReefScape', ReefScapeState )
 
 
         ## Driver Controller

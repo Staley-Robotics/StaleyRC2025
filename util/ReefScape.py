@@ -3,7 +3,34 @@ from typing import Callable
 
 from commands2 import Subsystem
 from ntcore import NetworkTable, NetworkTableInstance
+from wpimath.geometry import Pose2d, Rotation2d
 
+
+class ReefScapePositions(Enum):
+    class Reef(Enum):
+        R1 = Pose2d(4.998, 5.199, Rotation2d.fromDegrees(-120))
+        R2 = Pose2d(5.263, 5.053, Rotation2d.fromDegrees(-120))
+        R3 = Pose2d(5.758, 4.194, Rotation2d.fromDegrees(180))
+        R4 = Pose2d(4.763, 3.852, Rotation2d.fromDegrees(180))
+        R5 = Pose2d(5.272, 3, Rotation2d.fromDegrees(120))
+        R6 = Pose2d(4.998, 2.830, Rotation2d.fromDegrees(120))
+        R7 = Pose2d(4, 2.829, Rotation2d.fromDegrees(60))
+        R8 = Pose2d(3.71, 3, Rotation2d.fromDegrees(60))
+        R9 = Pose2d(3.2, 3.86, Rotation2d.fromDegrees(0))
+        R10 = Pose2d(3.2, 4.187, Rotation2d.fromDegrees(0))
+        R11 = Pose2d(3.716, 5.058, Rotation2d.fromDegrees(-60))
+        R12 = Pose2d(3.976, 5.212, Rotation2d.fromDegrees(-60))
+
+    class Source(Enum):
+        class Left(Enum):
+            Outer = Pose2d(1.7, 7.413, Rotation2d.fromDegrees(-27))
+            Middle = Pose2d(1.2, 7.051, Rotation2d.fromDegrees(-27))
+            Inner = Pose2d(0.660, 6.681, Rotation2d.fromDegrees(-27))
+
+        class Right(Enum):
+            Outer = Pose2d(1.459, 0.79, Rotation2d.fromDegrees(46.5))
+            Middle = Pose2d(1.202, 1.029, Rotation2d.fromDegrees(46.5))
+            Inner = Pose2d(0.734, 1.340, Rotation2d.fromDegrees(46.5))
 
 class RobotMode(Enum):
     TEST = auto()
@@ -36,22 +63,22 @@ class ReefTarget(Enum):
     L1 = auto()
     L2 = auto()
     L3 = auto()
-    R4 = auto()
+    L4 = auto()
 
 
 class ReefSide(Enum):
-    ONE = auto()
-    TWO = auto()
-    THREE = auto()
-    FOUR = auto()
-    FIVE = auto()
-    SIX = auto()
-    SEVEN = auto()
-    EIGHT = auto()
-    NINE = auto()
-    TEN = auto()
-    ELEVEN = auto()
-    TWELVE = auto()
+    R1 = auto()
+    R2 = auto()
+    R3 = auto()
+    R4 = auto()
+    R5 = auto()
+    R6 = auto()
+    R7 = auto()
+    R8 = auto()
+    R9 = auto()
+    R10 = auto()
+    R11 = auto()
+    R12 = auto()
 
 
 class RobotState(Enum):
@@ -84,7 +111,7 @@ class ReefScape(Subsystem):
     _current_source_side: SourceSide = SourceSide.AUTO
     _current_select: SourceSelect = SourceSelect.OUTER
     _current_height: ReefTarget = ReefTarget.L2
-    _current_reef_side: ReefSide = ReefSide.ONE
+    _current_reef_side: ReefSide = ReefSide.R1
 
     __log: NetworkTable = NetworkTableInstance.getDefault().getTable("/")
 
@@ -144,30 +171,30 @@ class ReefScape(Subsystem):
 
     def setNextSide(self):
         match self._current_reef_side:
-            case ReefSide.ONE:
-                self._current_reef_side = ReefSide.TWO
-            case ReefSide.TWO:
-                self._current_reef_side = ReefSide.THREE
-            case ReefSide.THREE:
-                self._current_reef_side = ReefSide.FOUR
-            case ReefSide.FOUR:
-                self._current_reef_side = ReefSide.FIVE
-            case ReefSide.FIVE:
-                self._current_reef_side = ReefSide.SIX
-            case ReefSide.SIX:
-                self._current_reef_side = ReefSide.SEVEN
-            case ReefSide.SEVEN:
-                self._current_reef_side = ReefSide.EIGHT
-            case ReefSide.EIGHT:
-                self._current_reef_side = ReefSide.NINE
-            case ReefSide.NINE:
-                self._current_reef_side = ReefSide.TEN
-            case ReefSide.TEN:
-                self._current_reef_side = ReefSide.ELEVEN
-            case ReefSide.ELEVEN:
-                self._current_reef_side = ReefSide.TWELVE
-            case ReefSide.TWELVE:
-                self._current_reef_side = ReefSide.ONE
+            case ReefSide.R1:
+                self._current_reef_side = ReefSide.R2
+            case ReefSide.R2:
+                self._current_reef_side = ReefSide.R3
+            case ReefSide.R3:
+                self._current_reef_side = ReefSide.R4
+            case ReefSide.R4:
+                self._current_reef_side = ReefSide.R5
+            case ReefSide.R5:
+                self._current_reef_side = ReefSide.R6
+            case ReefSide.R6:
+                self._current_reef_side = ReefSide.R7
+            case ReefSide.R7:
+                self._current_reef_side = ReefSide.R8
+            case ReefSide.R8:
+                self._current_reef_side = ReefSide.R9
+            case ReefSide.R9:
+                self._current_reef_side = ReefSide.R10
+            case ReefSide.R10:
+                self._current_reef_side = ReefSide.R11
+            case ReefSide.R11:
+                self._current_reef_side = ReefSide.R12
+            case ReefSide.R12:
+                self._current_reef_side = ReefSide.R1
         self.__log.putString("ReefSide", str(self._current_reef_side))
 
     def setNextHeight(self):
@@ -177,17 +204,19 @@ class ReefScape(Subsystem):
             case ReefTarget.L2:
                 self._current_height = ReefTarget.L3
             case ReefTarget.L3:
-                self._current_height = ReefTarget.R4
-            case ReefTarget.R4:
+                self._current_height = ReefTarget.L4
+            case ReefTarget.L4:
                 self._current_height = ReefTarget.L1
         self.__log.putString("ReefHeight", str(self._current_height))
 
+    @classmethod
     def getTarget(self):
         """
-        Returns ONE through TWELVE
+        Returns R1 through R12
         """
         return self._current_reef_side
 
+    @classmethod
     def setTarget(self, side: ReefSide):
         """
         Sets the target to ONE through TWELVE
@@ -195,6 +224,7 @@ class ReefScape(Subsystem):
         self._current_reef_side = side
         self.__log.putString("ReefSide", str(side))
 
+    @classmethod
     def setHeight(self, height: ReefTarget):
         """
         Sets the height to L1, L2, L3, or R4
@@ -202,6 +232,7 @@ class ReefScape(Subsystem):
         self._current_height = height
         self.__log.putString("ReefHeight", str(height))
 
+    @classmethod
     def getHeight(self):
         """
         Returns L1, L2, L3, or R4
@@ -276,10 +307,14 @@ class ReefScape(Subsystem):
     # Lambdas
 
     def getHasCoral(self):
-        return self.__hasCoral
+        return self.__hasCoral()
 
     def getHasAlgae(self):
         return self.__lamdaGetHasAlgae()
 
     def getElevatorAtPosition(self):
         return self.__lamdaElevatorAtPosition()
+
+    @classmethod
+    def getReefPose(self) -> Pose2d:
+        return ReefScapePositions.Reef._member_map_[ self._current_reef_side.name ].value

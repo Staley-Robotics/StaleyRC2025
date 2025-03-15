@@ -99,7 +99,7 @@ class AlgaeManipulator(Subsystem):
         # Init motors and config
         lMotorCfg = SparkMaxConfig()
         lMotorCfg = lMotorCfg.setIdleMode( SparkMaxConfig.IdleMode.kBrake )
-        
+
         fMotorCfg = SparkMaxConfig()
         fMotorCfg = fMotorCfg.setIdleMode( SparkMaxConfig.IdleMode.kBrake )
         fMotorCfg = fMotorCfg.inverted(True)
@@ -150,7 +150,7 @@ class AlgaeManipulator(Subsystem):
         self.mechAlgaeTarget = mechPost.appendLigament("AlgaeTarget", 14, 0, 2, color=Color8Bit( Color.kYellow ) )
         self.mechAlgaeActual = mechPost.appendLigament("AlgaeActual", 18, 0, 3, color=Color8Bit( Color.kGreen ) )
         if RobotBase.isSimulation(): self.mechAlgaeSim = mechPost.appendLigament("AlgaeSSim", 16, 0, 3, color=Color8Bit( Color.kRed ) )
-        
+
         # Shuffleboard
         SmartDashboard.putData( "Algae", self )
         SmartDashboard.putData( "AlgaeMech", mech )
@@ -173,8 +173,8 @@ class AlgaeManipulator(Subsystem):
         self.simPivotArm.setState( self.getMeasurement(), 0.0 )
 
         # Intake Simulation
-        self.simIntake = self.__intakeMotor.getSimCollection()             
-      
+        self.simIntake = self.__intakeMotor.getSimCollection()
+
     def periodic(self) -> None:
         # Input Logging - Neo - Pivot
         FalconLogger.logInput("AlgaeManipulator/Pivot/LeadMotorInput", self.__leadMotor.get())
@@ -228,7 +228,7 @@ class AlgaeManipulator(Subsystem):
         #driveRpm = AlgaeManipulatorConstants.NeoSim.kMaxRpm * self.__leadMotor.getAppliedOutput()
         driveRadps = self.simPivotArm.getVelocity()
         driveRpm = radiansToRotations( driveRadps ) * 60
-        
+
         self.simLMotor.setMotorCurrent(0)
         self.simLMotor.iterate( driveRpm , 12, 0.02)
         self.simLMotor.getRelativeEncoderSim().iterate( driveRpm * AlgaeManipulatorConstants.pivot_kGearRatio, 0.02 )
@@ -240,7 +240,7 @@ class AlgaeManipulator(Subsystem):
 
         # 775pro Periodic
         velocity = AlgaeManipulatorConstants.Vex775Sim.kMaxRpm * self.__intakeMotor.getMotorOutputPercent()
-        velocity_Tp100ms = int( velocity * 2048 / 60 / 10 ) # RPM * Tickzzzzxxs/Rot * 1 M/60sec * 1 sec / 10 (100ms) 
+        velocity_Tp100ms = int( velocity * 2048 / 60 / 10 ) # RPM * Tickzzzzxxs/Rot * 1 M/60sec * 1 sec / 10 (100ms)
         self.simIntake.setAnalogVelocity(velocity_Tp100ms)
         self.simIntake.addQuadraturePosition( int( velocity_Tp100ms * 0.02 ) )
 
@@ -258,11 +258,11 @@ class AlgaeManipulator(Subsystem):
     def run(self) -> None:
         # Pivot
         sp = degreesToRotations( self.getSetpoint() )
-        
+
         arbFF = AlgaeManipulatorConstants.pivot_kArbFF_Algae if self.hasAlgae() else AlgaeManipulatorConstants.pivot_kArbFF
         cosineScalar = math.cos( degreesToRadians( self.getMeasurement() ) )
         slot = ClosedLoopSlot.kSlot1 if self.hasAlgae() else ClosedLoopSlot.kSlot0
-        
+
         self.__pivotController.setReference(
             sp,
             SparkBase.ControlType.kPosition,
@@ -289,7 +289,7 @@ class AlgaeManipulator(Subsystem):
         if not override:
             setpoint = min(max(setpoint, AlgaeManipulatorPositions.MIN), AlgaeManipulatorPositions.MAX)
         self.pivotSetpoint = setpoint
-        
+
 
     def getMeasurement(self) -> float:
         """
@@ -326,10 +326,10 @@ class AlgaeManipulator(Subsystem):
     def hasAlgae(self) -> bool:
         """
         Returns if the intake has a ball
-        """ 
+        """
         if RobotBase.isSimulation():
             return not self.__irBeam.get()
-        else:   
+        else:
             def inRange(actual, target, tolerance):
                 return abs( target - actual ) < tolerance
 
