@@ -24,6 +24,7 @@ from .Elevator.ElevatorToPos import *
 
 from .Testing.ControlPivotPosition import *
 from .Testing.CoralWheelOpenControl import *
+from .Testing.ClimberPosition import *
 
 # Classes to Import
 __all__ = [
@@ -52,4 +53,5 @@ __all__ = [
 
     "CoralWheelOpenControl",
     "ControlPivotPosition",
+    "ClimberPosition"
 ]

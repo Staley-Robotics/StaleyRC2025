@@ -17,11 +17,12 @@ class ClimberNotClimb(Command):
 
     # On Start
     def initialize(self) -> None:
-        self.Climber.setPosition(0)
+        self.Climber.setPosition(0)  
 
     # Periodic
     def execute(self) -> None:
-        self.Climber.setPosition(0)
+        # self.Climber.setPosition(0)
+        ...
 
     # On End
     def end(self, interrupted: bool) -> None:

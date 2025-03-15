@@ -17,19 +17,19 @@ class ClimberStay(Command):
 
     # On Start
     def initialize(self) -> None:
-        pass
+        self.Climber.setPosition(self.Climber.getPosition())
 
     # Periodic
     def execute(self) -> None:
-        self.Climber.setPosition(self.Climber.save_position)
+        ...
 
     # On End
     def end(self, interrupted: bool) -> None:
-        self.Climber.safe_stop()
+        pass
 
     # Is Finished
     def isFinished(self) -> bool:
-        return self.Climber.atSetpoint()
+        return False
 
     # Run When Disabled
     def runsWhenDisabled(self) -> bool:

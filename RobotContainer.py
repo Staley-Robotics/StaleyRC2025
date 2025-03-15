@@ -31,8 +31,8 @@ class RobotContainer:
         '''
         ## Initialize Subsystems
         # sysCoralWheel = CoralManipulatorWheel( 8 )
-        sysCoralPivot = CoralManipulatorPivot( 7, 0.7794115 )
-        sysClimber = Climber(3, 4, 0)
+        # sysCoralPivot = CoralManipulatorPivot( 7, 0.7794115 )
+        sysClimber = Climber(3, 4, 0.9024424)
 
         ## Initialize Commands
         # create controller objects
@@ -41,22 +41,24 @@ class RobotContainer:
 
         # commands
         # cmdCoralIO = CoralIO(sysCoralWheel)
-        cmdSetPivotl1 = SetPivotPosition( sysCoralPivot, sysCoralPivot.PivotPositions.L1, "SetPivotSource" )
-        cmdSetPivotL2 = SetPivotPosition( sysCoralPivot, sysCoralPivot.PivotPositions.L2, "SetPivotHold" )
-        cmdSetPivotL3 = SetPivotPosition( sysCoralPivot, sysCoralPivot.PivotPositions.L3, "SetPivotL3" )
+        # cmdSetPivotl1 = SetPivotPosition( sysCoralPivot, sysCoralPivot.PivotPositions.L1, "SetPivotSource" )
+        # cmdSetPivotL2 = SetPivotPosition( sysCoralPivot, sysCoralPivot.PivotPositions.L2, "SetPivotHold" )
+        # cmdSetPivotL3 = SetPivotPosition( sysCoralPivot, sysCoralPivot.PivotPositions.L3, "SetPivotL3" )
 
         cmdClimberClimb = ClimberClimb( sysClimber )
         cmdClimberNotClimb = ClimberNotClimb( sysClimber )
-        cmdClimberAway = ClimberNotClimb( sysClimber )
-        cmdClimberStay = ClimberStay( sysClimber )
+        # cmdClimberPosition = ClimberPosition( sysClimber, driver1.getLeftUpDown )
+        # cmdClimberAway = ClimberNotClimb( sysClimber )
+        # cmdClimberStay = ClimberStay( sysClimber )
+
         # cmdCoralIn = CoralWheelIn( sysCoralWheel )
         # cmdCoralOut = CoralWheelOut( sysCoralWheel )
-        cmdCoralPivotControl = ControlPivotPosition( sysCoralPivot, driver1.getRightUpDown )
+        # cmdCoralPivotControl = ControlPivotPosition( sysCoralPivot, driver1.getRightUpDown )
 
         # default commands
         # defaults
         # sysCoralPivot.setDefaultCommand(cmdCoralPivotControl)
-        sysClimber.setDefaultCommand(cmdClimberStay)
+        # sysClimber.setDefaultCommand(cmdClimberStay)
 
 
 
@@ -66,13 +68,13 @@ class RobotContainer:
         # assign controls
         # driver1.a().onTrue(cmdCoralIn)
         # driver1.y().onTrue(cmdCoralOut)
-        driver1.pov(0).onTrue(cmdSetPivotl1)
-        driver1.pov(45).onTrue(cmdSetPivotL2)
-        driver1.pov(90).onTrue(cmdSetPivotL3)
-        driver1.a().toggleOnTrue(cmdCoralPivotControl)
-
-        driver1.a().whileTrue(cmdClimberClimb) # z on keyboard
-        driver1.x().whileTrue(cmdClimberNotClimb) # c on keyboard
+        # driver1.pov(0).onTrue(cmdSetPivotl1)
+        # driver1.pov(45).onTrue(cmdSetPivotL2)
+        # driver1.pov(90).onTrue(cmdSetPivotL3)
+        # driver1.a().toggleOnTrue(cmdCoralPivotControl)
+        # driver1.y().toggleOnTrue(cmdClimberPosition)
+        driver1.a().onTrue(cmdClimberClimb) # z on keyboard
+        driver1.x().onTrue(cmdClimberNotClimb) # c on keyboard
 
 
     # Get Autonomous Command

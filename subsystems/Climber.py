@@ -1,6 +1,6 @@
 from commands2 import Subsystem
 from wpimath import units, controller
-from wpilib import RobotState, Mechanism2d, SmartDashboard, Color, Color8Bit
+from wpilib import RobotState, Mechanism2d, SmartDashboard, Color, Color8Bit, XboxController
 from wpimath.system.plant import DCMotor
 from wpilib.simulation import SingleJointedArmSim
 from rev import SparkBase, SparkMax, SparkMaxSim, SparkMaxConfig, AbsoluteEncoderConfig, ClosedLoopSlot, ClosedLoopConfig
@@ -18,7 +18,7 @@ class ClimberConstants():
 
     class Other:
         GEAR_RATIO:float = 1/75.6
-        _kP = 1
+        _kP = 5
         _kI = 0
         _kD = 0
         _kFF = 0 # Feed Forward
@@ -45,11 +45,19 @@ class Climber(Subsystem):
         mainId: main motor ID\n
         followId: following motor ID
         '''
+
+        self.controller = XboxController( 0 )
+
         self.__main_id = mainId
         self.__follow_id = followId
+        ## Init Motors
+        self.__main_motor:SparkMax = SparkMax(self.__main_id, SparkMax.MotorType.kBrushless)
+        self.__follow_motor:SparkMax = SparkMax(self.__follow_id, SparkMax.MotorType.kBrushless)
         
         # Init motors and config
-        # PID setup
+        self.__motor_config = SparkMaxConfig()
+        self.__motor_config = self.__motor_config.setIdleMode(idleMode=SparkMaxConfig.IdleMode.kCoast)
+        
         self.__main_motor_closed_loop_config = ClosedLoopConfig()
         self.__main_motor_closed_loop_config = self.__main_motor_closed_loop_config.pidf(
             ClimberConstants.Other._kP,
@@ -57,37 +65,25 @@ class Climber(Subsystem):
             ClimberConstants.Other._kD,
             ClimberConstants.Other._kFF,
             ClosedLoopSlot.kSlot0
-        )
-
-        # Init Motors
-        self.__main_motor:SparkMax = SparkMax(self.__main_id, SparkMax.MotorType.kBrushless)
-        self.__follow_motor:SparkMax = SparkMax(self.__follow_id, SparkMax.MotorType.kBrushless)
-
-        # Make Config
-        self.__motor_config:SparkMaxConfig = SparkMaxConfig()
-        self.__motor_config = self.__motor_config.setIdleMode(idleMode=SparkMaxConfig.IdleMode.kBrake)
+        ).setFeedbackSensor( ClosedLoopConfig.FeedbackSensor.kAbsoluteEncoder )
         
-        
-        # Init encoder and config
         self.__abs_encoder_config = AbsoluteEncoderConfig()
-        self.__abs_encoder_config = self.__abs_encoder_config.setSparkMaxDataPortConfig()
-        self.__abs_encoder_config = self.__abs_encoder_config.inverted( False ) # TODO test to see if I need to change to True
+        self.__abs_encoder_config = self.__abs_encoder_config.inverted( True ) # TODO test to see if I need to change to True
         self.__abs_encoder_config = self.__abs_encoder_config.positionConversionFactor(1).velocityConversionFactor(1)
         self.__abs_encoder_config = self.__abs_encoder_config.zeroOffset( encoder_offset )
-
-        
-        self.__abs_encoder = self.__main_motor.getAbsoluteEncoder()
 
         # Apply configs
         self.__motor_config.apply(self.__main_motor_closed_loop_config)
         self.__motor_config.apply(self.__abs_encoder_config)
         
         self.__main_motor.configure(self.__motor_config, SparkBase.ResetMode.kResetSafeParameters, SparkBase.PersistMode.kPersistParameters)
-        self.__motor_config = self.__motor_config.follow(self.__main_id, False)
+        
+        self.__motor_config = SparkMaxConfig().follow(self.__main_id, False)
         self.__follow_motor.configure(self.__motor_config, SparkBase.ResetMode.kResetSafeParameters, SparkBase.PersistMode.kPersistParameters)
         
+        # get motor objects
         self.pid_controller = self.__main_motor.getClosedLoopController()
-
+        self.__abs_encoder = self.__main_motor.getAbsoluteEncoder()
 
         # Init sim motor and sim encoders
         self.__motor_sim = SparkMaxSim(self.__main_motor, DCMotor.NEO(1))
@@ -110,18 +106,8 @@ class Climber(Subsystem):
 
         # self.actual_position = self.getPosition()
         self.desired_position = self.getPosition()
-        self.save_position = self.getPosition()
-        self.__set_voltage = 0
-
-        # PID setup
-        __mainMotorClosedLoopConfig = ClosedLoopConfig()
-        __mainMotorClosedLoopConfig = __mainMotorClosedLoopConfig.pidf(
-            ClimberConstants.Other._kP,
-            ClimberConstants.Other._kI,
-            ClimberConstants.Other._kD,
-            ClimberConstants.Other._kFF,
-            ClosedLoopSlot.kSlot0
-        )
+        # self.save_position = self.getPosition()
+        # self.__set_voltage = 0
 
         # SmartDashboard.putData("/Climber/PID Controller", self.pid_controller)     
         
@@ -129,6 +115,7 @@ class Climber(Subsystem):
         self.root = self.mech.getRoot("root", 1.5, 0)
         self.base = self.root.appendLigament("base", 2, 90, color=Color8Bit(Color.kBrown))
         self.arm = self.base.appendLigament("arm", 1, 90, color=Color8Bit(Color.kGreen))
+        self.armSetPoint = self.base.appendLigament("armSetPoint", 1, 30, color=Color8Bit(Color.kYellow), lineWidth=3)
 
         SmartDashboard.putData("/Climber/mech2d", self.mech)
         SmartDashboard.putData("/Climber", self)
@@ -180,7 +167,8 @@ class Climber(Subsystem):
         FalconLogger.logInput("Climber/MotorCurrent_a", self.__main_motor.getOutputCurrent())
 
         # Update some variables
-        self.save_position = round(self.getPosition()) # note: this is used for the command ClimberStay (why is it rounded? idk maybe to stop climber from bakonking itself)
+        # self.save_position = round(self.getPosition()) # note: this is used for the command ClimberStay (why is it rounded? idk maybe to stop climber from bakonking itself)
+
 
         # Run Subsystem: Set New State To Subsystem
         if RobotState.isDisabled():
@@ -196,11 +184,13 @@ class Climber(Subsystem):
 
     # Run the Subsystem
     def run(self) -> None:
-        self.pid_controller.setReference(
-            units.degreesToRotations(self.desired_position),
-            SparkBase.ControlType.kPosition,
-            ClosedLoopSlot.kSlot0
-            )
+        self.__main_motor.set(self.controller.getLeftY())
+        # return
+        # self.pid_controller.setReference(
+        #     units.degreesToRotations(self.desired_position),
+        #     SparkBase.ControlType.kPosition,
+        #     ClosedLoopSlot.kSlot0
+        #     )
 
     # Stop the Subsystem
     def force_stop(self) -> None:
@@ -216,6 +206,12 @@ class Climber(Subsystem):
         :param position: the desired position in degrees
         """
         self.desired_position = position
+
+        self.pid_controller.setReference(
+            units.degreesToRotations(self.desired_position),
+            SparkBase.ControlType.kPosition,
+            ClosedLoopSlot.kSlot0
+            )
 
     # Get Desired Position
     def getDesiredPosition(self):
@@ -239,5 +235,12 @@ class Climber(Subsystem):
 
         :returns: position of climber in degrees
         """
-        return units.rotationsToDegrees(self.__abs_encoder.getPosition()) * ClimberConstants.Other.GEAR_RATIO
+        val = units.rotationsToDegrees(self.__abs_encoder.getPosition())
+
+        if val > 270:
+            val -= 360
+        elif val < -90:
+            val += 360
+            
+        return val
         

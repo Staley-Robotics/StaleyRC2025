@@ -17,11 +17,11 @@ class ClimberClimb(Command):
 
     # On Start
     def initialize(self) -> None:
-        pass
+        self.Climber.setPosition(180)
 
     # Periodic
     def execute(self) -> None:
-        self.Climber.setPosition(180)
+        ...
 
     # On End
     def end(self, interrupted: bool) -> None:
