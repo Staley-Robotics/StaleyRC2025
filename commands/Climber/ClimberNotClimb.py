@@ -17,7 +17,7 @@ class ClimberNotClimb(Command):
 
     # On Start
     def initialize(self) -> None:
-        pass
+        self.Climber.setPosition(0)
 
     # Periodic
     def execute(self) -> None:

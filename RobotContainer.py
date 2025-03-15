@@ -32,6 +32,7 @@ class RobotContainer:
         ## Initialize Subsystems
         # sysCoralWheel = CoralManipulatorWheel( 8 )
         sysCoralPivot = CoralManipulatorPivot( 7, 0.7794115 )
+        sysClimber = Climber(3, 4, 0)
 
         ## Initialize Commands
         # create controller objects
@@ -44,11 +45,19 @@ class RobotContainer:
         cmdSetPivotL2 = SetPivotPosition( sysCoralPivot, sysCoralPivot.PivotPositions.L2, "SetPivotHold" )
         cmdSetPivotL3 = SetPivotPosition( sysCoralPivot, sysCoralPivot.PivotPositions.L3, "SetPivotL3" )
 
+        cmdClimberClimb = ClimberClimb( sysClimber )
+        cmdClimberNotClimb = ClimberNotClimb( sysClimber )
+        cmdClimberAway = ClimberNotClimb( sysClimber )
+        cmdClimberStay = ClimberStay( sysClimber )
         # cmdCoralIn = CoralWheelIn( sysCoralWheel )
         # cmdCoralOut = CoralWheelOut( sysCoralWheel )
         cmdCoralPivotControl = ControlPivotPosition( sysCoralPivot, driver1.getRightUpDown )
 
         # default commands
+        # defaults
+        # sysCoralPivot.setDefaultCommand(cmdCoralPivotControl)
+        sysClimber.setDefaultCommand(cmdClimberStay)
+
 
 
         ## Controls
@@ -61,6 +70,9 @@ class RobotContainer:
         driver1.pov(45).onTrue(cmdSetPivotL2)
         driver1.pov(90).onTrue(cmdSetPivotL3)
         driver1.a().toggleOnTrue(cmdCoralPivotControl)
+
+        driver1.a().whileTrue(cmdClimberClimb) # z on keyboard
+        driver1.x().whileTrue(cmdClimberNotClimb) # c on keyboard
 
 
     # Get Autonomous Command
