@@ -11,6 +11,8 @@ from .Elevator import *
 __all__ = [
     "SampleSubsystem",
     "CoralManipulatorPivot",
+    "CoralPivotPositions",
+    "CoralPivotConstants",
     "CoralManipulatorWheel",
     "AlgaeManipulator",
     "SwerveDrive",

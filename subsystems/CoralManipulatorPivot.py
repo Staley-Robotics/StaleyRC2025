@@ -1,16 +1,17 @@
 from commands2 import Subsystem
 
-from wpilib import RobotState, SmartDashboard, RobotBase, Mechanism2d, Color8Bit
+from wpilib import RobotState, SmartDashboard, RobotBase, Mechanism2d, Color8Bit, Color, XboxController
 from wpilib.simulation import SingleJointedArmSim
 from wpimath.controller import PIDController
 from wpimath.system.plant import DCMotor
+from wpimath import applyDeadband
 
-from wpimath.units import radians, rotationsToRadians, rotationsToDegrees, radiansToDegrees, radiansToRotations
+from wpimath.units import * #radians, rotationsToRadians, rotationsToDegrees, radiansToDegrees, radiansToRotations
 
 from ntcore import NetworkTable, NetworkTableInstance
 from ntcore.util import ntproperty
 
-from rev import SparkMax, SparkMaxSim, SparkMaxConfig
+from rev import SparkMax, SparkMaxSim, SparkMaxConfig, AlternateEncoderConfig, ClosedLoopConfig, SparkClosedLoopController
 from phoenix6.hardware import CANcoder
 from phoenix6.configs import CANcoderConfiguration
 from phoenix6.signals.spn_enums import SensorDirectionValue
@@ -19,102 +20,126 @@ from math import pi
 
 from util import FalconLogger
 
+class CoralPivotConstants:
+    k_max_velocity=DCMotor.NEO550().freeSpeed * 60
+    gear_ratio=25
+    kP=2.5
+    kI=0
+    kD=0.1
+    kArbFF=0.5
+    tolerance:degrees = 1.0
+
+class CoralPivotPositions: # NOTE: these are wrong
+    # pi is straight forwards
+    MIN:degrees = -110
+    MAX:degrees = 110
+    START:degrees = -90
+    SOURCE:degrees = 30
+    HOLD:degrees = 0.0
+
+    L1:degrees = -45.0
+    L2:degrees = -45/2.0
+    L3:degrees = 0.0
+    L4_up:degrees = 30
+    L4_down:degrees = 60
+
+
 class CoralManipulatorPivot(Subsystem):
 
-    class PivotConstants:
-        k_max_velocity=DCMotor.NEO550().freeSpeed * 60
-        gear_ratio=1/25
-        kP=1.75
-        kI=0
-        kD=0.1
-
-    class PivotPositions: # NOTE: these are wrong
-        # pi is straight forwards
-        MIN:radians = -pi/2
-        MAX:radians = pi/2
-        START:radians = pi
-        SOURCE:radians = pi/4
-        HOLD:radians = pi/2
-
-        L1:radians = -pi/6 #Trough
-        L2:radians = 7*pi/6
-        L3:radians = 7*pi/6
-        L4_up:radians = 2*pi/3
-        L4_down:radians = 7*pi/6
-
     # Variable Declaration
-    m_sys_id:int = None
+    desiredPosition:degrees = 0.0
 
-    tolerance = pi / 10 #ntproperty("/CoralManipulatorPivot/AtPostionTolerance", pi/20, persistent=True)
-
-
-    def __init__(self, sysId:int, motor_port:int, encoder_port:int) -> None:
-        self.m_sys_id = sysId
-
+    def __init__(self, motor_port:int) -> None:
+        self.driver1 = XboxController(0)
         ## Motor Init
         # using NEO 550
-        self.pivotMotor = SparkMax( motor_port, SparkMax.MotorType.kBrushless )
+        self.motor = SparkMax( motor_port, SparkMax.MotorType.kBrushless )
+        self.encoder = self.motor.getAlternateEncoder()
+        self.controller = self.motor.getClosedLoopController()
+        
         # config
-        motorConfig = SparkMaxConfig()
-        motorConfig.setIdleMode( SparkMaxConfig.IdleMode.kCoast )
-        self.pivotMotor.configure( motorConfig, SparkMax.ResetMode.kResetSafeParameters, SparkMax.PersistMode.kPersistParameters )
+        motorCfg = SparkMaxConfig()
+        motorCfg = motorCfg.setIdleMode( SparkMaxConfig.IdleMode.kCoast )
+        
+        encCfg = AlternateEncoderConfig()
+        encCfg = encCfg.countsPerRevolution(8192)
+
+        clCfg = ClosedLoopConfig()
+        clCfg = clCfg.setFeedbackSensor( ClosedLoopConfig.FeedbackSensor.kAlternateOrExternalEncoder )
+        clCfg = clCfg.pid(
+            CoralPivotConstants.kP,
+            CoralPivotConstants.kI,
+            CoralPivotConstants.kD
+        )
+        clCfg = clCfg.outputRange( -1.0, 1.0 )
+
+        motorCfg.apply( encCfg )
+        motorCfg.apply( clCfg )
+
+        self.motor.configure(
+            motorCfg,
+            SparkMax.ResetMode.kResetSafeParameters,
+            SparkMax.PersistMode.kPersistParameters
+        )
 
         ## Encoder Init
-        self.encoder = CANcoder( encoder_port, 'canivore1' )
-        #config
-        encoderConfig = CANcoderConfiguration()
-        encoderConfig.magnet_sensor.magnet_offset = 0 # TODO: measure and place here when built
-        encoderConfig.magnet_sensor.sensor_direction = SensorDirectionValue.CLOCKWISE_POSITIVE # TODO: check when thing is built
-        # encoderConfig.magnet_sensor.absolute_sensor_discontinuity_point = ... # NOTE: probably need to use this
+        encoderSetpoint = CoralPivotPositions.START
+        self.setSetpoint( -45.0 )
+        #self.stop()
 
-        ## Controller
-        self.controller = PIDController(
-            self.PivotConstants.kP,
-            self.PivotConstants.kI,
-            self.PivotConstants.kD
-        )
-        self.controller.enableContinuousInput(-pi, pi)
-        SmartDashboard.putData( "/CoralManipulatorPivot/PIDController", self.controller )
+        ## Simulation
+        self.simMotor = SparkMaxSim( self.motor, DCMotor.NEO550() )
+        self.simMotor.setPosition( degreesToRotations( encoderSetpoint ) )
+        self.simMotor.enable()
 
-        self.desiredPosition: radians = self.getMeasuredPosition()
+        self.simRelEncoder = self.simMotor.getRelativeEncoderSim()
+        self.simRelEncoder.setPositionConversionFactor( 25 ) #1 / CoralPivotConstants.gear_ratio )
+        self.simRelEncoder.setVelocityConversionFactor( 25 ) #1 / CoralPivotConstants.gear_ratio )
+        self.simRelEncoder.setPosition( degreesToRotations( encoderSetpoint ) * CoralPivotConstants.gear_ratio )
+
+        self.simAltEncoder = self.simMotor.getAlternateEncoderSim()
+        self.simAltEncoder.setPositionConversionFactor( 1 ) #1 / CoralPivotConstants.gear_ratio )
+        self.simAltEncoder.setVelocityConversionFactor( 1 ) #1 / CoralPivotConstants.gear_ratio )
+        self.simAltEncoder.setPosition( degreesToRotations( encoderSetpoint ) )
+
+        self.armSim = SingleJointedArmSim(
+            DCMotor.NEO550(),
+            CoralPivotConstants.gear_ratio,
+            SingleJointedArmSim.estimateMOI( 0.30, 0.5 ), # NOTE: these are random numbers
+            0.30,
+            degreesToRadians( CoralPivotPositions.MIN ),
+            degreesToRadians( CoralPivotPositions.MAX ),
+            True,
+            degreesToRadians( CoralPivotPositions.START ),
+            )
+        self.armSim.setState( degreesToRadians( CoralPivotPositions.START ), 0.0 )
 
         ## Mech2d
-        self.mech = Mechanism2d( 12, 12, Color8Bit(50,50,70) )
+        self.mech = Mechanism2d( 12, 12, Color8Bit(Color.kBlack) )
         root = self.mech.getRoot( 'CoralPivot', 6, 0 )
-        elevator = root.appendLigament('pretendElevator', 6, 90, color=Color8Bit(200,200,170) ) # replace with ref to real elevator mech
-        stick = elevator.appendLigament('stick', 3, -90, color=Color8Bit(200,200,170))
-        self.pivotArm = stick.appendLigament( 'arm', 6, 180, color=Color8Bit(20,240,20) )
-        self.guide = stick.appendLigament( 'guidearm', 3, 180, color=Color8Bit(20,170,20) )
-
-        SmartDashboard.putData( '/CoralManipulatorPivot/mech2d', self.mech)
-
-        ## Simulation Inits
+        elevator = root.appendLigament('pretendElevator', 6, 90, color=Color8Bit(Color.kPurple) ) # replace with ref to real elevator mech
+        stick = elevator.appendLigament('stick', 2, -90, color=Color8Bit(Color.kPurple))
+        
+        self.mechTarget = stick.appendLigament( 'armTarget', 2, 180, color=Color8Bit(Color.kRed) )
+        self.mechActual = stick.appendLigament( 'armActual', 6, 180, color=Color8Bit(Color.kGreen) )
+        
         if RobotBase.isSimulation():
-            gearbox = DCMotor.NEO550()
-            self.armSim = SingleJointedArmSim(
-                gearbox,
-                1/self.PivotConstants.gear_ratio,
-                SingleJointedArmSim.estimateMOI( 0.34, 1. ), # NOTE: these are random numbers
-                0.15,
-                self.PivotPositions.MIN,
-                self.PivotPositions.MAX,
-                True,
-                self.PivotPositions.START,
-             )
+            self.mechSim = stick.appendLigament( 'armSim', 4, 180, color=Color8Bit(Color.kYellow) )
 
-            self.simMotor = SparkMaxSim( self.pivotMotor, DCMotor.NEO550() )
-            self.simEncoder = self.simMotor.getAbsoluteEncoderSim()
-            self.simEncoder.setPositionConversionFactor(pi/2)
-
+        SmartDashboard.putData( 'Coral/mech2d', self.mech)
 
     # Periodic Loop
     def periodic(self) -> None:
         # Logging - Write Measured Values
-        FalconLogger.logInput("CoralManipulatorPivot/MotorInput", self.pivotMotor.get())
-        FalconLogger.logInput("CoralManipulatorPivot/MotorOutput_v", self.pivotMotor.getAppliedOutput())
-        FalconLogger.logInput("CoralManipulatorPivot/MotorPosition_abs_r", self.pivotMotor.getAbsoluteEncoder().getPosition())
-        FalconLogger.logInput("CoralManipulatorPivot/MotorTemp_c", self.pivotMotor.getMotorTemperature())
-        FalconLogger.logInput("CoralManipulatorPivot/MotorCurrent_a", self.pivotMotor.getOutputCurrent())
+        FalconLogger.logInput("Coral/Pivot/MotorInput", self.motor.get() )
+        FalconLogger.logInput("Coral/Pivot/MotorOutput_v", self.motor.getAppliedOutput() )
+        FalconLogger.logInput("Coral/Pivot/MotorPosition_abs_r", self.motor.getEncoder().getPosition() )
+        FalconLogger.logInput("Coral/Pivot/MotorVelocity_rpm", self.motor.getEncoder().getVelocity() )
+        FalconLogger.logInput("Coral/Pivot/MotorTemp_c", self.motor.getMotorTemperature() )
+        FalconLogger.logInput("Coral/Pivot/MotorCurrent_a", self.motor.getOutputCurrent())
+
+        FalconLogger.logInput("Coral/Pivot/EncoderPosition_r", self.encoder.getPosition() )
+        FalconLogger.logInput("Coral/Pivot/EncoderVelocity_rpm", self.encoder.getVelocity() )
 
         # Run Subsystem
         if RobotState.isDisabled():
@@ -123,42 +148,74 @@ class CoralManipulatorPivot(Subsystem):
             self.run()
 
         # Mech2d
-        self.pivotArm.setAngle( radiansToDegrees(self.getMeasuredPosition()) )
-        self.guide.setAngle( radiansToDegrees(self.getSetpoint()) )
+        self.mechActual.setAngle( self.getPosition() )
+        self.mechTarget.setAngle( self.getSetpoint() )
 
         # Logging - Write Calculated Values
-        FalconLogger.logOutput('/CoralManipulatorPivot/DesiredPosition', self.desiredPosition)
-        FalconLogger.logOutput('/CoralManipulatorPivot/ActualPosition_R', self.getMeasuredPosition())
+        FalconLogger.logOutput('CoralManipulator/Pivot/ActualPosition_d', self.getPosition() )
+        FalconLogger.logOutput('CoralManipulator/Pivot/TargetPosition_d', self.getSetpoint() )
 
     def simulationPeriodic(self):
         ## Simulate
-        self.armSim.setInputVoltage( self.pivotMotor.get() * self.simMotor.getBusVoltage() )
+        FalconLogger.logInput("Coral/Pivot/SimPosition_r", self.armSim.getAngle() )
+        FalconLogger.logInput("Coral/Pivot/SimPosition_d", self.armSim.getAngleDegrees() )
+        FalconLogger.logInput("Coral/Pivot/SimVelocity_rps", self.armSim.getVelocity() )
+
+        self.simMotor.setMotorCurrent( 0 )
+        self.simMotor.iterate(
+            radiansToRotations( self.armSim.getVelocity() ) * 60,
+            self.simMotor.getBusVoltage(),
+            0.020
+        )
+        self.simRelEncoder.iterate(
+            radiansToRotations( self.armSim.getVelocity() ) * 60 * CoralPivotConstants.gear_ratio,
+            0.020
+        )
+        # self.simAltEncoder.iterate(
+        #     radiansToRotations( self.armSim.getVelocity() ) * 60,
+        #     0.020
+        # )        
+
+        self.mechSim.setAngle( radiansToDegrees( self.armSim.getAngle() ) )
+
+        appOut = self.simMotor.getAppliedOutput()
+        self.armSim.setInputVoltage( appOut * self.simMotor.getBusVoltage() )
         self.armSim.update(0.02)
 
-        ## Apply Simulated Data
-        self.encoder.sim_state.set_raw_position( radiansToRotations(self.armSim.getAngle()) )
-        self.pivotArm.setAngle( radiansToDegrees(self.armSim.getAngle()) )
-
     def run(self) -> None:
+        # x = applyDeadband( self.driver1.getLeftX(), 0.04 )
+        # self.motor.set( x * 0.25 )
+        self.controller.setReference(
+            degreesToRotations( self.desiredPosition ),
+            SparkMax.ControlType.kPosition,
+            arbFeedforward = CoralPivotConstants.kArbFF * math.cos( degreesToRadians(self.getPosition()) ),
+            arbFFUnits = SparkClosedLoopController.ArbFFUnits.kVoltage
+        )
+        return None
         val = self.controller.calculate( self.getMeasuredPosition(), self.desiredPosition )
         # print(val)
-        self.pivotMotor.set( val )
+        self.motor.set( val )
 
     def stop(self) -> None:
-        self.desiredPosition = self.getMeasuredPosition()
+        self.setSetpoint( self.getPosition(), True )
 
-    def setSetpoint(self, value:radians) -> None:
-        self.desiredPosition = min(max(value, CoralManipulatorPivot.PivotPositions.MIN), CoralManipulatorPivot.PivotPositions.MAX)
-        # self.desiredPosition = value
+    def setSetpoint(self, value:degrees, override:bool = False) -> None:
+        self.desiredPosition = min(max(value, CoralPivotPositions.MIN), CoralPivotPositions.MAX)
+        if override: self.desiredPosition = value
 
-    def getSetpoint(self) -> radians:
+        # self.controller.setReference(
+        #     degreesToRotations( self.desiredPosition ),
+        #     SparkMax.ControlType.kPosition
+        # )
+
+    def getSetpoint(self) -> degrees:
         return self.desiredPosition
 
     def atSetpoint(self) -> bool:
-        return abs(self.desiredPosition - self.getMeasuredPosition()) < self.tolerance # figure out tolerance
+        sp = self.getSetpoint()
+        cur = self.getPosition()
+        return abs(sp - cur) < CoralPivotConstants.tolerance
 
-    def getMeasuredPosition(self) -> radians:
-        """
-        Get the current position of the pivot in radians
-        """
-        return rotationsToRadians(self.encoder.get_position().value)
+    def getPosition(self) -> degrees:
+        return rotationsToDegrees( self.encoder.getPosition() )
+

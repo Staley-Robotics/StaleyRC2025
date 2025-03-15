@@ -26,31 +26,31 @@ class RobotContainer:
         """
 
         ## Declare Subsystems
-        sysDriveTrain = SwerveDrive()
-        sysVision = Vision( sysDriveTrain.getOdometry )
+        # sysDriveTrain = SwerveDrive()
+        # sysVision = Vision( sysDriveTrain.getOdometry )
 
-        sysCoralManipulatorPivot = CoralManipulatorPivot( 'CoralManipulatorPivot', 12, 20 )
-        sysCoralManipulatorWheel = CoralManipulatorWheel( 'CoralManipulatorWheel', 3 )
+        sysCoralManipulatorPivot = CoralManipulatorPivot( 7 )
+        sysCoralManipulatorWheel = CoralManipulatorWheel( 8 )
 
-        sysAlgae = AlgaeManipulator()
-        sysElevator = Elevator()
-        sysClimber = Climber( 15 )
+        # sysAlgae = AlgaeManipulator()
+        # sysElevator = Elevator()
+        # sysClimber = Climber( 15 )
 
         ## Configure State
-        ReefScapeState = ReefScape.getInstance()
-        ReefScapeState.setHasCoral( sysCoralManipulatorWheel.hasCoral )
-        ReefScapeState.setGetRobotPose( sysDriveTrain.getPose )
-        ReefScapeState.setHasAlgae( sysAlgae.hasAlgae )
+        # ReefScapeState = ReefScape.getInstance()
+        # ReefScapeState.setHasCoral( sysCoralManipulatorWheel.hasCoral )
+        # ReefScapeState.setGetRobotPose( sysDriveTrain.getPose )
+        # ReefScapeState.setHasAlgae( sysAlgae.hasAlgae )
 
         # Put Subsystems on NetworkTables
-        SmartDashboard.putData( '/Subsystems/DriveTrain', sysDriveTrain )
-        SmartDashboard.putData( '/Subsystems/Vision', sysVision )
-        SmartDashboard.putData( '/Subsystems/CoralPivot', sysCoralManipulatorPivot )
-        SmartDashboard.putData( '/Subsystems/CoralWheel', sysCoralManipulatorWheel )
-        SmartDashboard.putData( '/Subsystems/Algae', sysAlgae )
-        SmartDashboard.putData( '/Subsystems/Elevator', sysElevator )
-        SmartDashboard.putData( '/Subsystems/Climber', sysClimber )
-        SmartDashboard.putData( '/ReefScape', ReefScapeState )
+        # SmartDashboard.putData( 'DriveTrain', sysDriveTrain )
+        # SmartDashboard.putData( 'Vision', sysVision )
+        SmartDashboard.putData( 'CoralPivot', sysCoralManipulatorPivot )
+        SmartDashboard.putData( 'CoralWheel', sysCoralManipulatorWheel )
+        # SmartDashboard.putData( 'Algae', sysAlgae )
+        # SmartDashboard.putData( 'Elevator', sysElevator )
+        # SmartDashboard.putData( 'Climber', sysClimber )
+        #SmartDashboard.putData( 'ReefScape', ReefScapeState )
 
         ## Driver Controller
         driver1 = FalconXboxController( 0, squaredInputs=ntproperty("/Settings/Driver1/SquaredInputs", True) )
@@ -60,76 +60,44 @@ class RobotContainer:
         # Coral
         cmdControlPivotPosition = ControlPivotPosition( sysCoralManipulatorPivot, lambda: driver1.getLeftUpDown())
         cmdRunCoralWheel = CoralWheelOpenControl( sysCoralManipulatorWheel, driver1.getRightUpDown )
-        cmdSetPivotPositionL1 = SetPivotPosition( sysCoralManipulatorPivot, CoralManipulatorPivot.PivotPositions.L1, 'Trough' )
-        cmdSetPivotPositionMAX = SetPivotPosition( sysCoralManipulatorPivot, CoralManipulatorPivot.PivotPositions.MAX, 'Up' )
+        cmdSetPivotPositionL1 = SetPivotPosition( sysCoralManipulatorPivot, CoralPivotPositions.L1, 'Trough' )
+        cmdSetPivotPositionMAX = SetPivotPosition( sysCoralManipulatorPivot, CoralPivotPositions.MAX, 'Up' )
 
         # Algae
-        cmdAlgaeGrab = AlgaeGrabCommand( sysAlgae )
-        cmdAlgaeDefault = AlgaeHoldCommand( sysAlgae )
-        cmdAlgaeEject = AlgaeEjectCommand( sysAlgae )
+        # cmdAlgaeGrab = AlgaeGrabCommand( sysAlgae )
+        # cmdAlgaeDefault = AlgaeHoldCommand( sysAlgae )
+        # cmdAlgaeEject = AlgaeEjectCommand( sysAlgae )
 
         # Elevator
         # cmdElevatorTo0 = ElevatorToPos(sysElevator, lambda: 0)
         # cmdElevatorTo10 = ElevatorToPos(sysElevator, lambda: 10)
-        cmdElevatorByStick = ElevatorByStick(sysElevator, lambda: driver2.getLeftUpDown())
+        # cmdElevatorByStick = ElevatorByStick(sysElevator, lambda: driver2.getLeftUpDown())
 
         # Climber
-        cmdClimberStay = ClimberStay( sysClimber )
+        # cmdClimberStay = ClimberStay( sysClimber )
 
         # Drive
-        cmdDriveByStick = DriveByStick( sysDriveTrain, driver1.getLeftUpDown, driver1.getLeftSideToSide, driver1.getRightSideToSide )
-        cmdAwaitVisionData = AwaitVisionData( lambda: sysVision.has_recieved_data, sysDriveTrain.resetOdometry, sysVision.get_last_pose )
+        # cmdDriveByStick = DriveByStick( sysDriveTrain, driver1.getLeftUpDown, driver1.getLeftSideToSide, driver1.getRightSideToSide )
+        # cmdAwaitVisionData = AwaitVisionData( lambda: sysVision.has_recieved_data, sysDriveTrain.resetOdometry, sysVision.get_last_pose )
         # cmdFollowPathSelect = FollowPathSelect( sysDriveTrain )
-        cmdGetCoral = GetCoral(sysCoralManipulatorWheel, sysCoralManipulatorPivot, sysElevator, sysDriveTrain)
-        cmdToReef = ToReef(sysCoralManipulatorWheel, sysCoralManipulatorPivot, sysElevator, sysDriveTrain)
+        # cmdGetCoral = GetCoral(sysCoralManipulatorWheel, sysCoralManipulatorPivot, sysElevator, sysDriveTrain)
+        # cmdToReef = ToReef(sysCoralManipulatorWheel, sysCoralManipulatorPivot, sysElevator, sysDriveTrain)
 
         ## Default Commands
-        sysCoralManipulatorPivot.setDefaultCommand( cmdControlPivotPosition )
-        sysCoralManipulatorWheel.setDefaultCommand( cmdRunCoralWheel )
-        sysAlgae.setDefaultCommand( cmdAlgaeDefault )
-        sysDriveTrain.setDefaultCommand( cmdDriveByStick )
-        sysClimber.setDefaultCommand( cmdClimberStay )
+        #sysCoralManipulatorPivot.setDefaultCommand( cmdControlPivotPosition )
+        #sysCoralManipulatorWheel.setDefaultCommand( cmdRunCoralWheel )
+        # sysAlgae.setDefaultCommand( cmdAlgaeDefault )
+        # sysDriveTrain.setDefaultCommand( cmdDriveByStick )
+        # sysClimber.setDefaultCommand( cmdClimberStay )
 
-        sysElevator.setDefaultCommand( cmdElevatorByStick )
+        # sysElevator.setDefaultCommand( cmdElevatorByStick )
 
         #cmdAwaitVisionData.schedule()
 
-        ## Driver Controller Button Binding
-        # driver1.y().whileTrue( cmdAlgaeGrab )
-        # driver1.b().whileTrue( cmdAlgaeEject )
-
-        #driver1.b().onTrue(cmd.runOnce(lambda: ReefScapeState.changeSourceSide()))
-        #driver1.y().onTrue(cmd.runOnce(lambda: ReefScapeState.changeSourceSelect()))
-
-        driver1.back().onTrue( cmd.runOnce( sysDriveTrain.resetOdometry() ) )
-
-        # driver1.a().whileTrue(ClimberClimb(sysClimber)) # TODO: move these to be created with other commands
-        # driver1.x().whileTrue(ClimberNotClimb(sysClimber))
-
-        driver1.x().toggleOnTrue( ElevatorToPos( sysElevator, lambda: ElevatorPositions.L4 ) ) #whileTrue( cmdGetCoral )
-        driver1.y().toggleOnTrue( ElevatorToPos( sysElevator, lambda: ElevatorPositions.MIN ) ) #whileTrue( cmdGetCoral )
-        driver1.b().toggleOnTrue( ElevatorToPos( sysElevator, lambda: ElevatorPositions.L2 ) )
-        driver1.a().whileTrue( cmdToReef )
-
-        driver1.pov(0).onTrue(cmd.runOnce(lambda: ReefScape.getInstance().setHasCoral(True)))
-        driver1.pov(180).onTrue(cmd.runOnce(lambda: ReefScape.getInstance().setHasCoral(False)))
-
-        driver1.pov(45).onTrue(cmd.runOnce(lambda: ReefScapeState.setNextSide()))
-        driver1.pov(90).onTrue(cmd.runOnce(lambda: ReefScapeState.setNextHeight()))
-
-        driver1.leftBumper().whileTrue( DriveToPose( sysDriveTrain, lambda: ReefScapeState.getSourcePose( SourceSide.LEFT ) ) )
-        driver1.rightBumper().whileTrue( DriveToPose( sysDriveTrain, lambda: ReefScapeState.getSourcePose( SourceSide.RIGHT ) ) )
-        driver1.start().whileTrue( DriveToPose( sysDriveTrain, ReefScapeState.getSourcePose ) )
-        driver1.back().whileTrue( DriveToPose( sysDriveTrain, ReefScapeState.getReefPose ) )
-
-        # driver1.a().onTrue( cmdSetPivotPositionMAX )
-        # driver1.b().onTrue( cmdSetPivotPositionL1 )
-
-        # driver1.pov(0).onTrue(cmdElevatorTo0)
-        # driver1.pov(90).onTrue(cmdElevatorTo10)
-        # driver1.y().whileTrue( cmdElevatorByStuck )
-
-        # driver1.a().onTrue( cmdFollowPathSelect )
+        driver1.a().toggleOnTrue( SetPivotPosition( sysCoralManipulatorPivot, CoralPivotPositions.START, 'Start' ) )
+        driver1.b().toggleOnTrue( SetPivotPosition( sysCoralManipulatorPivot, CoralPivotPositions.L1, 'L1' ) )
+        driver1.x().toggleOnTrue( SetPivotPosition( sysCoralManipulatorPivot, CoralPivotPositions.L3, 'L3' ) )
+        driver1.y().toggleOnTrue( SetPivotPosition( sysCoralManipulatorPivot, CoralPivotPositions.L4_up, 'L4' ) )
 
         ## PathPlanner Setup
         # Register Named Commands
@@ -137,8 +105,8 @@ class RobotContainer:
         # NamedCommands.registerCommand('LaunchSpeaker', cmd.waitSeconds(0.25) )
 
         # Autonomous Chooser
-        self.__autoChooser = AutoBuilder.buildAutoChooser( "Auto Practice" )
-        SmartDashboard.putData( "Autonomous Mode", self.__autoChooser )
+        # self.__autoChooser = AutoBuilder.buildAutoChooser( "Auto Practice" )
+        # SmartDashboard.putData( "Autonomous Mode", self.__autoChooser )
 
 
     # Get Autonomous Command

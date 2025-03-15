@@ -2,7 +2,7 @@ from commands2 import Subsystem
 from wpilib import RobotState, DigitalInput
 from ntcore import NetworkTable, NetworkTableInstance
 
-from rev import SparkMax, SparkMaxConfig
+from rev import SparkMax, SparkMaxConfig, LimitSwitchConfig
 
 from util import FalconLogger
 
@@ -13,15 +13,11 @@ class CoralManipulatorWheel(Subsystem):
         IN = -1
         OUT = 1
 
-    # Variable Declaration
-    m_sys_id:int = None
-
     # Initialization
-    def __init__(self, sysId:int, motor_port:int) -> None:
-        self.m_sys_id = sysId
-
+    def __init__(self, motor_port:int) -> None:
         # motor
         self.motor = SparkMax( motor_port, SparkMax.MotorType.kBrushless )
+        self.rlSwitch = self.motor.getReverseLimitSwitch()
 
         # limit switch
         self.limit_switch = DigitalInput( 5 )
@@ -29,6 +25,13 @@ class CoralManipulatorWheel(Subsystem):
         # config
         motorConfig = SparkMaxConfig()
         motorConfig.setIdleMode( SparkMaxConfig.IdleMode.kBrake )
+
+        ls_cfg = LimitSwitchConfig()
+        ls_cfg = ls_cfg.reverseLimitSwitchType( LimitSwitchConfig.Type.kNormallyOpen )
+        ls_cfg = ls_cfg.reverseLimitSwitchEnabled( True )
+
+        motorConfig.apply( ls_cfg )
+
         self.motor.configure( motorConfig, SparkMax.ResetMode.kResetSafeParameters, SparkMax.PersistMode.kPersistParameters )
 
         # setup
@@ -55,8 +58,8 @@ class CoralManipulatorWheel(Subsystem):
 
     # Run the Subsystem
     def run(self) -> None:
-        self.motor.set( self.motor_speed )
-
+        #self.motor.configureAsync()
+        pass
 
     # Stop the Subsystem
     def stop(self) -> None:
@@ -74,4 +77,5 @@ class CoralManipulatorWheel(Subsystem):
         return self.motor_speed
     
     def hasCoral(self) -> bool:
-        return self.stalled_frames > 5 or not self.limit_switch.get()
+        #return self.stalled_frames > 5 or not self.limit_switch.get()
+        return self.rlSwitch.get()
