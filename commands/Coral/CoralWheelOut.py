@@ -27,4 +27,4 @@ class CoralWheelOut(Command):
         self.timer.reset()
     
     def isFinished(self):
-        return not self.wheelSys.hasCoral() and self.timer.hasElapsed(0.5) # TODO: This is probably wrong
+        return not self.wheelSys.hasCoral() and self.timer.hasElapsed(1) # TODO: This is probably wrong
