@@ -184,7 +184,8 @@ class Climber(Subsystem):
 
     # Run the Subsystem
     def run(self) -> None:
-        self.__main_motor.set(self.controller.getLeftY())
+        # self.__main_motor.set(self.controller.getLeftY())
+        pass
         # return
         # self.pid_controller.setReference(
         #     units.degreesToRotations(self.desired_position),

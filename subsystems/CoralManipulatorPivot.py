@@ -24,9 +24,9 @@ class CoralManipulatorPivot(Subsystem):
     class PivotConstants:
         k_max_velocity=DCMotor.NEO550().freeSpeed * 60
         gear_ratio=25
-        kP=2.0
+        kP=3.0
         kI=0
-        kD=0.1
+        kD=0.15
         kArbFF=0.5
     
     class PivotPositions: # NOTE: these are wrong
