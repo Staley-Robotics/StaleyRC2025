@@ -166,7 +166,7 @@ class Elevator(Subsystem):
             self.stop()
         
         ### Open loop
-        self.__leadMotor.set( self.openSpeed() )
+        # self.__leadMotor.set( self.openSpeed() )
         
         ## Safety Measure:
         #TODO: measure standard applied output and velocities to establish safe zones
