@@ -35,8 +35,10 @@ class RobotContainer:
         # sysClimber = Climber(3, 4, 0.9024424)
         driver1 = FalconXboxController(0, squaredInputs=True)
         driver2 = FalconXboxController(1, squaredInputs=True)
-        sysElevator = Elevator( 5, 6, driver1.getRightUpDown )
-            
+        # sysElevator = Elevator( 5, 6, driver1.getRightUpDown )
+        # sysAlgae = AlgaeManipulator()
+        sysDriveTrain = SwerveDrive()
+
         ## Initialize Commands
         # create controller objects
 
@@ -61,12 +63,20 @@ class RobotContainer:
         ## Elevator
         # cmdElevatorByStick = ElevatorByStick( sysElevator, driver1.getRightUpDown )
 
+        ## DriveTrain
+        cmdDriveByStick = DriveByStick( sysDriveTrain, driver1.getLeftUpDown, driver1.getLeftSideToSide, driver1.getRightSideToSide )
+
+        ## Algae
+        # cmdAlgaeGrab = AlgaeGrab( sysAlgae )
+        # cmdAlgaeEject = AlgaeEject( sysAlgae )
+        # cmdAlgaeHold = AlgaeHold( sysAlgae )
 
         # default commands
         # defaults
         # sysCoralPivot.setDefaultCommand(cmdCoralPivotControl)
         # sysClimber.setDefaultCommand(cmdClimberStay)
-
+        # sysAlgae.setDefaultCommand(AlgaeHold( sysAlgae ))
+        sysDriveTrain.setDefaultCommand(cmdDriveByStick)
 
 
         ### Controls
@@ -87,6 +97,10 @@ class RobotContainer:
 
         ## Elevator
         # driver1.a().toggleOnTrue( cmdElevatorByStick )
+
+        ## Algae
+        # driver1.a().whileTrue(cmdAlgaeGrab)
+        # driver1.b().whileTrue(cmdAlgaeEject)
 
 
     # Get Autonomous Command

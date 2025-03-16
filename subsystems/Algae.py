@@ -13,9 +13,9 @@ from phoenix6.configs import TalonFXConfiguration, CANcoderConfiguration
 from phoenix6.signals.spn_enums import InvertedValue, NeutralModeValue, \
     SensorDirectionValue
 
-from phoenix5 import TalonSRX, TalonSRXControlMode
+from phoenix5 import TalonSRX, TalonSRXControlMode, NeutralMode
 
-from rev import SparkMax, SparkMaxConfig, SparkMaxSim, SparkBase, ClosedLoopConfig
+from rev import SparkMax, SparkMaxConfig, SparkMaxSim, SparkBase, ClosedLoopConfig, AbsoluteEncoderConfig
 
 from enum import Enum
 
@@ -23,29 +23,29 @@ from util import FalconLogger
 
 
 class AlgaeManipulatorPositions:
-    MAX = 95.0
-    HOLD = 90.0
-    PLACE = 95.0
+    MAX = 90.0
+    HOLD = 80.0
+    PLACE = 70.0
     GRAB = 35.0
     MIN = 0.0
 
 
 class IntakeState(Enum):
-    IN = 0.5
-    OUT = -0.5
+    IN = -0.5
+    OUT = 0.5
     OFF = 0
 
 
 class AlgaeManipulatorConstants:
     # Pivot Constants
-    pivot_kP: float = .01
+    pivot_kP: float = 2
     pivot_kI: float = 0.0
     pivot_kD: float = 0.0
     pivot_kFF: float = 0.0
     pivot_kV: float = 0.0
     pivot_kTolerance: float = 0.01
 
-    pivot_kGearRatio: float = 25
+    pivot_kGearRatio: float = 8
     pivot_kOffsetRotations: float = 0.0
 
     # Intake Constants
@@ -80,6 +80,8 @@ class AlgaeManipulator(Subsystem):
 
     __irBeam: DigitalInput = None
 
+    __kMotorOffset = 0.80742
+
     def __init__(self):
         # Motor
         # Neo
@@ -89,17 +91,37 @@ class AlgaeManipulator(Subsystem):
         self.__pivotController = self.__pivotMotorOne.getClosedLoopController()
         
         self.sparkConfig = SparkMaxConfig()
-        self.sparkConfig.closedLoop.pidf(AlgaeManipulatorConstants.pivot_kP, AlgaeManipulatorConstants.pivot_kI,
+
+        self.clConfig = ClosedLoopConfig()
+        self.clConfig = self.clConfig.pidf(AlgaeManipulatorConstants.pivot_kP, AlgaeManipulatorConstants.pivot_kI,
                                          AlgaeManipulatorConstants.pivot_kD, AlgaeManipulatorConstants.pivot_kFF)
-        self.sparkConfig.closedLoop.setFeedbackSensor(ClosedLoopConfig.FeedbackSensor.kAbsoluteEncoder)
+        self.clConfig = self.clConfig.setFeedbackSensor(ClosedLoopConfig.FeedbackSensor.kAbsoluteEncoder)
+        self.clConfig = self.clConfig.positionWrappingEnabled(True).positionWrappingInputRange(0, 1)
+
+        self.absEncoderConfig = AbsoluteEncoderConfig()
+        self.absEncoderConfig = self.absEncoderConfig.zeroOffset(self.__kMotorOffset)
+
+        self.sparkConfig.apply(self.clConfig)
+        self.sparkConfig.apply(self.absEncoderConfig)
+        self.sparkConfig.inverted(True)
+
+
         self.__pivotMotorOne.configure(self.sparkConfig, SparkBase.ResetMode.kNoResetSafeParameters,
                                        SparkBase.PersistMode.kNoPersistParameters)
-        self.sparkConfig.follow(1, True)
+
+        self.sparkConfig.inverted(False)
+        self.sparkConfig.follow(self.__pivotMotorOne.getDeviceId(), True)
+
+
         self.__pivotMotorTwo.configure(self.sparkConfig, SparkBase.ResetMode.kNoResetSafeParameters,
                                        SparkBase.PersistMode.kNoPersistParameters)
 
+
+
+
         # 775pro
-        self.__intakeMotor = TalonSRX(25)
+        self.__intakeMotor = TalonSRX(31)
+        self.__intakeMotor.setNeutralMode(NeutralMode.Brake)
         # Zero the motor
         self.voltOut = VoltageOut(0, use_timesync=True)
         self.dutyOut = DutyCycleOut(0, use_timesync=True)
@@ -150,10 +172,13 @@ class AlgaeManipulator(Subsystem):
             # Intake
             self.__intakeMotor.set(TalonSRXControlMode.PercentOutput, self.intakeState.value)
 
-        # Output Logging
-        FalconLogger.logOutput("AlgaeManipulator/Pivot/TargetAngle", self.getSetpoint())
-        FalconLogger.logOutput("AlgaeManipulator/Pivot/ActualAngle", self.getMeasurement())
+        self.manipulator.setAngle(self.getMeasurement())
 
+        # Output Logging
+        FalconLogger.logOutput("AlgaeManipulator/Pivot/TargetAngle_d", self.getSetpoint())
+        FalconLogger.logOutput("AlgaeManipulator/Pivot/ActualAngle_d", self.getMeasurement())
+
+        # Output Loggin
         FalconLogger.logOutput("AlgaeManipulator/Intake/DesiredState", self.intakeState.value)
         FalconLogger.logOutput("AlgaeManipulator/Intake/CurrentState", self.__intakeMotor.getMotorOutputPercent())
         FalconLogger.logOutput("AlgaeManipulator/Intake/Voltage", self.__intakeMotor.getMotorOutputVoltage())
@@ -161,11 +186,12 @@ class AlgaeManipulator(Subsystem):
     def simulationPeriodic(self) -> None:
         # Neo Periodic
         driveRpm = AlgaeManipulatorConstants.NeoSim.kMaxRpm * self.__pivotMotorOne.getAppliedOutput()
+
+        self.simPivot.setMotorCurrent(0)
         self.simPivot.iterate(driveRpm, 12, 0.02)
         self.simPivot.getRelativeEncoderSim().iterate(driveRpm, 0.02)
         self.simPivot.getAbsoluteEncoderSim().iterate(driveRpm / AlgaeManipulatorConstants.pivot_kGearRatio, 0.02)
 
-        self.manipulator.setAngle(self.getMeasurement())
         # self.simPivot.getRelativeEncoderSim().setVelocity(driveRpm)
         # self.simPivot.getAbsoluteEncoderSim().setVelocity(driveRpm)
         # self.simPivot.getAbsoluteEncoderSim().setPosition(self.simPivot.getRelativeEncoderSim().getPosition() % 1)
@@ -196,7 +222,12 @@ class AlgaeManipulator(Subsystem):
         """
         Returns the current position of the manipulator in degrees
         """
-        return rotationsToDegrees(self.__pivotMotorOne.getAbsoluteEncoder().getPosition())
+        measurement = rotationsToDegrees(self.__pivotMotorOne.getAbsoluteEncoder().getPosition())
+        if measurement > 180:
+            measurement -= 360
+        if measurement < -180:
+            measurement += 360
+        return measurement
 
     def atSetpoint(self, positionDeg: float = None) -> bool:
         """
