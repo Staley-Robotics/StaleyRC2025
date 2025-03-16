@@ -29,10 +29,10 @@ class ClimberConstants():
         GEAR_RATIO_SIM:float = 75.6
         ARM_LENGTH_METERS:float = 0.2667
         ARM_MASS_KG:float = 1.35575924
-        MIN_ANGLE_RADS:float = 0
-        MAX_ANGLE_RADS:float = pi
-        IS_SIMULATING_GRAVITY:bool = False
-        STARTING_ANGLE_RADS:float = 1
+        MIN_ANGLE_RADS:float = -5/8 * pi
+        MAX_ANGLE_RADS:float = 5/4 * pi
+        IS_SIMULATING_GRAVITY:bool = True
+        STARTING_ANGLE_RADS:float = 0
         # note distance per pulse = (angle per revolution) / (pulses per revolution) = (2 * PI rads) / (4096 pulses)
         ENCODER_DIST_PER_PULSE:float = 1
 
@@ -65,7 +65,10 @@ class Climber(Subsystem):
             ClimberConstants.Other._kD,
             ClimberConstants.Other._kFF,
             ClosedLoopSlot.kSlot0
-        ).setFeedbackSensor( ClosedLoopConfig.FeedbackSensor.kAbsoluteEncoder )
+        ).setFeedbackSensor(
+            ClosedLoopConfig.FeedbackSensor.kAbsoluteEncoder
+        ).positionWrappingEnabled(False).positionWrappingInputRange(0, 1)
+
         
         self.__abs_encoder_config = AbsoluteEncoderConfig()
         self.__abs_encoder_config = self.__abs_encoder_config.inverted( True ) # TODO test to see if I need to change to True
@@ -93,7 +96,7 @@ class Climber(Subsystem):
         self.__sim_abs_encoder.setPosition( units.degreesToRotations(-90) )
 
         self.__sim_jointed_arm = SingleJointedArmSim(
-            DCMotor.NEO(1),
+            DCMotor.NEO(2),
             ClimberConstants.Simulation.GEAR_RATIO_SIM,
             SingleJointedArmSim.estimateMOI(ClimberConstants.Simulation.ARM_LENGTH_METERS, ClimberConstants.Simulation.ARM_MASS_KG),
             ClimberConstants.Simulation.ARM_LENGTH_METERS,
@@ -115,7 +118,8 @@ class Climber(Subsystem):
         self.root = self.mech.getRoot("root", 1.5, 0)
         self.base = self.root.appendLigament("base", 2, 90, color=Color8Bit(Color.kBrown))
         self.arm = self.base.appendLigament("arm", 1, 90, color=Color8Bit(Color.kGreen))
-        self.armSetPoint = self.base.appendLigament("armSetPoint", 1, 30, color=Color8Bit(Color.kYellow), lineWidth=3)
+        self.armSim = self.base.appendLigament("armSim", 4, 90, color=Color8Bit(Color.kRed))
+        self.armSetPoint = self.base.appendLigament("armSetPoint", 1, 90, color=Color8Bit(Color.kYellow), lineWidth=3)
 
         SmartDashboard.putData("/Climber/mech2d", self.mech)
         SmartDashboard.putData("/Climber", self)
@@ -130,7 +134,22 @@ class Climber(Subsystem):
         Apply sim output to motor sim object
 
         """
+        
+        self.__motor_sim.setMotorCurrent(0)
 
+        sim_velocity = self.__sim_jointed_arm.getVelocity() # note: this returns velocity in radians per sec
+        self.__motor_sim.iterate( units.radiansToRotations( sim_velocity ) * 60, 12.0, 0.02 )
+        # self.__sim_abs_encoder.iterate(sim_velocity * ClimberConstants.Simulation.GEAR_RATIO_SIM, 0.02)
+        self.__sim_rel_encoder.iterate( units.radiansToRotations(sim_velocity) * 60 * 1/ClimberConstants.Other.GEAR_RATIO, 0.02) # TODO add gear ratio (check if gear ratio should be * to or / by sim_velocity) IF NEEDED after testing
+        # note: iterate must be done on absolute encoder, relative encoder, and motor
+
+        # SmartDashboard.putNumber("/Climber/sim_outputs/sim_motor_output (rotations per minute)", output)
+        SmartDashboard.putNumber("/Climber/sim_outputs/sim_velocity", sim_velocity)
+
+        self.armSim.setAngle(self.__sim_jointed_arm.getAngleDegrees() - 90)
+
+        SmartDashboard.putNumber("/Climber/sim_outputs/sim_angle", self.__sim_jointed_arm.getAngleDegrees())
+        # SmartDashboard.putNumber("/Climber/sim_outputs/sim_mech_arm_angle", self.arm.getAngle() + 90)
 
         output = self.__motor_sim.getAppliedOutput() * 12  # note: self.__motor.getAppliedOutput() outputs in radians per sec
         # note: multiplied by 12 because output needs to be in volts
@@ -139,20 +158,6 @@ class Climber(Subsystem):
         self.__sim_jointed_arm.setInputVoltage(output) # note: input needs to be in rotations per minute
 
         self.__sim_jointed_arm.update(0.02)
-
-        sim_velocity = self.__sim_jointed_arm.getVelocity() # note: this returns velocity in rotation per sec
-        self.__sim_abs_encoder.iterate(sim_velocity * ClimberConstants.Simulation.GEAR_RATIO_SIM, 0.02)
-        self.__sim_rel_encoder.iterate(sim_velocity, 0.02) # TODO add gear ratio (check if gear ratio should be * to or / by sim_velocity) IF NEEDED after testing
-        # note: iterate must be done on absolute encoder, relative encoder, and motor
-
-        SmartDashboard.putNumber("/Climber/sim_outputs/sim_motor_output (rotations per minute)", output)
-        SmartDashboard.putNumber("/Climber/sim_outputs/sim_velocity", sim_velocity)
-
-        self.arm.setAngle(self.__sim_jointed_arm.getAngleDegrees() - 90)
-
-        SmartDashboard.putNumber("/Climber/sim_outputs/sim_angle", self.__sim_jointed_arm.getAngleDegrees())
-        SmartDashboard.putNumber("/Climber/sim_outputs/sim_mech_arm_angle", self.arm.getAngle())
-
 
 
         return super().simulationPeriodic()
@@ -168,7 +173,8 @@ class Climber(Subsystem):
 
         # Update some variables
         # self.save_position = round(self.getPosition()) # note: this is used for the command ClimberStay (why is it rounded? idk maybe to stop climber from bakonking itself)
-
+        self.arm.setAngle(self.getPosition() - 90)
+        self.armSetPoint.setAngle(self.desired_position - 90)
 
         # Run Subsystem: Set New State To Subsystem
         if RobotState.isDisabled():
@@ -184,17 +190,18 @@ class Climber(Subsystem):
 
     # Run the Subsystem
     def run(self) -> None:
-        self.__main_motor.set(self.controller.getLeftY())
+        # self.__main_motor.set(self.controller.getLeftY())
         # return
-        # self.pid_controller.setReference(
-        #     units.degreesToRotations(self.desired_position),
-        #     SparkBase.ControlType.kPosition,
-        #     ClosedLoopSlot.kSlot0
-        #     )
+        self.pid_controller.setReference(
+            units.degreesToRotations(self.desired_position),
+            SparkBase.ControlType.kPosition,
+            ClosedLoopSlot.kSlot0
+            )
 
     # Stop the Subsystem
     def force_stop(self) -> None:
-        self.__main_motor.set(ClimberConstants.Speeds.STOP)
+        # self.__main_motor.set(ClimberConstants.Speeds.STOP)
+        pass
 
     def safe_stop(self) -> None:
         self.setPosition(self.getPosition())
@@ -207,11 +214,11 @@ class Climber(Subsystem):
         """
         self.desired_position = position
 
-        self.pid_controller.setReference(
-            units.degreesToRotations(self.desired_position),
-            SparkBase.ControlType.kPosition,
-            ClosedLoopSlot.kSlot0
-            )
+        # self.pid_controller.setReference(
+        #     units.degreesToRotations(self.desired_position),
+        #     SparkBase.ControlType.kPosition,
+        #     ClosedLoopSlot.kSlot0
+        #     )
 
     # Get Desired Position
     def getDesiredPosition(self):
