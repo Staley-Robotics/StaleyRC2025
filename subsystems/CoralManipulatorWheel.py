@@ -11,7 +11,7 @@ class CoralManipulatorWheel(Subsystem):
     class WheelSpeeds:
         STOP: float = 0
         IN: float = -0.4
-        OUT: float = 1
+        OUT: float = 0.4
 
     # Initialization
     def __init__(self, motor_port:int) -> None:

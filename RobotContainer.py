@@ -29,29 +29,41 @@ class RobotContainer:
         Testing Logging:
         - order: coral wheel, coral pivot, algae, climber, elevator
         '''
-        ## Initialize Subsystems
-        # sysCoralWheel = CoralManipulatorWheel( 8 )
-        # sysCoralPivot = CoralManipulatorPivot( 7, 0.7794115 )
-        # sysClimber = Climber(3, 4, 0.9024424)
+        ## Controller Mapping Mode
+        control_mode: str = "Test"  # Can be "Comp", "Practice", or "Test"
+
+        ## Controllers
         driver1 = FalconXboxController(0, squaredInputs=True)
         driver2 = FalconXboxController(1, squaredInputs=True)
+
+        ## Initialize Subsystems
+        sysCoralWheel = CoralManipulatorWheel( 8 )
+        sysCoralPivot = CoralManipulatorPivot( 7, 0.7794115 )
+        # sysClimber = Climber(3, 4, 0.9024424)
         # sysElevator = Elevator( 5, 6, driver1.getRightUpDown )
         # sysAlgae = AlgaeManipulator()
-        sysDriveTrain = SwerveDrive()
+        # sysDriveTrain = SwerveDrive()
 
         ## Initialize Commands
-        # create controller objects
+
+        # match control_mode:
+        #     case "Comp":
+        #         self.__compControls(driver1, driver2, sysCoralWheel, sysCoralPivot, sysClimber, sysAlgae, sysDriveTrain, sysElevator)
+        #     case "Practice":
+        #         self.__practiceControls(driver1, driver2, sysCoralWheel, sysCoralPivot, sysClimber, sysAlgae, sysDriveTrain, sysElevator)
+        #     case "Test":
+        #         self.__testControls(driver1, driver2, sysCoralWheel, sysCoralPivot, sysClimber, sysAlgae, sysDriveTrain, sysElevator)
 
         ### Commands
         ## Coral
         # cmdCoralIO = CoralIO(sysCoralWheel)
-        # cmdSetPivotl1 = SetPivotPosition( sysCoralPivot, sysCoralPivot.PivotPositions.L1, "SetPivotSource" )
-        # cmdSetPivotL2 = SetPivotPosition( sysCoralPivot, sysCoralPivot.PivotPositions.L2, "SetPivotHold" )
-        # cmdSetPivotL3 = SetPivotPosition( sysCoralPivot, sysCoralPivot.PivotPositions.L3, "SetPivotL3" )
+        cmdSetPivotl1 = SetPivotPosition( sysCoralPivot, sysCoralPivot.PivotPositions.L1, "SetPivotSource" )
+        cmdSetPivotL2 = SetPivotPosition( sysCoralPivot, sysCoralPivot.PivotPositions.L2, "SetPivotHold" )
+        cmdSetPivotL3 = SetPivotPosition( sysCoralPivot, sysCoralPivot.PivotPositions.L3, "SetPivotL3" )
 
-        # cmdCoralIn = CoralWheelIn( sysCoralWheel )
-        # cmdCoralOut = CoralWheelOut( sysCoralWheel )
-        # cmdCoralPivotControl = ControlPivotPosition( sysCoralPivot, driver1.getRightUpDown )
+        cmdCoralIn = CoralWheelIn( sysCoralWheel )
+        cmdCoralOut = CoralWheelOut( sysCoralWheel )
+        cmdCoralPivotControl = ControlPivotPosition( sysCoralPivot, driver1.getRightUpDown )
 
         ## Climber
         # cmdClimberClimb = ClimberClimb( sysClimber )
@@ -64,7 +76,7 @@ class RobotContainer:
         # cmdElevatorByStick = ElevatorByStick( sysElevator, driver1.getRightUpDown )
 
         ## DriveTrain
-        cmdDriveByStick = DriveByStick( sysDriveTrain, driver1.getLeftUpDown, driver1.getLeftSideToSide, driver1.getRightSideToSide )
+        # cmdDriveByStick = DriveByStick( sysDriveTrain, driver1.getLeftUpDown, driver1.getLeftSideToSide, driver1.getRightSideToSide )
 
         ## Algae
         # cmdAlgaeGrab = AlgaeGrab( sysAlgae )
@@ -76,19 +88,20 @@ class RobotContainer:
         # sysCoralPivot.setDefaultCommand(cmdCoralPivotControl)
         # sysClimber.setDefaultCommand(cmdClimberStay)
         # sysAlgae.setDefaultCommand(AlgaeHold( sysAlgae ))
-        sysDriveTrain.setDefaultCommand(cmdDriveByStick)
+        # sysDriveTrain.setDefaultCommand(cmdDriveByStick)
 
 
         ### Controls
-        ## Coral
-        # driver1.x().onTrue(cmdCoralIn)
-        # driver1.y().onTrue(cmdCoralOut)
-        # # driver1.y().toggleOnTrue(cmdCoralIO)
 
-        # driver1.pov(0).onTrue(cmdSetPivotl1)
-        # driver1.pov(45).onTrue(cmdSetPivotL2)
-        # driver1.pov(90).onTrue(cmdSetPivotL3)
-        # driver1.a().toggleOnTrue(cmdCoralPivotControl)
+        ## Coral
+        driver1.x().onTrue(cmdCoralIn)
+        driver1.y().onTrue(cmdCoralOut)
+        # driver1.y().toggleOnTrue(cmdCoralIO)
+
+        driver1.pov(0).onTrue(cmdSetPivotl1)
+        driver1.pov(45).onTrue(cmdSetPivotL2)
+        driver1.pov(90).onTrue(cmdSetPivotL3)
+        driver1.a().toggleOnTrue(cmdCoralPivotControl)
 
         ## CLimber
         # driver1.y().toggleOnTrue(cmdClimberPosition)
