@@ -97,19 +97,19 @@ class AlgaeManipulator(Subsystem):
     def __init__(self):
         # Motor
         # Neo
-        self.__pivotMotorOne = SparkMax(1, SparkMax.MotorType.kBrushless)
-        self.__pivotMotorTwo = SparkMax(2, SparkMax.MotorType.kBrushless)
+        self.__leadMotor = SparkMax(1, SparkMax.MotorType.kBrushless)
+        self.__followMotor = SparkMax(2, SparkMax.MotorType.kBrushless)
 
-        self.__pivotEncoder = self.__pivotMotorOne.getAbsoluteEncoder()
-        self.__pivotController = self.__pivotMotorOne.getClosedLoopController()
+        self.__pivotEncoder = self.__leadMotor.getAbsoluteEncoder()
+        self.__pivotController = self.__leadMotor.getClosedLoopController()
         
-        pivot1cfg = SparkMaxConfig()
-        pivot1cfg = pivot1cfg.setIdleMode( SparkMaxConfig.IdleMode.kBrake )
+        lMotorCfg = SparkMaxConfig()
+        lMotorCfg = lMotorCfg.setIdleMode( SparkMaxConfig.IdleMode.kBrake )
         
-        pivot2cfg = SparkMaxConfig()
-        pivot2cfg = pivot2cfg.setIdleMode( SparkMaxConfig.IdleMode.kBrake )
-        pivot2cfg = pivot2cfg.inverted(True)
-        pivot2cfg = pivot2cfg.follow(self.__pivotMotorOne.getDeviceId(), True)
+        fMotorCfg = SparkMaxConfig()
+        fMotorCfg = fMotorCfg.setIdleMode( SparkMaxConfig.IdleMode.kBrake )
+        fMotorCfg = fMotorCfg.inverted(True)
+        fMotorCfg = fMotorCfg.follow(self.__leadMotor.getDeviceId(), True)
 
         clConfig = ClosedLoopConfig()
         clConfig = clConfig.pidf(
@@ -133,17 +133,17 @@ class AlgaeManipulator(Subsystem):
         encConfig = encConfig.zeroOffset(self.__kMotorOffset)
         encConfig = encConfig.zeroCentered(True)
 
-        pivot1cfg.apply(clConfig)
-        pivot1cfg.apply(encConfig)
+        lMotorCfg.apply(clConfig)
+        lMotorCfg.apply(encConfig)
 
-        self.__pivotMotorOne.configure(
-            pivot1cfg,
+        self.__leadMotor.configure(
+            lMotorCfg,
             SparkBase.ResetMode.kNoResetSafeParameters,
             SparkBase.PersistMode.kNoPersistParameters
         )
 
-        self.__pivotMotorTwo.configure(
-            pivot2cfg,
+        self.__followMotor.configure(
+            fMotorCfg,
             SparkBase.ResetMode.kNoResetSafeParameters,
             SparkBase.PersistMode.kNoPersistParameters
         )
@@ -183,7 +183,7 @@ class AlgaeManipulator(Subsystem):
         )
         self.simPivotArm.setState( self.getMeasurement(), 0.0 )
 
-        self.simPivot = SparkMaxSim(self.__pivotMotorOne, DCMotor.NEO(1))
+        self.simPivot = SparkMaxSim(self.__leadMotor, DCMotor.NEO(1))
         self.simEncoder = self.simPivot.getAbsoluteEncoderSim()
 
         # Intake Simulation
@@ -191,12 +191,12 @@ class AlgaeManipulator(Subsystem):
       
     def periodic(self) -> None:
         # Input Logging - Neo - Pivot
-        FalconLogger.logInput("AlgaeManipulator/Pivot/MotorInput", self.__pivotMotorOne.get())
-        FalconLogger.logInput("AlgaeManipulator/Pivot/MotorOutput", self.__pivotMotorOne.getAppliedOutput())
-        FalconLogger.logInput("AlgaeManipulator/Pivot/MotorCurrent_a", self.__pivotMotorOne.getOutputCurrent())
-        FalconLogger.logInput("AlgaeManipulator/Pivot/MotorPosition_r", self.__pivotMotorOne.getEncoder().getPosition())
-        FalconLogger.logInput("AlgaeManipulator/Pivot/MotorVelocity_rpm", self.__pivotMotorOne.getEncoder().getVelocity())
-        FalconLogger.logInput("AlgaeManipulator/Pivot/MotorTemp_c", self.__pivotMotorOne.getMotorTemperature())
+        FalconLogger.logInput("AlgaeManipulator/Pivot/MotorInput", self.__leadMotor.get())
+        FalconLogger.logInput("AlgaeManipulator/Pivot/MotorOutput", self.__leadMotor.getAppliedOutput())
+        FalconLogger.logInput("AlgaeManipulator/Pivot/MotorCurrent_a", self.__leadMotor.getOutputCurrent())
+        FalconLogger.logInput("AlgaeManipulator/Pivot/MotorPosition_r", self.__leadMotor.getEncoder().getPosition())
+        FalconLogger.logInput("AlgaeManipulator/Pivot/MotorVelocity_rpm", self.__leadMotor.getEncoder().getVelocity())
+        FalconLogger.logInput("AlgaeManipulator/Pivot/MotorTemp_c", self.__leadMotor.getMotorTemperature())
         
         FalconLogger.logInput("AlgaeManipulator/Pivot/EncoderPosition_r", self.__pivotEncoder.getPosition())
         FalconLogger.logInput("AlgaeManipulator/Pivot/EncoderVelocity_rpm", self.__pivotEncoder.getVelocity())
@@ -235,7 +235,7 @@ class AlgaeManipulator(Subsystem):
         FalconLogger.logInput("AlgaeManipulator/IRBeam", self.__irBeam.get())
 
         # Neo Periodic
-        #driveRpm = AlgaeManipulatorConstants.NeoSim.kMaxRpm * self.__pivotMotorOne.getAppliedOutput()
+        #driveRpm = AlgaeManipulatorConstants.NeoSim.kMaxRpm * self.__leadMotor.getAppliedOutput()
         driveRadps = self.simPivotArm.getVelocity()
         driveRpm = radiansToRotations( driveRadps ) * 60
         
@@ -262,7 +262,7 @@ class AlgaeManipulator(Subsystem):
         # else:
         #     self.simPivotArm.estimateMOI()
 
-        self.simPivotArm.setInputVoltage( self.__pivotMotorOne.getAppliedOutput() * 12.0 )
+        self.simPivotArm.setInputVoltage( self.__leadMotor.getAppliedOutput() * 12.0 )
         self.simPivotArm.update( 0.02 )
 
     def run(self) -> None:
