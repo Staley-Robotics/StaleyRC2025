@@ -1,3 +1,4 @@
+import math
 from commands2 import Subsystem
 
 from wpilib import SmartDashboard, RobotBase, RobotState, Mechanism2d, Color8Bit, RobotController, Color
@@ -10,12 +11,11 @@ rotations_per_meter = float
 
 from rev import SparkMax, SparkBase, SparkMaxConfig, ClosedLoopConfig, ClosedLoopSlot, SparkMaxSim, LimitSwitchConfig, EncoderConfig
 
-from math import pi
 
 from util import FalconLogger
 
 class ElevatorConstants:
-    _kP = 3.
+    _kP = 3.0
     _kI = 0.0
     _kD = 0.1
     _kG = 0.0 # force to overcome gravity
@@ -29,117 +29,109 @@ class ElevatorConstants:
     _pulleyDiameter:inches = 2.256
     _pulleyRadius:inches = 2.256 / 2
 
-    _gearRatio = 4
+    _gearRatio = 4.0
     _carriageMass:kilograms = 10.0 # Estimated
 
-    _motorRotsPerHeightInches =  1 / _gearRatio * (_pulleyDiameter * pi)
+    _motorRotsPerHeightInches =  1 / _gearRatio * (_pulleyDiameter * math.pi)
+
+class ElevatorPositions:
+    '''
+    measured in inches from ground to center of coral pivot axle
+    '''
+    BOTTOM:inches = 34.5 # Minimum height
+    TOP:inches = 76.0 # maximum height
+    MIDDLE:inches = (BOTTOM + TOP) / 2
+
+    TROUGH:inches = 35.0
+    LOW_CORAL:inches = 42.0
+    MED_CORAL:inches = 52.0
+    HIGH_CORAL:inches = 60.0
 
 class Elevator(Subsystem):
+    __setpoint = 0.0
 
-    class ElevatorPositions:
-        '''
-        measured in inches from ground to center of coral pivot axle
-        '''
-        BOTTOM:inches = 34.5 # Minimum height
-        TOP:inches = 76.0 # maximum height
-        MIDDLE:inches = (BOTTOM + TOP) / 2
-
-        TROUGH:inches = 0.0
-        LOW_CORAL:inches = 0.0
-        MED_CORAL:inches = 0.0
-        HIGH_CORAL:inches = 0.0
-
-    def __init__(self, leadMotorId:int, followMotorId:int, controller):
+    def __init__(self, leadMotorId:int, followMotorId:int):
         ## Motor Init
-        self.openSpeed = controller
         # motors
         self.__leadMotor = SparkMax(leadMotorId, SparkBase.MotorType.kBrushless)
         self.__followMotor = SparkMax(followMotorId, SparkBase.MotorType.kBrushless)
 
+        self.__leadEncoder = self.__leadMotor.getEncoder()
+        self.__followEncoder = self.__followMotor.getEncoder()
+        self.__pidController = self.__leadMotor.getClosedLoopController()
+
+        self.__topSwitch = self.__leadMotor.getReverseLimitSwitch()
+        self.__bottomSwitch = self.__leadMotor.getForwardLimitSwitch()
+
         # configuration
-        __motorLeadConfig = SparkMaxConfig()
-        __motorLeadConfig = __motorLeadConfig.setIdleMode( SparkMaxConfig.IdleMode.kBrake )
-        __motorLeadConfig = __motorLeadConfig.inverted( True )
+        lMotorCfg = SparkMaxConfig()
+        lMotorCfg = lMotorCfg.setIdleMode( SparkMaxConfig.IdleMode.kBrake )
+        lMotorCfg = lMotorCfg.inverted( True )
 
-        __motorLeadEncoderConfig = EncoderConfig()
-        __motorLeadEncoderConfig = __motorLeadEncoderConfig.positionConversionFactor(ElevatorConstants._motorRotsPerHeightInches).velocityConversionFactor(ElevatorConstants._motorRotsPerHeightInches / 60)
-        #__motorLeadEncoderConfig = __motorLeadEncoderConfig.inverted( True )
+        fMotorCfg = SparkMaxConfig()
+        fMotorCfg = fMotorCfg.setIdleMode( SparkMaxConfig.IdleMode.kBrake )
+        fMotorCfg = fMotorCfg.inverted( True )
+        fMotorCfg = fMotorCfg.follow( self.__followMotor.getDeviceId(), False )
 
-        __motorLeadClosedLoopConfig = ClosedLoopConfig()
-        #__motorLeadClosedLoopConfig =  __motorLeadClosedLoopConfig.setFeedbackSensor( ClosedLoopConfig.FeedbackSensor.kPrimaryEncoder )#makes not work lol?
-        __motorLeadClosedLoopConfig = __motorLeadClosedLoopConfig.pidf(
+        clCfg = ClosedLoopConfig()
+        clCfg = clCfg.pidf(
             ElevatorConstants._kP,
             ElevatorConstants._kI,
             ElevatorConstants._kD,
             ElevatorConstants._kFF,
             ClosedLoopSlot.kSlot0
-            )
+        )
+        clCfg = clCfg.positionWrappingEnabled( False )
 
-        __motorLeadLimitSwitchConfig = LimitSwitchConfig()
-        __motorLeadLimitSwitchConfig = __motorLeadLimitSwitchConfig.forwardLimitSwitchType(LimitSwitchConfig.Type.kNormallyOpen)
-        __motorLeadLimitSwitchConfig = __motorLeadLimitSwitchConfig.reverseLimitSwitchType(LimitSwitchConfig.Type.kNormallyClosed)
-        __motorLeadLimitSwitchConfig = __motorLeadLimitSwitchConfig.forwardLimitSwitchEnabled(False)
-        __motorLeadLimitSwitchConfig = __motorLeadLimitSwitchConfig.reverseLimitSwitchEnabled(False)
+        convFactor = ElevatorConstants._motorRotsPerHeightInches
+        encConfig = EncoderConfig()
+        encConfig = encConfig.positionConversionFactor( convFactor ).velocityConversionFactor( convFactor / 60)
 
-        __motorLeadConfig.apply(__motorLeadEncoderConfig)
-        __motorLeadConfig.apply(__motorLeadClosedLoopConfig)
-        __motorLeadConfig.apply(__motorLeadLimitSwitchConfig)
+        lsConfig = LimitSwitchConfig()
+        lsConfig = lsConfig.forwardLimitSwitchType(LimitSwitchConfig.Type.kNormallyOpen)
+        lsConfig = lsConfig.reverseLimitSwitchType(LimitSwitchConfig.Type.kNormallyClosed)
+        lsConfig = lsConfig.forwardLimitSwitchEnabled(False)
+        lsConfig = lsConfig.reverseLimitSwitchEnabled(False)
 
-        self.__leadMotor.configure(__motorLeadConfig, SparkBase.ResetMode.kResetSafeParameters, SparkBase.PersistMode.kPersistParameters)
+        # Apply Configs
+        lMotorCfg.apply(clCfg)
+        lMotorCfg.apply(encConfig)
+        lMotorCfg.apply(lsConfig)
 
-        __motorFollowConfig = SparkMaxConfig().inverted(True).follow(leadMotorId, False).apply(__motorLeadEncoderConfig)
-        self.__followMotor.configure(__motorFollowConfig, SparkBase.ResetMode.kResetSafeParameters, SparkBase.PersistMode.kPersistParameters)
+        # Apply Configs
+        fMotorCfg.apply(encConfig)
 
-        # grab motor objects
-        self.__pidController = self.__leadMotor.getClosedLoopController()
+        self.__leadMotor.configure(lMotorCfg, SparkBase.ResetMode.kResetSafeParameters, SparkBase.PersistMode.kPersistParameters)
+        self.__followMotor.configure(fMotorCfg, SparkBase.ResetMode.kResetSafeParameters, SparkBase.PersistMode.kPersistParameters)
 
-        self.__leadEncoder = self.__leadMotor.getEncoder()
-        self.__leadEncoder.setPosition( self.ElevatorPositions.BOTTOM )
-        self.__followEncoder = self.__followMotor.getEncoder()
+        # Mechanism2d
+        mech = Mechanism2d( 30, 50, Color8Bit( Color.kBlack ) )
+        mechRoot = mech.getRoot( "ElevatorRoot", 15, 10 )
+        mechFrame = mechRoot.appendLigament("outerFrame", 10, 90, lineWidth=12, color=Color8Bit(Color.kOrange))
+        self.mechElevatorTarget = mechFrame.appendLigament("ElevatorTarget", 0, 0, lineWidth=6, color=Color8Bit(Color.kYellow))
+        self.mechElevatorActual = mechFrame.appendLigament("ElevatorActual", 0, 0, lineWidth=12, color=Color8Bit(Color.kGreen))
+        if RobotBase.isSimulation(): self.mechElevatorSim = mechFrame.appendLigament("ElevatorSSim", 0, 0, lineWidth=12, color=Color8Bit(Color.kRed))
 
-        self.__topSwitch = self.__leadMotor.getReverseLimitSwitch() # TODO: test behavior of limit switch w/ lead+follow motors
-        self.__bottomSwitch = self.__leadMotor.getForwardLimitSwitch()
-
-        self.__setpoint = 0.0
+        SmartDashboard.putData("Elevator", self)
+        SmartDashboard.putData("ElevatorMech", mech)
 
         ## Simulation
-        self.__gearbox = DCMotor.NEO(2)
-
-        self.__simMotor = SparkMaxSim(self.__leadMotor, self.__gearbox)
-        self.__simMotor.setPosition( self.ElevatorPositions.BOTTOM )
-        self.__simEncoder = self.__simMotor.getAbsoluteEncoderSim()
+        self.__simMotor = SparkMaxSim(self.__leadMotor, DCMotor.NEO() )
+        self.__simMotor.setPosition( ElevatorPositions.BOTTOM )
+        #self.__simEncoder = self.__simMotor.getAbsoluteEncoderSim()
 
         self.__elevatorSim = ElevatorSim(
-            self.__gearbox,
+            DCMotor.NEO(2),
             ElevatorConstants._gearRatio,
             ElevatorConstants._carriageMass,
             inchesToMeters(ElevatorConstants._pulleyRadius),
-            inchesToMeters(Elevator.ElevatorPositions.BOTTOM),
-            inchesToMeters(Elevator.ElevatorPositions.TOP),
+            inchesToMeters(ElevatorPositions.BOTTOM),
+            inchesToMeters(ElevatorPositions.TOP),
             simulateGravity=False,
-            startingHeight=inchesToMeters(Elevator.ElevatorPositions.BOTTOM),
+            startingHeight=inchesToMeters(ElevatorPositions.BOTTOM),
             measurementStdDevs=[0.01, 0.00]
         )
-
-        self.mech = Mechanism2d(
-            30,
-            50,
-            Color8Bit(Color.kBlack)
-        )
-        mechRoot = self.mech.getRoot(
-            "ElevatorRoot",
-            15,
-            10
-        )
-
-        outerFrame = mechRoot.appendLigament("outerFrame", 10, 90, lineWidth=12, color=Color8Bit(Color.kRed))
-        # self.mechElevator = self.mechBase.appendLigament("ElevatorImmutable", 10, 90, color=Color8Bit(Color.kRed))
-        self.mechElevatorMutable = outerFrame.appendLigament("ElevatorMutable", 0, 0, lineWidth=12, color=Color8Bit(Color.kLimeGreen))
-        self.mechElevatorSetpoint = outerFrame.appendLigament("ElevatorSetpoint", 0, 0, lineWidth=6, color=Color8Bit(Color.kWhite))
-
-        SmartDashboard.putData("Elevator", self)
-        SmartDashboard.putData("ElevatorMech", self.mech)
-
+        self.__elevatorSim.setState( inchesToMeters( self.getHeight() ), 0.0 )
 
     def periodic(self):
         # Lead motor
@@ -164,6 +156,8 @@ class Elevator(Subsystem):
 
         if RobotState.isDisabled():
             self.stop()
+        else: 
+            self.run()
         
         ### Open loop
         # self.__leadMotor.set( self.openSpeed() )
@@ -180,45 +174,43 @@ class Elevator(Subsystem):
         #     print('Elevator Stall detected, stopping')
         #     self.stop()
 
-        # self.mechElevatorMutable.setLength(
-        #     self.__elevatorSim.getPosition() * 10
-        # )
-        # self.mechElevatorSetpoint.setLength(
-        #     inchesToMeters(self.getSetpoint()) * 10
-        # )
+        self.mechElevatorActual.setLength( self.getHeight() - 34.0 )
+        self.mechElevatorTarget.setLength( self.getSetpoint() - 34.0 )
 
-        FalconLogger.logOutput("Elevator/CurrentHeight_in", self.getHeight())
+        FalconLogger.logOutput("Elevator/ActualHeight_in", self.getHeight())
         FalconLogger.logOutput("Elevator/TargetHeight_in", self.getSetpoint())
-        FalconLogger.logOutput("Elevator/SimHeight_in", self.__elevatorSim.getPositionInches())
+        
     
     def simulationPeriodic(self):
+        FalconLogger.logOutput("Elevator/SimHeight_in", self.__elevatorSim.getPositionInches())
+
+        velocity_ips = self.__elevatorSim.getVelocityFps() * 12
+
+        self.__simMotor.setMotorCurrent( 0 )
+        self.__simMotor.iterate( velocity_ips, 12, 0.02 )
+
         self.__elevatorSim.setInputVoltage( 12 * self.__simMotor.getAppliedOutput() )
         self.__elevatorSim.update( 0.02 )
 
-        vel_ips = self.__elevatorSim.getVelocityFps() * 12
-
-        self.__simMotor.setMotorCurrent( 0 )
-
-        self.__simMotor.iterate(
-            vel_ips,
-            12,
-            0.02
+        self.mechElevatorSim.setLength( self.__elevatorSim.getPositionInches() - 34.0 )
+            
+    def run(self) -> None:
+        self.__pidController.setReference(
+            self.__setpoint,
+            SparkBase.ControlType.kPosition, 
+            ClosedLoopSlot.kSlot0
         )
-    
+
     def stop(self) -> None:
         self.setSetpoint(self.getHeight())
-    
+
     def getSetpoint(self) -> inches:
         return self.__setpoint
     
-    def setSetpoint(self, setpoint: inches) -> None:
-        self.__setpoint = (max(min(setpoint, Elevator.ElevatorPositions.TOP), Elevator.ElevatorPositions.BOTTOM))# * ElevatorConstants._rotsPerInch * ElevatorConstants._gearing
-        
-        # self.__pidController.setReference(
-        #     self.__setpoint,
-        #     SparkBase.ControlType.kPosition, 
-        #     ClosedLoopSlot.kSlot0
-        # )
+    def setSetpoint(self, setpoint: inches, override: bool = False) -> None:
+        if not override:
+            setpoint = (max(min(setpoint, ElevatorPositions.TOP), ElevatorPositions.BOTTOM))
+        self.__setpoint = setpoint
     
     def setOpenControl(self, speedPercentage:float) -> None:
         self.__leadMotor.set( speedPercentage )
@@ -243,5 +235,5 @@ class Elevator(Subsystem):
         '''
         resets position of both motor encoders assuming the elevator is at the bottom
         '''
-        self.__leadEncoder.setPosition( Elevator.ElevatorPositions.BOTTOM )
-        self.__followEncoder.setPosition( Elevator.ElevatorPositions.BOTTOM )
+        self.__leadEncoder.setPosition( ElevatorPositions.BOTTOM )
+        self.__followEncoder.setPosition( ElevatorPositions.BOTTOM )

@@ -11,7 +11,7 @@ class ElevatorToPos(Command):
         self.addRequirements(self.__elevator)
 
     def initialize(self):
-        return self.__elevator.setSetpoint(self.__position)
+        self.__elevator.setSetpoint(self.__position)
 
     def isFinished(self):
         return self.__elevator.atSetpoint()

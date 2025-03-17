@@ -72,25 +72,9 @@ class RobotContainer:
         pass
 
     def __bindTestControls(self):
-        ### Commands
-        ## Coral
-        cmdSetPivotl1 = SetPivotPosition(self.sysCoralPivot, CoralPivotPositions.L1, "SetPivotL1")
-        cmdSetPivotL2 = SetPivotPosition(self.sysCoralPivot, CoralPivotPositions.L2, "SetPivotL2")
-        cmdSetPivotL3 = SetPivotPosition(self.sysCoralPivot, CoralPivotPositions.L3, "SetPivotL3")
-
-        cmdCoralIn = CoralWheelIn(self.sysCoralWheel)
-        cmdCoralOut = CoralWheelOut(self.sysCoralWheel)
-        cmdCoralPivotControl = ControlPivotPosition(self.sysCoralPivot, self.driver1.getRightUpDown)
-
-        # Elevator
-        # cmdElevatorByStick = ElevatorByStick( sysElevator, driver1.getRightUpDown )
-
         # DriveTrain
-        cmdDriveByStick = DriveByStick(
-            self.sysDriveTrain,
-            self.driver1.getLeftUpDown,
-            self.driver1.getLeftSideToSide,
-            self.driver1.getRightSideToSide
+        self.sysDriveTrain.setDefaultCommand(
+            DriveByStick( self.sysDriveTrain, self.driver1.getLeftUpDown, self.driver1.getLeftSideToSide, self.driver1.getRightSideToSide )
         )
 
         # Algae
@@ -111,6 +95,13 @@ class RobotContainer:
         self.driver1.povUpLeft().toggleOnTrue( SetPivotPosition( self.sysCoralPivot, CoralPivotPositions.L4_up, "L4u" ) )
         self.driver1.povUpRight().toggleOnTrue( SetPivotPosition( self.sysCoralPivot, CoralPivotPositions.L4_down, "L4d" ) )
         self.driver1.start().toggleOnTrue( SetPivotPosition( self.sysCoralPivot, CoralPivotPositions.START, "Start" ) )
+        
+        # Elevator
+        #self.sysElevator.setDefaultCommand()
+        self.driver2.a().toggleOnTrue( ElevatorToPos( self.sysElevator, ElevatorPositions.BOTTOM ) )
+        self.driver2.b().toggleOnTrue( ElevatorToPos( self.sysElevator, ElevatorPositions.LOW_CORAL ) )
+        self.driver2.x().toggleOnTrue( ElevatorToPos( self.sysElevator, ElevatorPositions.MED_CORAL ) )
+        self.driver2.y().toggleOnTrue( ElevatorToPos( self.sysElevator, ElevatorPositions.HIGH_CORAL ) )
         # default commands
         # defaults
         #self.sysCoralPivot.setDefaultCommand(cmdCoralPivotControl)
