@@ -71,6 +71,22 @@ class RobotContainer:
     def __bindPracticeControls(self):
         pass
 
+    def __bindSimTestControls(self):
+        self.driver1.povDown().toggleOnTrue( SetPivotPosition( self.sysCoralPivot, CoralPivotPositions.L1, "L1" ) )
+        self.driver1.povLeft().toggleOnTrue( SetPivotPosition( self.sysCoralPivot, CoralPivotPositions.L2, "L2" ) )
+        self.driver1.povRight().toggleOnTrue( SetPivotPosition( self.sysCoralPivot, CoralPivotPositions.L3, "L3" ) )
+        self.driver1.povUpLeft().toggleOnTrue( SetPivotPosition( self.sysCoralPivot, CoralPivotPositions.L4_up, "L4u" ) )
+        self.driver1.povUpRight().toggleOnTrue( SetPivotPosition( self.sysCoralPivot, CoralPivotPositions.L4_down, "L4d" ) )
+        self.driver1.start().toggleOnTrue( SetPivotPosition( self.sysCoralPivot, CoralPivotPositions.START, "Start" ) )
+        
+        # # Elevator
+        # #self.sysElevator.setDefaultCommand()
+        # self.driver2.a().toggleOnTrue( ElevatorToPos( self.sysElevator, ElevatorPositions.BOTTOM ) )
+        # self.driver2.b().toggleOnTrue( ElevatorToPos( self.sysElevator, ElevatorPositions.LOW_CORAL ) )
+        # self.driver2.x().toggleOnTrue( ElevatorToPos( self.sysElevator, ElevatorPositions.MED_CORAL ) )
+        # self.driver2.y().toggleOnTrue( ElevatorToPos( self.sysElevator, ElevatorPositions.HIGH_CORAL ) )
+        
+
     def __bindTestControls(self):
         # DriveTrain
         self.sysDriveTrain.setDefaultCommand(
@@ -80,11 +96,11 @@ class RobotContainer:
         # Algae
         self.sysAlgae.setDefaultCommand( AlgaeHold( self.sysAlgae ) )
         self.driver1.a().whileTrue( AlgaeGrab( self.sysAlgae ) )
-        self.driver1.b().whileTrue( AlgaeHold( self.sysAlgae ) )
+        self.driver1.b().whileTrue( AlgaeEject( self.sysAlgae ) )
 
         # Climber
-        self.sysClimber.setDefaultCommand( ClimberNotClimb( self.sysClimber ) )
-        self.driver1.x().whileTrue( ClimberAway( self.sysClimber ) ) 
+        self.sysClimber.setDefaultCommand( ClimberUp( self.sysClimber ) )
+        self.driver1.x().whileTrue( ClimberOut( self.sysClimber ) ) 
         self.driver1.y().whileTrue( ClimberClimb( self.sysClimber ) )
         
         # Coral Pivot

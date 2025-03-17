@@ -4,7 +4,7 @@ from commands2 import Command, Subsystem
 from subsystems.Climber import Climber, ClimberConstants
 
 
-class ClimberAway(Command):
+class ClimberUp(Command):
 
     # Initialization
     def __init__(self,
@@ -12,7 +12,7 @@ class ClimberAway(Command):
                  ) -> None:
         # Command Attributes
         self.Climber: Climber = climberSubsystem
-        self.setName("ClimberAway")
+        self.setName("ClimberUp")
         self.addRequirements(climberSubsystem)
 
     # On Start

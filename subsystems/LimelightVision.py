@@ -58,8 +58,12 @@ if this is wrong, go look at https://docs.limelightvision.io/docs/docs-limelight
 '''
 
 class Vision(Subsystem):
+
+    # Limelight_IDs = ('one','two','three')
+
     def __init__(self, odometryGetter:typing.Callable[[], SwerveDrive4PoseEstimator]):
-        self.camera = Limelight( 'limelight-one', odometryGetter)
+        # self.cameras = [Limelight( f'limelight-{i}', odometryGetter) for i in self.Limelight_IDs]
+        self.camera = Limelight( f'limelight-one', odometryGetter)
 
         self.has_received_data = False
         self.last_pose = Pose2d()

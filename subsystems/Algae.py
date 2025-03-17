@@ -41,11 +41,11 @@ class AlgaeIntakeState(Enum):
 
 class AlgaeManipulatorConstants:
     # Pivot Constants
-    pivot_kP: float = 2.0
+    pivot_kP: float = 8.0
     pivot_kI: float = 0.0
-    pivot_kD: float = 0.5
+    pivot_kD: float = 1.5
     pivot_kFF: float = 0.0
-    pivot_kArbFF: float = 0.0 #4.1675
+    pivot_kArbFF: float = 4.1675
     pivot_kV: float = 0.0
     pivot_kTolerance: float = 0.01
 
@@ -144,10 +144,10 @@ class AlgaeManipulator(Subsystem):
         self.__colorSensor = ColorSensorV3(I2C.Port(0))
 
         # Mechanism 2d stuff
-        mech = Mechanism2d(30, 70, Color8Bit(0, 0, 0))
-        mechRoot = mech.getRoot("Pivot", 30, 0 )
-        mechPost = mechRoot.appendLigament( "AlgaePost", 6, 90, 2, Color8Bit( Color.kBlue ) )
-        self.mechAlgaeTarget = mechPost.appendLigament("AlgaeTarget", 14, 0, 3, color=Color8Bit( Color.kYellow ) )
+        mech = Mechanism2d(30, 40, Color8Bit(50,50,70))
+        mechRoot = mech.getRoot("Pivot", 15, 0 )
+        mechPost = mechRoot.appendLigament( "AlgaePost", 6, 90, 2, Color8Bit( Color.kGray ) )
+        self.mechAlgaeTarget = mechPost.appendLigament("AlgaeTarget", 14, 0, 2, color=Color8Bit( Color.kYellow ) )
         self.mechAlgaeActual = mechPost.appendLigament("AlgaeActual", 18, 0, 3, color=Color8Bit( Color.kGreen ) )
         if RobotBase.isSimulation(): self.mechAlgaeSim = mechPost.appendLigament("AlgaeSSim", 16, 0, 3, color=Color8Bit( Color.kRed ) )
         
@@ -244,7 +244,7 @@ class AlgaeManipulator(Subsystem):
         self.simIntake.setAnalogVelocity(velocity_Tp100ms)
         self.simIntake.addQuadraturePosition( int( velocity_Tp100ms * 0.02 ) )
 
-        self.mechAlgaeSim.setAngle( self.simPivotArm.getAngleDegrees() - 90 )
+        self.mechAlgaeSim.setAngle( self.simPivotArm.getAngleDegrees() - 90.0 )
 
         ## Update MOI when you have Algae?
         # if self.hasAlgae():

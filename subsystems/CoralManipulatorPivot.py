@@ -24,7 +24,7 @@ class CoralPivotConstants:
     kP = 5.0
     kI = 0
     kD = 0.0
-    kArbFF = 0.0 #0.5
+    kArbFF = 0.25
 
     kP_Coral = 3.0
     kI_Coral = 0
@@ -91,10 +91,10 @@ class CoralManipulatorPivot(Subsystem):
 
         ## Mech2d
         mech = Mechanism2d( 12, 12, Color8Bit(50,50,70) )
-        mechRoot = mech.getRoot( 'CoralPivot', 6, 0 )
-        mechElevator = mechRoot.appendLigament('pretendElevator', 6, 90, color=Color8Bit(200,200,170) ) # replace with ref to real elevator mech
-        mechStick = mechElevator.appendLigament('stick', 3, -90, color=Color8Bit(200,200,170))
-        self.mechArmTarget = mechStick.appendLigament( 'coralPivotTarget', 4, 180, color=Color8Bit(Color.kYellow) )
+        mechRoot = mech.getRoot( 'CoralPivot', 0.5, 0 )
+        mechElevator = mechRoot.appendLigament('pretendElevator', 6, 90, color=Color8Bit( Color.kGray ) ) # replace with ref to real elevator mech
+        mechStick = mechElevator.appendLigament('stick', 3, -90, color=Color8Bit( Color.kGray ))
+        self.mechArmTarget = mechStick.appendLigament( 'coralPivotTarget', 4, 180, color=Color8Bit(Color.kYellow), lineWidth=4 )
         self.mechArmActual = mechStick.appendLigament( 'coralPivotActual', 8, 180, color=Color8Bit(Color.kGreen) )
         if RobotBase.isSimulation(): self.mechArmSim = mechStick.appendLigament('coralPivotSSim', 6, 180, color=Color8Bit(Color.kRed) )
         
@@ -117,7 +117,7 @@ class CoralManipulatorPivot(Subsystem):
             True, # Gravity
             degreesToRadians( CoralPivotPositions.START ),
         )
-        self.armSim.setState( degreesToRadians( self.getPosition() ) , 0.0 )
+        self.armSim.setState( degreesToRadians( self.simEncoder.getPosition() ) , 0.0 )
 
     def periodic(self) -> None:
         # Logging - Write Measured Values

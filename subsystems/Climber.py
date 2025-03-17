@@ -26,7 +26,7 @@ class ClimberConstants:
     kP = 5.0
     kI = 0.0
     kD = 0.0
-    kFF = 0.0 # Feed Forward
+    kFF = 0.5 # Feed Forward
     kArbFF = 0.0
     kTolerance:degrees = 1.0
 
@@ -99,11 +99,11 @@ class Climber(Subsystem):
         self.__followMotor.configure( fMotorCfg, SparkBase.ResetMode.kResetSafeParameters, SparkBase.PersistMode.kPersistParameters )
         
         # Mechanism2d
-        mech = Mechanism2d( 30, 70, Color8Bit( Color.kBlack ) )
-        mechRoot = mech.getRoot("Climber", 30, 0)
-        mechBase = mechRoot.appendLigament("ClimberPost", 6, 90, 2, color=Color8Bit(Color.kBrown))
-        self.mechClimberActual = mechBase.appendLigament("ClimberTarget", 4, 90, 3, color=Color8Bit(Color.kYellow))
-        self.mechClimberTarget = mechBase.appendLigament("ClimberActual", 8, 90, 3, color=Color8Bit(Color.kGreen))
+        mech = Mechanism2d( 30, 40, Color8Bit(50,50,70) )
+        mechRoot = mech.getRoot("Climber", 15, 0)
+        mechBase = mechRoot.appendLigament("ClimberPost", 6, 90, 2, color=Color8Bit(Color.kGray))
+        self.mechClimberTarget = mechBase.appendLigament("ClimberActual", 8, 90, 2, color=Color8Bit(Color.kYellow))
+        self.mechClimberActual = mechBase.appendLigament("ClimberTarget", 4, 90, 3, color=Color8Bit(Color.kGreen))
         if RobotBase.isSimulation(): self.mechClimberSim = mechBase.appendLigament("ClimberSSim", 6, 90, 3, color=Color8Bit(Color.kRed))
 
         # Shuffleboard

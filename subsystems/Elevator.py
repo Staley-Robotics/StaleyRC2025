@@ -105,9 +105,9 @@ class Elevator(Subsystem):
         self.__followMotor.configure(fMotorCfg, SparkBase.ResetMode.kResetSafeParameters, SparkBase.PersistMode.kPersistParameters)
 
         # Mechanism2d
-        mech = Mechanism2d( 30, 50, Color8Bit( Color.kBlack ) )
+        mech = Mechanism2d( 30, 50, Color8Bit(50,50,70) )
         mechRoot = mech.getRoot( "ElevatorRoot", 15, 10 )
-        mechFrame = mechRoot.appendLigament("outerFrame", 10, 90, lineWidth=12, color=Color8Bit(Color.kOrange))
+        mechFrame = mechRoot.appendLigament("outerFrame", 10, 90, lineWidth=12, color=Color8Bit(Color.kGray))
         self.mechElevatorTarget = mechFrame.appendLigament("ElevatorTarget", 0, 0, lineWidth=6, color=Color8Bit(Color.kYellow))
         self.mechElevatorActual = mechFrame.appendLigament("ElevatorActual", 0, 0, lineWidth=12, color=Color8Bit(Color.kGreen))
         if RobotBase.isSimulation(): self.mechElevatorSim = mechFrame.appendLigament("ElevatorSSim", 0, 0, lineWidth=12, color=Color8Bit(Color.kRed))

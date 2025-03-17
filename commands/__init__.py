@@ -2,9 +2,9 @@ from .Algae.AlgaeEject import *
 from .Algae.AlgaeGrab import *
 from .Algae.AlgaeHold import *
 
-from .Climber.ClimberAway import *
+from .Climber.ClimberUp import *
 from .Climber.ClimberClimb import *
-from .Climber.ClimberNotClimb import *
+from .Climber.ClimberOut import *
 from .Climber.ClimberStay import *
 
 from .Coral.SetCoralWheelSpeed import *
@@ -32,9 +32,9 @@ __all__ = [
     "AlgaeGrab",
     "AlgaeHold",
 
-    "ClimberAway",
+    "ClimberUp",
     "ClimberClimb",
-    "ClimberNotClimb",
+    "ClimberOut",
     "ClimberStay",
 
     "CoralWheelIn",
