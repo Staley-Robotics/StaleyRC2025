@@ -49,11 +49,11 @@ class AlgaeManipulatorConstants:
     pivot_kV: float = 0.0
     pivot_kTolerance: float = 0.01
 
-    pivot_kP_algae: float = 2.2
-    pivot_kI_algae: float = 0.0
-    pivot_kD_algae: float = 0.0
-    pivot_kFF_algae: float = 0.0
-    pivot_kArbFF_algae: float = 1.0
+    pivot_kP_Algae: float = 2.2
+    pivot_kI_Algae: float = 0.0
+    pivot_kD_Algae: float = 0.0
+    pivot_kFF_Algae: float = 0.0
+    pivot_kArbFF_Algae: float = 1.0
 
     pivot_kGearRatio: float = 8
     pivot_kOffsetRotations: float = 0.0
@@ -114,10 +114,10 @@ class AlgaeManipulator(Subsystem):
             ClosedLoopSlot.kSlot0
         )
         clConfig = clConfig.pidf(
-            AlgaeManipulatorConstants.pivot_kP_algae,
-            AlgaeManipulatorConstants.pivot_kI_algae,
-            AlgaeManipulatorConstants.pivot_kD_algae,
-            AlgaeManipulatorConstants.pivot_kFF_algae,
+            AlgaeManipulatorConstants.pivot_kP_Algae,
+            AlgaeManipulatorConstants.pivot_kI_Algae,
+            AlgaeManipulatorConstants.pivot_kD_Algae,
+            AlgaeManipulatorConstants.pivot_kFF_Algae,
             ClosedLoopSlot.kSlot1
         )
         clConfig = clConfig.setFeedbackSensor(ClosedLoopConfig.FeedbackSensor.kAbsoluteEncoder)
@@ -260,7 +260,7 @@ class AlgaeManipulator(Subsystem):
         # Pivot
         sp = degreesToRotations( self.getSetpoint() )
         
-        arbFF = AlgaeManipulatorConstants.pivot_kArbFF_algae if self.hasAlgae() else AlgaeManipulatorConstants.pivot_kArbFF
+        arbFF = AlgaeManipulatorConstants.pivot_kArbFF_Algae if self.hasAlgae() else AlgaeManipulatorConstants.pivot_kArbFF
         cosineScalar = math.cos( degreesToRadians( self.getMeasurement() ) )
         slot = ClosedLoopSlot.kSlot1 if self.hasAlgae() else ClosedLoopSlot.kSlot0
         
