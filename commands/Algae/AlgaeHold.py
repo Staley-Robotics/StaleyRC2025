@@ -1,5 +1,5 @@
 from commands2 import Command, Subsystem
-from subsystems.Algae import AlgaeManipulator, AlgaeManipulatorPositions, IntakeState
+from subsystems.Algae import AlgaeManipulator, AlgaeManipulatorPositions, AlgaeIntakeState
 
 class AlgaeHold(Command):
     # Variable Declaration
@@ -16,7 +16,7 @@ class AlgaeHold(Command):
 
     # On Start
     def initialize(self) -> None:
-        self.m_subsystem.setIntake( IntakeState.OFF )
+        self.m_subsystem.setIntake( AlgaeIntakeState.OFF )
         self.m_subsystem.setSetpoint( AlgaeManipulatorPositions.HOLD )
 
     # Periodic

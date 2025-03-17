@@ -1,5 +1,5 @@
 from commands2 import Command, Subsystem
-from subsystems.Algae import AlgaeManipulator, AlgaeManipulatorPositions, IntakeState
+from subsystems.Algae import AlgaeManipulator, AlgaeManipulatorPositions, AlgaeIntakeState
 
 class AlgaeEject(Command):
     # Variable Declaration
@@ -19,7 +19,7 @@ class AlgaeEject(Command):
         if not self.Algae.hasAlgae():
             self.cancel()
         else:
-            self.Algae.setIntake(IntakeState.OUT)
+            self.Algae.setIntake(AlgaeIntakeState.OUT)
             self.Algae.setSetpoint(AlgaeManipulatorPositions.PLACE)
 
     # Periodic

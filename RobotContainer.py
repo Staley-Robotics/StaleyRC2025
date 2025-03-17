@@ -33,26 +33,28 @@ class RobotContainer:
         control_mode: str = "Test"  # Can be "Comp", "Practice", or "Test"
 
         ## Controllers
-        driver1 = FalconXboxController(0, squaredInputs=True)
-        driver2 = FalconXboxController(1, squaredInputs=True)
+        self.driver1 = FalconXboxController(0, squaredInputs=True)
+        self.driver2 = FalconXboxController(1, squaredInputs=True)
 
         ## Initialize Subsystems
-        sysCoralWheel = CoralManipulatorWheel( 8 )
-        sysCoralPivot = CoralManipulatorPivot( 7, 0.7794115 )
-        sysClimber = Climber(3, 4, 0.9024424)
-        sysElevator = Elevator( 5, 6, driver1.getRightUpDown )
-        sysAlgae = AlgaeManipulator()
-        sysDriveTrain = SwerveDrive()
+        self.sysDriveTrain = SwerveDrive()
+        self.sysElevator   = Elevator( 5, 6 )
+        self.sysCoralWheel = CoralManipulatorWheel( 8 )
+        self.sysCoralPivot = CoralManipulatorPivot( 7, 0.7794115 )
+        self.sysAlgae      = AlgaeManipulator()
+        self.sysClimber    = Climber( 3, 4, 0.9024424 )
+        
+        ## PathPlanner / Autonomous
 
         ## Initialize Control Scheme
-
+        ## Driver Controller Button Binding
         match control_mode:
             case "Comp":
-                self.__compControls(driver1, driver2, sysCoralWheel, sysCoralPivot, sysClimber, sysAlgae, sysDriveTrain, sysElevator)
+                self.__bindCompetitionControls()
             case "Practice":
-                self.__practiceControls(driver1, driver2, sysCoralWheel, sysCoralPivot, sysClimber, sysAlgae, sysDriveTrain, sysElevator)
+                self.__bindPracticeControls()
             case "Test":
-                self.__testControls(driver1, driver2, sysCoralWheel, sysCoralPivot, sysClimber, sysAlgae, sysDriveTrain, sysElevator)
+                self.__bindTestControls()
 
 
     # Get Autonomous Command
@@ -63,54 +65,56 @@ class RobotContainer:
         chooserValue = self.__autoChooser.getSelected()
         return chooserValue if isinstance( chooserValue, Command ) else cmd.none()
 
-    def __compControls(self, driver1, driver2, sysCoralWheel, sysCoralPivot, sysClimber, sysAlgae, sysDriveTrain,
-                       sysElevator):
+    def __bindCompetitionControls(self):
         pass
 
-    def __practiceControls(self, driver1, driver2, sysCoralWheel, sysCoralPivot, sysClimber, sysAlgae, sysDriveTrain,
-                           sysElevator):
+    def __bindPracticeControls(self):
         pass
 
-    def __testControls(self, driver1, driver2, sysCoralWheel, sysCoralPivot, sysClimber, sysAlgae, sysDriveTrain,
-                       sysElevator):
+    def __bindTestControls(self):
         ### Commands
         ## Coral
-        cmdSetPivotl1 = SetPivotPosition(sysCoralPivot, sysCoralPivot.PivotPositions.L1, "SetPivotL1")
-        cmdSetPivotL2 = SetPivotPosition(sysCoralPivot, sysCoralPivot.PivotPositions.L2, "SetPivotL2")
-        cmdSetPivotL3 = SetPivotPosition(sysCoralPivot, sysCoralPivot.PivotPositions.L3, "SetPivotL3")
+        cmdSetPivotl1 = SetPivotPosition(self.sysCoralPivot, CoralPivotPositions.L1, "SetPivotL1")
+        cmdSetPivotL2 = SetPivotPosition(self.sysCoralPivot, CoralPivotPositions.L2, "SetPivotL2")
+        cmdSetPivotL3 = SetPivotPosition(self.sysCoralPivot, CoralPivotPositions.L3, "SetPivotL3")
 
-        cmdCoralIn = CoralWheelIn(sysCoralWheel)
-        cmdCoralOut = CoralWheelOut(sysCoralWheel)
-        cmdCoralPivotControl = ControlPivotPosition(sysCoralPivot, driver1.getRightUpDown)
+        cmdCoralIn = CoralWheelIn(self.sysCoralWheel)
+        cmdCoralOut = CoralWheelOut(self.sysCoralWheel)
+        cmdCoralPivotControl = ControlPivotPosition(self.sysCoralPivot, self.driver1.getRightUpDown)
 
         # Climber
         # cmdClimberPosition = ClimberPosition( sysClimber, driver2.getLeftUpDown )
-        cmdClimberStay = ClimberStay( sysClimber )
+        cmdClimberStay = ClimberStay( self.sysClimber )
 
         # Elevator
         # cmdElevatorByStick = ElevatorByStick( sysElevator, driver1.getRightUpDown )
 
         # DriveTrain
-        cmdDriveByStick = DriveByStick( sysDriveTrain, driver1.getLeftUpDown, driver1.getLeftSideToSide, driver1.getRightSideToSide )
+        cmdDriveByStick = DriveByStick(
+            self.sysDriveTrain,
+            self.driver1.getLeftUpDown,
+            self.driver1.getLeftSideToSide,
+            self.driver1.getRightSideToSide
+        )
 
         # Algae
-        cmdAlgaeGrab = AlgaeGrab( sysAlgae )
-        cmdAlgaeEject = AlgaeEject( sysAlgae )
-        cmdAlgaeHold = AlgaeHold( sysAlgae )
+        cmdAlgaeGrab = AlgaeGrab( self.sysAlgae )
+        cmdAlgaeEject = AlgaeEject( self.sysAlgae )
+        cmdAlgaeHold = AlgaeHold( self.sysAlgae )
 
         # default commands
         # defaults
-        sysCoralPivot.setDefaultCommand(cmdCoralPivotControl)
+        #self.sysCoralPivot.setDefaultCommand(cmdCoralPivotControl)
         # sysClimber.setDefaultCommand(cmdClimberStay)
-        sysAlgae.setDefaultCommand(cmdAlgaeHold)
-        sysDriveTrain.setDefaultCommand(cmdDriveByStick)
+        self.sysAlgae.setDefaultCommand(cmdAlgaeHold)
+        #self.sysDriveTrain.setDefaultCommand(cmdDriveByStick)
 
         ### Controls
 
         ## Coral
-        driver1.x().onTrue(cmdCoralIn)
-        driver1.y().onTrue(cmdCoralOut)
-        # driver1.y().toggleOnTrue(cmdCoralIO)
+        # self.driver1.x().onTrue(cmdCoralIn)
+        # self.driver1.y().onTrue(cmdCoralOut)
+        # # driver1.y().toggleOnTrue(cmdCoralIO)
 
 
         ## CLimber
@@ -123,5 +127,5 @@ class RobotContainer:
         # driver1.a().toggleOnTrue( cmdElevatorByStick )
 
         ## Algae
-        driver1.a().whileTrue(cmdAlgaeGrab)
-        driver1.b().whileTrue(cmdAlgaeEject)
+        self.driver1.a().whileTrue(cmdAlgaeGrab)
+        self.driver1.b().whileTrue(cmdAlgaeEject)

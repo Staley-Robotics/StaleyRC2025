@@ -1,7 +1,7 @@
 import typing
 
 from commands2 import Command, Subsystem
-from subsystems.Algae import AlgaeManipulator, AlgaeManipulatorPositions, IntakeState
+from subsystems.Algae import AlgaeManipulator, AlgaeManipulatorPositions, AlgaeIntakeState
 
 class AlgaeGrab(Command):
     # Variable Declaration
@@ -18,7 +18,7 @@ class AlgaeGrab(Command):
 
     # On Start
     def initialize(self) -> None:
-        self.Algae.setIntake(IntakeState.IN)
+        self.Algae.setIntake(AlgaeIntakeState.IN)
         self.Algae.setSetpoint(AlgaeManipulatorPositions.GRAB)
 
     # Periodic
