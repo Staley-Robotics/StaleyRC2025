@@ -81,28 +81,22 @@ class AlgaeManipulator(Subsystem):
     The AlgaeManipulator subsystem is responsible for controlling the pivot and intake of the robot where Algae is concerned
     """
     # Motors (Neo and 775pro, at 25:1 and 10.3333:1 respectively)
-    __pivotMotorOne: SparkMax = None
-    __pivotMotorTwo: SparkMax = None
     pivotSetpoint: float = 0.0
 
     __intakeMotor: TalonSRX = None
     intakeState = AlgaeIntakeState.OFF
 
-    # __irBeam: DigitalInput = None
-
-    __colorSensor: ColorSensorV3 = None
-
     __kMotorOffset = 0.80742
 
     def __init__(self):
-        # Motor
-        # Neo
+        ## Init Motors
         self.__leadMotor = SparkMax(1, SparkMax.MotorType.kBrushless)
         self.__followMotor = SparkMax(2, SparkMax.MotorType.kBrushless)
 
         self.__pivotEncoder = self.__leadMotor.getAbsoluteEncoder()
         self.__pivotController = self.__leadMotor.getClosedLoopController()
         
+        # Init motors and config
         lMotorCfg = SparkMaxConfig()
         lMotorCfg = lMotorCfg.setIdleMode( SparkMaxConfig.IdleMode.kBrake )
         
@@ -133,20 +127,12 @@ class AlgaeManipulator(Subsystem):
         encConfig = encConfig.zeroOffset(self.__kMotorOffset)
         encConfig = encConfig.zeroCentered(True)
 
+        # Apply configs
         lMotorCfg.apply(clConfig)
         lMotorCfg.apply(encConfig)
 
-        self.__leadMotor.configure(
-            lMotorCfg,
-            SparkBase.ResetMode.kNoResetSafeParameters,
-            SparkBase.PersistMode.kNoPersistParameters
-        )
-
-        self.__followMotor.configure(
-            fMotorCfg,
-            SparkBase.ResetMode.kNoResetSafeParameters,
-            SparkBase.PersistMode.kNoPersistParameters
-        )
+        self.__leadMotor.configure( lMotorCfg, SparkBase.ResetMode.kNoResetSafeParameters, SparkBase.PersistMode.kNoPersistParameters )
+        self.__followMotor.configure( fMotorCfg, SparkBase.ResetMode.kNoResetSafeParameters, SparkBase.PersistMode.kNoPersistParameters )
 
         # 775pro
         self.__intakeMotor = WPI_TalonSRX(31)
@@ -160,15 +146,15 @@ class AlgaeManipulator(Subsystem):
         # Mechanism 2d stuff
         mech = Mechanism2d(30, 70, Color8Bit(0, 0, 0))
         mechRoot = mech.getRoot("Pivot", 30, 0 )
-        mechPost = mechRoot.appendLigament( "AlgaePost", 6, 90, 1, Color8Bit( Color.kBlue ) )
+        mechPost = mechRoot.appendLigament( "AlgaePost", 6, 90, 2, Color8Bit( Color.kBlue ) )
         self.mechAlgaeTarget = mechPost.appendLigament("AlgaeTarget", 14, 0, 3, color=Color8Bit( Color.kYellow ) )
         self.mechAlgaeActual = mechPost.appendLigament("AlgaeActual", 18, 0, 3, color=Color8Bit( Color.kGreen ) )
-        if RobotBase.isSxcimulation(): self.mechAlgaeSim = mechPost.appendLigament("AlgaeSSim", 16, 0, 3, color=Color8Bit( Color.kRed ) )
+        if RobotBase.isSimulation(): self.mechAlgaeSim = mechPost.appendLigament("AlgaeSSim", 16, 0, 3, color=Color8Bit( Color.kRed ) )
         
         # Shuffleboard
         SmartDashboard.putData( "Algae", self )
         SmartDashboard.putData( "AlgaeMech", mech )
-        #Shuffleboard.getTab("AlgaeManipulator").add("AlgaeManzxczipulator", self)
+        #Shuffleboard.getTab("AlgaeManipulator").add("AlgaeManipulator", self)
 
         # Pivot Simulation
         self.simPivotArm = SingleJointedArmSim(
@@ -183,21 +169,28 @@ class AlgaeManipulator(Subsystem):
         )
         self.simPivotArm.setState( self.getMeasurement(), 0.0 )
 
-        self.simPivot = SparkMaxSim(self.__leadMotor, DCMotor.NEO(1))
-        self.simEncoder = self.simPivot.getAbsoluteEncoderSim()
+        self.simLMotor = SparkMaxSim(self.__leadMotor, DCMotor.NEO(1))
+        self.simEncoder = self.simLMotor.getAbsoluteEncoderSim()
 
         # Intake Simulation
         self.simIntake = self.__intakeMotor.getSimCollection()             
       
     def periodic(self) -> None:
         # Input Logging - Neo - Pivot
-        FalconLogger.logInput("AlgaeManipulator/Pivot/MotorInput", self.__leadMotor.get())
-        FalconLogger.logInput("AlgaeManipulator/Pivot/MotorOutput", self.__leadMotor.getAppliedOutput())
-        FalconLogger.logInput("AlgaeManipulator/Pivot/MotorCurrent_a", self.__leadMotor.getOutputCurrent())
-        FalconLogger.logInput("AlgaeManipulator/Pivot/MotorPosition_r", self.__leadMotor.getEncoder().getPosition())
-        FalconLogger.logInput("AlgaeManipulator/Pivot/MotorVelocity_rpm", self.__leadMotor.getEncoder().getVelocity())
-        FalconLogger.logInput("AlgaeManipulator/Pivot/MotorTemp_c", self.__leadMotor.getMotorTemperature())
-        
+        FalconLogger.logInput("AlgaeManipulator/Pivot/LeadMotorInput", self.__leadMotor.get())
+        FalconLogger.logInput("AlgaeManipulator/Pivot/LeadMotorOutput", self.__leadMotor.getAppliedOutput())
+        FalconLogger.logInput("AlgaeManipulator/Pivot/LeadMotorCurrent_a", self.__leadMotor.getOutputCurrent())
+        FalconLogger.logInput("AlgaeManipulator/Pivot/LeadMotorPosition_r", self.__leadMotor.getEncoder().getPosition())
+        FalconLogger.logInput("AlgaeManipulator/Pivot/LeadMotorVelocity_rpm", self.__leadMotor.getEncoder().getVelocity())
+        FalconLogger.logInput("AlgaeManipulator/Pivot/LeadMotorTemp_c", self.__leadMotor.getMotorTemperature())
+
+        FalconLogger.logInput("AlgaeManipulator/Pivot/FollowMotorInput", self.__followMotor.get())
+        FalconLogger.logInput("AlgaeManipulator/Pivot/FollowMotorOutput", self.__followMotor.getAppliedOutput())
+        FalconLogger.logInput("AlgaeManipulator/Pivot/FollowMotorCurrent_a", self.__followMotor.getOutputCurrent())
+        FalconLogger.logInput("AlgaeManipulator/Pivot/FollowMotorPosition_r", self.__followMotor.getEncoder().getPosition())
+        FalconLogger.logInput("AlgaeManipulator/Pivot/FollowMotorVelocity_rpm", self.__followMotor.getEncoder().getVelocity())
+        FalconLogger.logInput("AlgaeManipulator/Pivot/FollowMotorTemp_c", self.__followMotor.getMotorTemperature())
+
         FalconLogger.logInput("AlgaeManipulator/Pivot/EncoderPosition_r", self.__pivotEncoder.getPosition())
         FalconLogger.logInput("AlgaeManipulator/Pivot/EncoderVelocity_rpm", self.__pivotEncoder.getVelocity())
 
@@ -224,11 +217,8 @@ class AlgaeManipulator(Subsystem):
         # Output Logging
         FalconLogger.logOutput("AlgaeManipulator/Pivot/TargetAngle_d", self.getSetpoint())
         FalconLogger.logOutput("AlgaeManipulator/Pivot/ActualAngle_d", self.getMeasurement())
-
-        FalconLogger.logOutput("AlgaeManipulator/Intake/DesiredState", self.intakeState.value)
-        FalconLogger.logOutput("AlgaeManipulator/Intake/CurrentState", self.__intakeMotor.getMotorOutputPercent())
-        FalconLogger.logOutput("AlgaeManipulator/Intake/Voltage", self.__intakeMotor.getMotorOutputVoltage())
-
+        FalconLogger.logOutput("AlgaeManipulator/Intake/TargetSpeed_p", self.intakeState.value)
+        FalconLogger.logOutput("AlgaeManipulator/Intake/ActualSpeed_p", self.__intakeMotor.getMotorOutputPercent())
         FalconLogger.logOutput("AlgaeManipulator/HasAlgae", self.hasAlgae() )
 
     def simulationPeriodic(self) -> None:
@@ -239,9 +229,9 @@ class AlgaeManipulator(Subsystem):
         driveRadps = self.simPivotArm.getVelocity()
         driveRpm = radiansToRotations( driveRadps ) * 60
         
-        self.simPivot.setMotorCurrent(0)
-        self.simPivot.iterate( driveRpm , 12, 0.02)
-        self.simPivot.getRelativeEncoderSim().iterate( driveRpm * AlgaeManipulatorConstants.pivot_kGearRatio, 0.02 )
+        self.simLMotor.setMotorCurrent(0)
+        self.simLMotor.iterate( driveRpm , 12, 0.02)
+        self.simLMotor.getRelativeEncoderSim().iterate( driveRpm * AlgaeManipulatorConstants.pivot_kGearRatio, 0.02 )
         #self.simPivot.getAbsoluteEncoderSim().iterate(driveRpm / AlgaeManipulatorConstants.pivot_kGearRatio, 0.02)
 
         # self.simPivot.getRelativeEncoderSim().setVelocity(driveRpm)
@@ -291,12 +281,12 @@ class AlgaeManipulator(Subsystem):
         self.setSetpoint(self.getMeasurement(), True)
         self.__intakeMotor.set(TalonSRXControlMode.PercentOutput, 0.0)
 
-    def setSetpoint(self, setpoint: degrees, overrideRange: bool = False):
+    def setSetpoint(self, setpoint: degrees, override: bool = False):
         """
         Sets the setpoint for the manipulator, accepts degrees
         """
         # Limits the specific range (Protects mechanism)
-        if not overrideRange:
+        if not override:
             setpoint = min(max(setpoint, AlgaeManipulatorPositions.MIN), AlgaeManipulatorPositions.MAX)
         self.pivotSetpoint = setpoint
         
