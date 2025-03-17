@@ -125,6 +125,7 @@ class Climber(Subsystem):
 
         self.simLMotor = SparkMaxSim(self.__leadMotor, DCMotor.NEO(1))
         self.simEncoder = self.simLMotor.getAbsoluteEncoderSim()
+        self.simEncoder.setPosition( degreesToRotations( 90 ) )
 
     # Periodic Loop
     def periodic(self) -> None:
