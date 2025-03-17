@@ -103,6 +103,14 @@ class RobotContainer:
         self.driver1.x().whileTrue( ClimberAway( self.sysClimber ) ) 
         self.driver1.y().whileTrue( ClimberClimb( self.sysClimber ) )
         
+        # Coral Pivot
+        #self.sysCoralPivot.setDefaultCommand()
+        self.driver1.povDown().toggleOnTrue( SetPivotPosition( self.sysCoralPivot, CoralPivotPositions.L1, "L1" ) )
+        self.driver1.povLeft().toggleOnTrue( SetPivotPosition( self.sysCoralPivot, CoralPivotPositions.L2, "L2" ) )
+        self.driver1.povRight().toggleOnTrue( SetPivotPosition( self.sysCoralPivot, CoralPivotPositions.L3, "L3" ) )
+        self.driver1.povUpLeft().toggleOnTrue( SetPivotPosition( self.sysCoralPivot, CoralPivotPositions.L4_up, "L4u" ) )
+        self.driver1.povUpRight().toggleOnTrue( SetPivotPosition( self.sysCoralPivot, CoralPivotPositions.L4_down, "L4d" ) )
+        self.driver1.start().toggleOnTrue( SetPivotPosition( self.sysCoralPivot, CoralPivotPositions.START, "Start" ) )
         # default commands
         # defaults
         #self.sysCoralPivot.setDefaultCommand(cmdCoralPivotControl)

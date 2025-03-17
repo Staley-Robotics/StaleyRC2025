@@ -1,7 +1,7 @@
 import typing
 
 from commands2 import Command
-from subsystems import CoralManipulatorPivot
+from subsystems import CoralManipulatorPivot, CoralPivotPositions
 
 class SetPivotPosition(Command):
     # Variable Declaration
@@ -10,7 +10,7 @@ class SetPivotPosition(Command):
     # Initialization
     def __init__( self,
                   pivot:CoralManipulatorPivot,
-                  setpoint:CoralManipulatorPivot.PivotPositions,
+                  setpoint:CoralPivotPositions,
                   cmdID:str
                 ) -> None:
         # Command Attributes
