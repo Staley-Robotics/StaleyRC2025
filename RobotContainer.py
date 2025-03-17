@@ -115,6 +115,7 @@ class RobotContainer:
 
         ## CLimber
         # driver2.y().toggleOnTrue(cmdClimberPosition)
+        # Only necessary climber commands (as of now): ClimberClimb (climber goes in), ClimberNotClimb (climber goes out), ClimberAway (climber goes straight up)
         # driver1.a().onTrue(cmdClimberClimb) # z on keyboard
         # driver1.x().onTrue(cmdClimberNotClimb) # c on keyboard
 

@@ -25,7 +25,8 @@ class ClimberAway(Command):
 
     # On End
     def end(self, interrupted: bool) -> None:
-        self.Climber.safe_stop()
+        # self.Climber.safe_stop()
+        ...
 
     # Is Finished
     def isFinished(self) -> bool:

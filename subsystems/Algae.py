@@ -1,7 +1,7 @@
 import math
 
 from commands2 import Subsystem
-from wpilib import SmartDashboard, RobotBase, RobotState, Mechanism2d, Color8Bit, RobotController, Victor, DigitalInput
+from wpilib import SmartDashboard, RobotBase, RobotState, Mechanism2d, Color8Bit, RobotController, Victor, DigitalInput, Color, I2C, LEDPattern
 from wpilib.shuffleboard import Shuffleboard
 from wpimath.controller import PIDController, SimpleMotorFeedforwardRadians
 from wpimath.system.plant import DCMotor
@@ -15,12 +15,19 @@ from phoenix6.signals.spn_enums import InvertedValue, NeutralModeValue, \
 
 from phoenix5 import TalonSRX, TalonSRXControlMode, NeutralMode
 
-from rev import SparkMax, SparkMaxConfig, SparkMaxSim, SparkBase, ClosedLoopConfig, AbsoluteEncoderConfig
+from rev import SparkMax, SparkMaxConfig, SparkMaxSim, SparkBase, ClosedLoopConfig, AbsoluteEncoderConfig, ColorSensorV3
 
 from enum import Enum
 
 from util import FalconLogger
 
+class ColorSensorConstants:
+    RED = 44
+    GREEN = 133
+    BLUE = 75
+    COLOR_TOLERANCE = 5 # if red is 44 and tolerance is 5, robot will see correct red value if red is in range (39, 49) exclusive
+    MIN_PROXIMITY = 75
+    
 
 class AlgaeManipulatorPositions:
     MAX = 90.0
@@ -78,7 +85,9 @@ class AlgaeManipulator(Subsystem):
     __intakeMotor: TalonSRX = None
     intakeState = IntakeState.OFF
 
-    __irBeam: DigitalInput = None
+    # __irBeam: DigitalInput = None
+
+    __colorSensor: ColorSensorV3 = None
 
     __kMotorOffset = 0.80742
 
@@ -145,7 +154,11 @@ class AlgaeManipulator(Subsystem):
             self.simIntake = TalonFX(25, "canivore1")
 
         # IR Beam
-        self.__irBeam = DigitalInput(3)
+        # self.__irBeam = DigitalInput(3)
+
+        # Color Sensor
+        self.__colorSensor = ColorSensorV3(I2C.Port(0))
+        self.color = self.__colorSensor.getColor()
 
         # Shuffleboard
         Shuffleboard.getTab("AlgaeManipulator").add("AlgaeManipulator", self)
@@ -254,4 +267,21 @@ class AlgaeManipulator(Subsystem):
         """
         Returns if the intake has a ball
         """
-        return not self.__irBeam.get()
+        self.color = self.__colorSensor.getColor()
+        red_min = ColorSensorConstants.RED - ColorSensorConstants.COLOR_TOLERANCE
+        red_max = ColorSensorConstants.RED + ColorSensorConstants.COLOR_TOLERANCE
+        green_min = ColorSensorConstants.GREEN - ColorSensorConstants.COLOR_TOLERANCE
+        green_max = ColorSensorConstants.GREEN + ColorSensorConstants.COLOR_TOLERANCE
+        blue_min = ColorSensorConstants.BLUE - ColorSensorConstants.COLOR_TOLERANCE
+        blue_max = ColorSensorConstants.BLUE + ColorSensorConstants.COLOR_TOLERANCE
+
+        return self.__colorSensor.getProximity() > ColorSensorConstants.MIN_PROXIMITY\
+            and self.is_within_range(self.color.red * 255, red_min, red_max)\
+                and self.is_within_range(self.color.green * 255, green_min, green_max)\
+                    and self.is_within_range(self.color.blue * 255, blue_min, blue_max)\
+            
+        
+    
+    def is_within_range(self, val, min, max):
+        '''Returns whether val is in range (min, max) exclusive'''
+        return val < max and val > min
