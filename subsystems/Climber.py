@@ -111,6 +111,9 @@ class Climber(Subsystem):
         SmartDashboard.putData( "ClimberMech", mech )
 
         # Simulation
+        self.simLMotor = SparkMaxSim(self.__leadMotor, DCMotor.NEO(1))
+        # self.simLMotor.setPosition( degreesToRotations( 90 ) )
+
         self.simClimber = SingleJointedArmSim(
             DCMotor.NEO(2),
             ClimberConstants.gearRatio,
@@ -122,10 +125,6 @@ class Climber(Subsystem):
             degreesToRadians( ClimberConstants.startAngle_d )
         )
         self.simClimber.setState( self.getPosition(), 0.0 )
-
-        self.simLMotor = SparkMaxSim(self.__leadMotor, DCMotor.NEO(1))
-        self.simEncoder = self.simLMotor.getAbsoluteEncoderSim()
-        self.simEncoder.setPosition( degreesToRotations( 90 ) )
 
     # Periodic Loop
     def periodic(self) -> None:
@@ -154,7 +153,7 @@ class Climber(Subsystem):
             self.run()
 
         self.mechClimberActual.setAngle( self.getPosition() - 90.0 )
-        self.mechClimberTarget.setAngle( self.getPosition() - 90.0 )
+        self.mechClimberTarget.setAngle( self.getSetpoint() - 90.0 )
 
         # Logging: Log Outputs
         FalconLogger.logOutput("Climber/TargetPosition_d", self.getSetpoint())

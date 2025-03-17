@@ -157,6 +157,9 @@ class AlgaeManipulator(Subsystem):
         #Shuffleboard.getTab("AlgaeManipulator").add("AlgaeManipulator", self)
 
         # Pivot Simulation
+        self.simLMotor = SparkMaxSim(self.__leadMotor, DCMotor.NEO(1))
+        #self.simLMotor.setPosition( degreesToRotations( 90 ) )
+
         self.simPivotArm = SingleJointedArmSim(
             DCMotor.NEO550(2),
             AlgaeManipulatorConstants.pivot_kGearRatio,
@@ -168,10 +171,6 @@ class AlgaeManipulator(Subsystem):
             degreesToRadians( 90.0 ),
         )
         self.simPivotArm.setState( self.getMeasurement(), 0.0 )
-
-        self.simLMotor = SparkMaxSim(self.__leadMotor, DCMotor.NEO(1))
-        self.simEncoder = self.simLMotor.getAbsoluteEncoderSim()
-        self.simEncoder.setPosition( degreesToRotations( 90 ) )
 
         # Intake Simulation
         self.simIntake = self.__intakeMotor.getSimCollection()             
