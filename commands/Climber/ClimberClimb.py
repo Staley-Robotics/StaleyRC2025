@@ -21,12 +21,13 @@ class ClimberClimb(Command):
 
     # Periodic
     def execute(self) -> None:
-        ...
+        # ...
+        pass
 
     # On End
     def end(self, interrupted: bool) -> None:
         # self.Climber.safe_stop()
-        ...
+        pass
 
     # Is Finished
     def isFinished(self) -> bool:

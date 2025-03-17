@@ -82,10 +82,6 @@ class RobotContainer:
         cmdCoralOut = CoralWheelOut(self.sysCoralWheel)
         cmdCoralPivotControl = ControlPivotPosition(self.sysCoralPivot, self.driver1.getRightUpDown)
 
-        # Climber
-        # cmdClimberPosition = ClimberPosition( sysClimber, driver2.getLeftUpDown )
-        cmdClimberStay = ClimberStay( self.sysClimber )
-
         # Elevator
         # cmdElevatorByStick = ElevatorByStick( sysElevator, driver1.getRightUpDown )
 
@@ -98,15 +94,20 @@ class RobotContainer:
         )
 
         # Algae
-        cmdAlgaeGrab = AlgaeGrab( self.sysAlgae )
-        cmdAlgaeEject = AlgaeEject( self.sysAlgae )
-        cmdAlgaeHold = AlgaeHold( self.sysAlgae )
+        self.sysAlgae.setDefaultCommand( AlgaeHold( self.sysAlgae ) )
+        self.driver1.a().whileTrue( AlgaeGrab( self.sysAlgae ) )
+        self.driver1.b().whileTrue( AlgaeHold( self.sysAlgae ) )
 
+        # Climber
+        self.sysClimber.setDefaultCommand( ClimberNotClimb( self.sysClimber ) )
+        self.driver1.x().whileTrue( ClimberAway( self.sysClimber ) ) 
+        self.driver1.y().whileTrue( ClimberClimb( self.sysClimber ) )
+        
         # default commands
         # defaults
         #self.sysCoralPivot.setDefaultCommand(cmdCoralPivotControl)
         # sysClimber.setDefaultCommand(cmdClimberStay)
-        self.sysAlgae.setDefaultCommand(cmdAlgaeHold)
+        
         #self.sysDriveTrain.setDefaultCommand(cmdDriveByStick)
 
         ### Controls
@@ -120,12 +121,10 @@ class RobotContainer:
         ## CLimber
         # driver2.y().toggleOnTrue(cmdClimberPosition)
         # Only necessary climber commands (as of now): ClimberClimb (climber goes in), ClimberNotClimb (climber goes out), ClimberAway (climber goes straight up)
-        # driver1.a().onTrue(cmdClimberClimb) # z on keyboard
-        # driver1.x().onTrue(cmdClimberNotClimb) # c on keyboard
+        
 
         ## Elevator
         # driver1.a().toggleOnTrue( cmdElevatorByStick )
 
         ## Algae
-        self.driver1.a().whileTrue(cmdAlgaeGrab)
-        self.driver1.b().whileTrue(cmdAlgaeEject)
+
