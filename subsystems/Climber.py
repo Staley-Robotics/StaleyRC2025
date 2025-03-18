@@ -42,12 +42,14 @@ class ClimberConstants:
     armMass_kg:kilograms = 1.35575924
     minAngle_d:degrees = -75.0
     maxAngle_d:degrees = 200.0
-    useGravity:bool = False
+    useGravity:bool = True
     startAngle_d:float = 90.0
 
 class Climber(Subsystem):
-    setpoint:float = 90.0
+    
+    setpoint:float = 45.0
     control_type:SparkMax.ControlType = None
+
     # Initialization
     def __init__(self, mainId:int, followId:int, encoder_offset:float) -> None:
         '''
@@ -127,7 +129,7 @@ class Climber(Subsystem):
             ClimberConstants.useGravity,
             degreesToRadians( ClimberConstants.startAngle_d )
         )
-        self.simClimber.setState( self.getPosition(), 0.0 )
+        self.simClimber.setState( degreesToRadians( ClimberConstants.startAngle_d ), 0.0 )
 
     # Periodic Loop
     def periodic(self) -> None:

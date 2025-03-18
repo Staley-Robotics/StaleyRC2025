@@ -41,6 +41,7 @@ class RobotContainer:
 
         ## Initialize Subsystems
         self.sysDriveTrain = SwerveDrive()
+        self.sysVision = Vision( self.sysDriveTrain.getOdometry )
         self.sysElevator   = Elevator( 5, 6 )
         self.sysCoralWheel = CoralManipulatorWheel( 8 )
         self.sysCoralPivot = CoralManipulatorPivot( 7, 0.7794115 )
@@ -48,6 +49,9 @@ class RobotContainer:
         self.sysClimber    = Climber( 3, 4, 0.9024424 )
 
         ## PathPlanner / Autonomous
+        # Vision Prep
+        AwaitVisionData( lambda: self.sysVision.has_received_data, self.sysDriveTrain.resetOdometry, self.sysVision.get_last_pose ).schedule()
+
 
         ## Initialize Control Scheme
         ## Driver Controller Button Binding

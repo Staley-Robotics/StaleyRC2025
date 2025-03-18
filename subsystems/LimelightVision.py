@@ -20,6 +20,7 @@ class Limelight:
         # self.targetSub = table.getDoubleArrayTopic('t2d').subscribe([])
 
         self.last_pose = Pose2d()
+        self.rotation_stddev = 1.
 
     def array2d_to_botpose(self, data:list[float]) -> Pose2d:
         '''
@@ -40,7 +41,11 @@ class Limelight:
                 hadNewData = True
 
                 self.last_pose = self.array2d_to_botpose(pose_data.value)
-                self.estimatorRef().addVisionMeasurement( self.last_pose, pose_data.time/1000000.0 - (pose_data.value[6]/1000), [1.,1.,999999.] )
+                self.get_odometry().addVisionMeasurement(
+                    self.last_pose,
+                    pose_data.time/1000000.0 - (pose_data.value[6]/1000),
+                    [1.,1.,self.rotation_stddev]
+                )
 
         if hadNewData: return self.last_pose
 
@@ -59,20 +64,27 @@ if this is wrong, go look at https://docs.limelightvision.io/docs/docs-limelight
 
 class Vision(Subsystem):
 
-    # Limelight_IDs = ('one','two','three')
+    Limelight_IDs = ('one','two','three')
 
     def __init__(self, odometryGetter:typing.Callable[[], SwerveDrive4PoseEstimator]):
-        # self.cameras = [Limelight( f'limelight-{i}', odometryGetter) for i in self.Limelight_IDs]
-        self.camera = Limelight( f'limelight-one', odometryGetter)
+        self.cameras = [Limelight( f'limelight-{i}', odometryGetter) for i in self.Limelight_IDs]
 
         self.has_received_data = False
         self.last_pose = Pose2d()
 
     def periodic(self):
-        output = self.camera.update_botpose()
-        if output:
-            self.last_pose = output
-        # self.has_received_data = self.camera.update_botpose() or self.has_received_data # works with bool return from update
+        outputs = [camera.update_botpose() for camera in self.cameras]
+
+        if any(outputs):
+            for pose in outputs:
+                if pose:
+                    self.last_pose = pose
+                    break
+
+        # output = self.camera.update_botpose()
+        # if output:
+        #     self.last_pose = output
+        # # self.has_received_data = self.camera.update_botpose() or self.has_received_data # works with bool return from update
 
     def get_last_pose(self) -> Pose2d:
         return self.last_pose

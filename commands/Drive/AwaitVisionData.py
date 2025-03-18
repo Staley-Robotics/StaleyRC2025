@@ -14,7 +14,7 @@ class AwaitVisionData(Command):
     # Initialization
     def __init__( self,
                   visionDataRecieved: typing.Callable[[], bool],
-                  resetSwerveGyro: typing.Callable[[], None],
+                  resetSwerveGyro: typing.Callable[[Pose2d], None],
                   getVisionPose: typing.Callable[[], Pose2d],
                 ) -> None:
         # Command Attributes
