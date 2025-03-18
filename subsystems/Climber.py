@@ -147,7 +147,7 @@ class Climber(Subsystem):
         FalconLogger.logInput("Climber/FollowMotorTemp_c", self.__leadMotor.getMotorTemperature())
 
         FalconLogger.logInput("Climber/EncoderPosition_r", self.__encoder.getPosition())
-        FalconLogger.logInput("Climber/EncoderVelocity_rpm", self.__encoder.getVelocity())
+        FalconLogger.logInput("Climber/EncoderVelocity_rpm", self.__encoder.getVelocity()) # TODO should this be rps? or maybe do a * 60
 
         # Run Subsystem: Set New State To Subsystem
         if RobotState.isDisabled():
@@ -230,6 +230,7 @@ class Climber(Subsystem):
         """Sets the desired position of the climber
     
         :param position: the desired position in degrees
+        :param override: whether or not this uses min(max()) to mnormalize position
         """
         if not override:
             position = min(max(position, ClimberConstants.minAngle_d), ClimberConstants.maxAngle_d )

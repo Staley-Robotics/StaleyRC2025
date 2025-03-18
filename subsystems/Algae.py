@@ -318,7 +318,7 @@ class AlgaeManipulator(Subsystem):
 
     def setIntake(self, state: AlgaeIntakeState):
         """
-        Sets the state of the intake, uses the
+        Sets the state of the intake
         """
         self.intakeState = state
         self.__intakeMotor.set(TalonSRXControlMode.PercentOutput, state.value)
