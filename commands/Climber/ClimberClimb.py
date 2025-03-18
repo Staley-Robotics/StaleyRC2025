@@ -17,7 +17,7 @@ class ClimberClimb(Command):
 
     # On Start
     def initialize(self) -> None:
-        self.Climber.setPosition(180)
+        self.Climber.setSetpoint(180)
 
     # Periodic
     def execute(self) -> None:

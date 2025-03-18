@@ -30,7 +30,7 @@ class RobotContainer:
         - order: coral wheel, coral pivot, algae, climber, elevator
         '''
         ## Controller Mapping Mode
-        control_mode: str = "Test"  # Can be "Comp", "Practice", or "Test"
+        control_mode: str = "Practice"  # Can be "Comp", "Practice", or "Test"
 
         ## Controllers
         self.driver1 = FalconXboxController(0, squaredInputs=True)
@@ -69,23 +69,42 @@ class RobotContainer:
         pass
 
     def __bindPracticeControls(self):
-        pass
+        ## Driver 1
+        # DriveTrain
+        self.sysDriveTrain.setDefaultCommand(
+            DriveByStick( self.sysDriveTrain, self.driver1.getLeftUpDown, self.driver1.getLeftSideToSide, self.driver1.getRightSideToSide )
+        )
 
-    def __bindSimTestControls(self):
-        self.driver1.povDown().toggleOnTrue( SetPivotPosition( self.sysCoralPivot, CoralPivotPositions.L1, "L1" ) )
-        self.driver1.povLeft().toggleOnTrue( SetPivotPosition( self.sysCoralPivot, CoralPivotPositions.L2, "L2" ) )
-        self.driver1.povRight().toggleOnTrue( SetPivotPosition( self.sysCoralPivot, CoralPivotPositions.L3, "L3" ) )
-        self.driver1.povUpLeft().toggleOnTrue( SetPivotPosition( self.sysCoralPivot, CoralPivotPositions.L4_up, "L4u" ) )
-        self.driver1.povUpRight().toggleOnTrue( SetPivotPosition( self.sysCoralPivot, CoralPivotPositions.L4_down, "L4d" ) )
-        self.driver1.start().toggleOnTrue( SetPivotPosition( self.sysCoralPivot, CoralPivotPositions.START, "Start" ) )
-        
-        # # Elevator
-        # #self.sysElevator.setDefaultCommand()
-        # self.driver2.a().toggleOnTrue( ElevatorToPos( self.sysElevator, ElevatorPositions.BOTTOM ) )
-        # self.driver2.b().toggleOnTrue( ElevatorToPos( self.sysElevator, ElevatorPositions.LOW_CORAL ) )
-        # self.driver2.x().toggleOnTrue( ElevatorToPos( self.sysElevator, ElevatorPositions.MED_CORAL ) )
-        # self.driver2.y().toggleOnTrue( ElevatorToPos( self.sysElevator, ElevatorPositions.HIGH_CORAL ) )
-        
+        # Algae
+        self.sysAlgae.setDefaultCommand( AlgaeHold( self.sysAlgae ) )
+        self.driver1.a().whileTrue( AlgaeGrab( self.sysAlgae ) )
+        self.driver1.b().whileTrue( AlgaeEject( self.sysAlgae ) ) # TODO: remake Algae eject as sequence to avoid early eject
+
+        # Climber
+        self.sysClimber.setDefaultCommand( ClimberUp( self.sysClimber ) )
+        self.driver1.x().onTrue( ClimberOut( self.sysClimber ) ) 
+        self.driver1.y().toggleOnTrue( ClimberOpenControl( self.sysClimber, self.driver1.getTriggers ) )# NOTE: use self.driver1.getRightTriggerAxis ) ) to only allow open loop to contract climber
+
+        ## Driver 2 TODO: update for control board + controller
+        # Coral Pivot
+        # self.driver2.back().toggleOnTrue( ControlPivotPosition( self.sysCoralPivot, self.driver2.getLeftUpDown ) ) NOTE: if manual control wanted
+        self.driver2.povDown().toggleOnTrue( SetPivotPosition( self.sysCoralPivot, CoralPivotPositions.L1, "L1" ) )
+        self.driver2.povLeft().toggleOnTrue( SetPivotPosition( self.sysCoralPivot, CoralPivotPositions.L2, "L2" ) )
+        self.driver2.povRight().toggleOnTrue( SetPivotPosition( self.sysCoralPivot, CoralPivotPositions.L3, "L3" ) )
+        self.driver2.povUpLeft().toggleOnTrue( SetPivotPosition( self.sysCoralPivot, CoralPivotPositions.L4_up, "L4u" ) )
+        self.driver2.povUpRight().toggleOnTrue( SetPivotPosition( self.sysCoralPivot, CoralPivotPositions.L4_down, "L4d" ) )
+        # self.driver2.start().toggleOnTrue( SetPivotPosition( self.sysCoralPivot, CoralPivotPositions.START, "Start" ) ) NOTE: what is this for?
+
+
+        # Coral Wheel
+        self.driver2.rightBumper().onTrue( CoralIO( self.sysCoralWheel ) )
+
+        # Elevator
+        # self.driver2.start().toggleOnTrue( ElevatorByStick( self.sysElevator, self.driver2.getRightUpDown ) ) NOTE: if manual control wanted
+        self.driver2.a().toggleOnTrue( ElevatorToPos( self.sysElevator, ElevatorPositions.BOTTOM ) )
+        self.driver2.b().toggleOnTrue( ElevatorToPos( self.sysElevator, ElevatorPositions.LOW_CORAL ) )
+        self.driver2.x().toggleOnTrue( ElevatorToPos( self.sysElevator, ElevatorPositions.MED_CORAL ) )
+        self.driver2.y().toggleOnTrue( ElevatorToPos( self.sysElevator, ElevatorPositions.HIGH_CORAL ) )
 
     def __bindTestControls(self):
         # DriveTrain

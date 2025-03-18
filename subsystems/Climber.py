@@ -47,6 +47,7 @@ class ClimberConstants:
 
 class Climber(Subsystem):
     setpoint:float = 90.0
+    control_type:SparkMax.ControlType = None
     # Initialization
     def __init__(self, mainId:int, followId:int, encoder_offset:float) -> None:
         '''
@@ -98,6 +99,8 @@ class Climber(Subsystem):
         self.__leadMotor.configure( lMotorCfg, SparkBase.ResetMode.kResetSafeParameters, SparkBase.PersistMode.kPersistParameters )
         self.__followMotor.configure( fMotorCfg, SparkBase.ResetMode.kResetSafeParameters, SparkBase.PersistMode.kPersistParameters )
         
+        self.control_type = SparkMax.ControlType.kPosition
+
         # Mechanism2d
         mech = Mechanism2d( 30, 40, Color8Bit(50,50,70) )
         mechRoot = mech.getRoot("Climber", 15, 0)
@@ -191,26 +194,39 @@ class Climber(Subsystem):
 
     # Run the Subsystem
     def run(self) -> None:
-        sp = degreesToRotations( self.getSetpoint() )
+        if self.control_type == SparkMax.ControlType.kPosition:
+            sp = degreesToRotations( self.getSetpoint() )
 
-        arbFF = ClimberConstants.kArbFF_Climb if self.isClimbing() else ClimberConstants.kArbFF
-        cosineScalar = math.cos( degreesToRadians( self.getPosition() ) )
-        slot = ClosedLoopSlot.kSlot1 if self.isClimbing() else ClosedLoopSlot.kSlot0       
+            arbFF = ClimberConstants.kArbFF_Climb if self.isClimbing() else ClimberConstants.kArbFF
+            cosineScalar = math.cos( degreesToRadians( self.getPosition() ) )
+            slot = ClosedLoopSlot.kSlot1 if self.isClimbing() else ClosedLoopSlot.kSlot0       
 
-        self.__controller.setReference(
-            sp,
-            SparkBase.ControlType.kPosition,
-            slot,
-            arbFF * cosineScalar,
-            SparkClosedLoopController.ArbFFUnits.kVoltage
-        )
+            self.__controller.setReference(
+                sp,
+                self.control_type,
+                slot,
+                arbFF * cosineScalar,
+                SparkClosedLoopController.ArbFFUnits.kVoltage
+            )
+        else: # kDutyCycle
+            # Safeties - check if position nearing bounds, only allow to move away from bound
+            if self.getPosition() >= ClimberPositions.Climbing - ClimberConstants.kTolerance:
+                self.setSetpoint(min(0, self.getSetpoint()), True)
+            elif self.getPosition() <= ClimberPositions.Prepare - ClimberConstants.kTolerance: # tolerance subtracted to extend farther if needed
+                self.setSetpoint(max(0, self.getSetpoint()), True)
+
+            # assumes setpoint will be overrided to match duty cycle range
+            self.__controller.setReference(
+                self.getSetpoint(),
+                self.control_type,
+            )
 
     # Stop the Subsystem
     def stop(self) -> None:
-        self.setPosition( self.getPosition(), True )
+        self.setSetpoint( self.getPosition(), True )
 
     # Set the Desired Position
-    def setPosition(self, position:degrees, override:bool = False):
+    def setSetpoint(self, position:degrees, override:bool = False):
         """Sets the desired position of the climber
     
         :param position: the desired position in degrees

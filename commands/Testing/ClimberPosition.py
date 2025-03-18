@@ -38,7 +38,7 @@ class ClimberPosition(Command):
         elif new_val < -90:
             new_val += 360
 
-        self.climber.setPosition(new_val)
+        self.climber.setSetpoint(new_val)
 
     # On End
     def end(self, interrupted:bool) -> None:

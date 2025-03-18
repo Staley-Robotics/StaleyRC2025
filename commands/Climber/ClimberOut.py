@@ -17,7 +17,7 @@ class ClimberOut(Command):
 
     # On Start
     def initialize(self) -> None:
-        self.Climber.setPosition(-10.0)  
+        self.Climber.setSetpoint(-10.0)  
 
     # Periodic
     def execute(self) -> None:
