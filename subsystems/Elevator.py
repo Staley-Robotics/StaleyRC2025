@@ -15,13 +15,13 @@ from rev import SparkMax, SparkBase, SparkMaxConfig, ClosedLoopConfig, ClosedLoo
 from util import FalconLogger
 
 class ElevatorConstants:
-    _kP = 3.0
+    _kP = 0.4
     _kI = 0.0
-    _kD = 0.1
+    _kD = 0.0
     _kG = 0.0 # force to overcome gravity
     _kS = 0.0 # force to overcome friction
     _kV = 0.0 # Apply __ voltage for target velocity
-    _kFF = 0.0 # Feed Forward
+    _kFF = 0.001 # Feed Forward
 
     _kOffset = 0.0
     _kAtSetpointTolerance:inches = 0.1
@@ -35,10 +35,10 @@ class ElevatorConstants:
     _motorRotsPerHeightInches =  1 / _gearRatio * (_pulleyDiameter * math.pi)
 
 class ElevatorPositions:
-    '''
+    """
     measured in inches from ground to center of coral pivot axle
-    '''
-    BOTTOM:inches = 34.5 # Minimum height
+    """
+    BOTTOM:inches = 34.75 # Minimum height
     TOP:inches = 76.0 # maximum height
     MIDDLE:inches = (BOTTOM + TOP) / 2
 
@@ -60,6 +60,8 @@ class Elevator(Subsystem):
         self.__followEncoder = self.__followMotor.getEncoder()
         self.__pidController = self.__leadMotor.getClosedLoopController()
 
+        self.__leadEncoder.setPosition(ElevatorPositions.BOTTOM)
+
         self.__topSwitch = self.__leadMotor.getReverseLimitSwitch()
         self.__bottomSwitch = self.__leadMotor.getForwardLimitSwitch()
 
@@ -71,7 +73,7 @@ class Elevator(Subsystem):
         fMotorCfg = SparkMaxConfig()
         fMotorCfg = fMotorCfg.setIdleMode( SparkMaxConfig.IdleMode.kBrake )
         fMotorCfg = fMotorCfg.inverted( True )
-        fMotorCfg = fMotorCfg.follow( self.__followMotor.getDeviceId(), False )
+        fMotorCfg = fMotorCfg.follow( self.__leadMotor.getDeviceId(), False )
 
         clCfg = ClosedLoopConfig()
         clCfg = clCfg.pidf(

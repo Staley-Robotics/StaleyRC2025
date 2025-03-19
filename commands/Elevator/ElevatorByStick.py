@@ -1,6 +1,6 @@
 from commands2 import Command
 
-from subsystems.Elevator import Elevator
+from subsystems.Elevator import Elevator, ElevatorPositions
 
 from typing import Callable
 
@@ -23,7 +23,7 @@ class ElevatorByStick(Command):
         ...
 
     def execute(self):
-        self.setPos = max(min(self.__elevator.getSetpoint() + self.getPos() * self.controlSpeed, Elevator.ElevatorPositions.TOP),Elevator.ElevatorPositions.BOTTOM)
+        self.setPos = max(min(self.__elevator.getSetpoint() + self.getPos() * self.controlSpeed, ElevatorPositions.TOP), ElevatorPositions.BOTTOM)
         self.__elevator.setSetpoint(self.setPos)
         # self.__elevator.setSetpoint(self.scaleToRange(self.getPos()))
 
@@ -39,7 +39,7 @@ class ElevatorByStick(Command):
         # toLow = 0
         # toHigh = 1
         # return (value - fromLow) / (fromHigh - fromLow) * (toHigh - toLow) + toLow
-        minimum = Elevator.ElevatorPositions.BOTTOM
-        maximum = Elevator.ElevatorPositions.TOP
+        minimum = ElevatorPositions.BOTTOM
+        maximum = ElevatorPositions.TOP
         value = (value + 1)/2 # value from [-1,1] -> [0,1]
         return minimum + (value * (maximum - minimum)) # value from [0,1] -> [minimum, maximum]

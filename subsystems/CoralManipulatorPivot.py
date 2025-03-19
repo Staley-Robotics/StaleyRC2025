@@ -21,15 +21,15 @@ from util import FalconLogger
 class CoralPivotConstants:
     gear_ratio = 25
     
-    kP = 5.0
-    kI = 0
-    kD = 0.0
-    kArbFF = 0.25
+    kP = 2.25 # 3
+    kI = 0 #
+    kD = 0.3 # 0.3
+    kArbFF = 0.55 # 0.425
 
-    kP_Coral = 3.0
+    kP_Coral = 2.25
     kI_Coral = 0
-    kD_Coral = 0.15
-    kArbFF_Coral = 0.5
+    kD_Coral = 0.3
+    kArbFF_Coral = 0.6
 
     kTolerance = 1.0 # math.pi / 10
     
@@ -39,6 +39,8 @@ class CoralPivotPositions: # NOTE: these are wrong
     START:degrees = -90
     SOURCE:degrees = 45
     HOLD:degrees = 90
+
+    Neg45:degrees = -45
 
     L1:degrees = -80 #Trough
     L2:degrees = 0
