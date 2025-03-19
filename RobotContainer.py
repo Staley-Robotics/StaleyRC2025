@@ -8,7 +8,7 @@ from ntcore.util import ntproperty
 from subsystems import *
 from commands import *
 from sequences import *
-from util import FalconXboxController, ReefScape, SourceSelect, SourceSide
+from util import FalconXboxController, ReefScape
 
 from pathplannerlib.auto import AutoBuilder, NamedCommands, PathPlannerPath
 
@@ -174,6 +174,12 @@ class RobotContainer:
         # # driver1.a().toggleOnTrue( cmdElevatorByStick )
         #
         # ## Algae
+
+        self.sysElevator.setDefaultCommand(ElevatorByStick(self.sysElevator, self.driver1.getRightUpDown))
+        self.driver1.a().onTrue(ElevatorToPos(self.sysElevator, ElevatorPositions.TROUGH))
+        self.driver1.b().onTrue(ElevatorToPos(self.sysElevator, ElevatorPositions.LOW_CORAL))
+        self.driver1.x().onTrue(ElevatorToPos(self.sysElevator, ElevatorPositions.MED_CORAL))
+        self.driver1.y().onTrue(ElevatorToPos(self.sysElevator, ElevatorPositions.HIGH_CORAL))
 
 
     def __bindDriveOnly(self):
