@@ -19,7 +19,7 @@ class Limelight:
         self.poseSub = table.getDoubleArrayTopic('botpose_wpiblue').subscribe([])
         # self.targetSub = table.getDoubleArrayTopic('t2d').subscribe([])
 
-        self.last_pose = Pose2d()
+        # self.last_pose = Pose2d()
         self.rotation_stddev = 1.
 
     def array2d_to_botpose(self, data:list[float]) -> Pose2d:
@@ -47,7 +47,7 @@ class Limelight:
                     [1.,1.,self.rotation_stddev]
                 )
 
-        if hadNewData: return self.last_pose
+        # if hadNewData: return self.last_pose
 
 '''
 limelight pose_data reference:
@@ -75,17 +75,21 @@ class Vision(Subsystem):
     def periodic(self):
         outputs = [camera.update_botpose() for camera in self.cameras]
 
-        if any(outputs):
-            for pose in outputs:
-                if pose:
-                    self.last_pose = pose
-                    break
+        # if any(outputs):
+        #     for pose in outputs:
+        #         if pose:
+        #             self.last_pose = pose
+        #             break
 
         # output = self.camera.update_botpose()
         # if output:
         #     self.last_pose = output
         # # self.has_received_data = self.camera.update_botpose() or self.has_received_data # works with bool return from update
 
-    def get_last_pose(self) -> Pose2d:
-        return self.last_pose
+    # def get_last_pose(self) -> Pose2d:
+    #     return self.last_pose
+    
+    def set_stddev(self, val:float) -> None:
+        for camera in self.cameras:
+            camera.rotation_stddev = val
 

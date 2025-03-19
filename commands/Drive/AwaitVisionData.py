@@ -1,47 +1,43 @@
 import typing
 
 from wpimath.geometry import Pose2d
+from wpilib import Timer
 
 from commands2 import Command, Subsystem
-from subsystems import Vision
+from subsystems import Vision, SwerveDrive
 from util import FalconLogger
 
 class AwaitVisionData(Command):
     # Variable Declaration
-    # vision:Vision = None
-    # m_getValue:typing.Callable[[],float] = lambda: 0.0
+    TRUST_VISION:float = 1.
+    NO_TRUST_VISION:float = 999999.
     
     # Initialization
     def __init__( self,
-                  visionDataRecieved: typing.Callable[[], bool],
-                  resetSwerveGyro: typing.Callable[[Pose2d], None],
-                  getVisionPose: typing.Callable[[], Pose2d],
+                  visionSys:Vision,
+                  driveSys:SwerveDrive
                 ) -> None:
         # Command Attributes
-        self.visionDataRecieved = visionDataRecieved
-        self.resetSwerveGyro = resetSwerveGyro
-        self.getVisionPose = getVisionPose
+        self.visionSys = visionSys
+        self.driveSys = driveSys
+
+        self.timer = Timer()
+
         self.setName( "AwaitVisionData" )
-        # self.addRequirements( visionSys )
 
-    # On Start
     def initialize(self) -> None:
-        pass
+        self.visionSys.set_stddev(self.TRUST_VISION)
 
-    # Periodic
     def execute(self) -> None:
-        if self.visionDataRecieved(): 
-            self.resetSwerveGyro( self.getVisionPose() )
-            FalconLogger.logOutput('/thingy/has synced gyro', True)
+        if self.visionSys.has_received_data:
+            self.timer.start()
 
-    # On End
     def end(self, interrupted:bool) -> None:
-        pass
+        self.visionSys.set_stddev(self.NO_TRUST_VISION)
+        self.driveSys.resetOdometry(self.driveSys.getPose())
 
-    # Is Finished
     def isFinished(self) -> bool:
-        return self.visionDataRecieved()
+        return self.timer.get() > 5
 
-    # Run When Disabled
     def runsWhenDisabled(self) -> bool:
         return True

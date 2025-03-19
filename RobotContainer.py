@@ -46,11 +46,12 @@ class RobotContainer:
         self.sysCoralWheel = CoralManipulatorWheel( 8 )
         self.sysCoralPivot = CoralManipulatorPivot( 7, 0.7794115 )
         self.sysAlgae      = AlgaeManipulator()
-        self.sysClimber    = Climber( 3, 4, 0.9024424 )
+        # self.sysClimber    = Climber( 3, 4, 0.9024424 )
+        self.sysClimber    = ClimberSimple( 3, 4, 0.9024424 )
 
         ## PathPlanner / Autonomous
         # Vision Prep
-        AwaitVisionData( lambda: self.sysVision.has_received_data, self.sysDriveTrain.resetOdometry, self.sysVision.get_last_pose ).schedule()
+        AwaitVisionData( self.sysVision, self.sysDriveTrain ).schedule()
 
 
         ## Initialize Control Scheme
@@ -88,9 +89,10 @@ class RobotContainer:
         self.driver1.b().whileTrue( AlgaeEject( self.sysAlgae ) ) # TODO: remake Algae eject as sequence to avoid early eject
 
         # Climber
-        self.sysClimber.setDefaultCommand( ClimberUp( self.sysClimber ) )
-        self.driver1.x().onTrue( ClimberOut( self.sysClimber ) )
-        self.driver1.y().toggleOnTrue( ClimberOpenControl( self.sysClimber, self.driver1.getTriggers ) )# NOTE: use self.driver1.getRightTriggerAxis ) ) to only allow open loop to contract climber
+        # self.sysClimber.setDefaultCommand( ClimberUp( self.sysClimber ) )
+        # self.driver1.x().onTrue( ClimberOut( self.sysClimber ) )
+        # self.driver1.y().toggleOnTrue( ClimberOpenControl( self.sysClimber, self.driver1.getTriggers ) )# NOTE: use self.driver1.getRightTriggerAxis ) ) to only allow open loop to contract climber
+        self.sysClimber.setDefaultCommand( ClimberOpenControl( self.sysClimber, self.driver1.getTriggers ) )
 
         ## Driver 2 TODO: update for control board + controller
         # Coral Pivot
