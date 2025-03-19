@@ -86,7 +86,7 @@ class AlgaeManipulator(Subsystem):
     __intakeMotor: TalonSRX = None
     intakeState = AlgaeIntakeState.OFF
 
-    __kMotorOffset = 0.80742
+    __kMotorOffset = 0.6926441
 
     def __init__(self):
         ## Init Motors

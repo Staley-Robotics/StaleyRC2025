@@ -42,12 +42,12 @@ class RobotContainer:
         ## Initialize Subsystems
         self.sysDriveTrain = SwerveDrive()
         self.sysVision = Vision( self.sysDriveTrain.getOdometry )
-        self.sysElevator   = Elevator( 5, 6 )
-        self.sysCoralWheel = CoralManipulatorWheel( 8 )
-        self.sysCoralPivot = CoralManipulatorPivot( 7, 0.7794115 )
-        self.sysAlgae      = AlgaeManipulator()
+        # self.sysElevator   = Elevator( 5, 6 )
+        # self.sysCoralWheel = CoralManipulatorWheel( 8 )
+        # self.sysCoralPivot = CoralManipulatorPivot( 7, 0.9551038 )
+        # self.sysAlgae      = AlgaeManipulator()
         # self.sysClimber    = Climber( 3, 4, 0.9024424 )
-        self.sysClimber    = ClimberSimple( 3, 4, 0.9024424 )
+        self.sysClimber    = ClimberSimple( 3, 4, 0.9136312 )
 
         ## PathPlanner / Autonomous
         # Vision Prep
@@ -180,3 +180,5 @@ class RobotContainer:
         self.sysDriveTrain.setDefaultCommand(
             DriveByStick( self.sysDriveTrain, self.driver1.getLeftUpDown, self.driver1.getLeftSideToSide, self.driver1.getRightSideToSide )
         )
+
+        self.driver1.a().onTrue( cmd.runOnce(self.sysDriveTrain.resetOdometry) )
