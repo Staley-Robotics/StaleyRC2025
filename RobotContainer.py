@@ -30,7 +30,7 @@ class RobotContainer:
         - order: coral wheel, coral pivot, algae, climber, elevator
         '''
         ## Controller Mapping Mode
-        control_mode: str = "Practice"  # Can be "Comp", "Practice", or "Test"
+        control_mode: str = "DriveOnly"  # Can be "Comp", "Practice", "Test", "DriveOnly"
 
         ## Initialize State
         ReefScapeState = ReefScape.getInstance()
@@ -62,6 +62,11 @@ class RobotContainer:
                 self.__bindPracticeControls()
             case "Test":
                 self.__bindTestControls()
+            case "DriveOnly":
+                self.__bindDriveOnly()
+
+        self.__autoChooser = AutoBuilder.buildAutoChooser("")
+        SmartDashboard.putData("AutoChooser", self.__autoChooser)
 
 
     # Get Autonomous Command
@@ -169,3 +174,7 @@ class RobotContainer:
 
         ## Algae
 
+    def __bindDriveOnly(self):
+        self.sysDriveTrain.setDefaultCommand(
+            DriveByStick( self.sysDriveTrain, self.driver1.getLeftUpDown, self.driver1.getLeftSideToSide, self.driver1.getRightSideToSide )
+        )
