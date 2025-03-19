@@ -19,12 +19,12 @@ class AlgaeEject(Command):
         if not self.Algae.hasAlgae():
             self.cancel()
         else:
+            self.Algae.setIntake(AlgaeIntakeState.OUT)
             self.Algae.setSetpoint(AlgaeManipulatorPositions.PLACE)
 
     # Periodic
     def execute(self) -> None:
-        if self.Algae.atSetpoint():
-            self.Algae.setIntake(AlgaeIntakeState.OUT)
+        pass
 
     # On End
     def end(self, interrupted:bool) -> None:
