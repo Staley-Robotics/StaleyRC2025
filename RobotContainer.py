@@ -42,11 +42,11 @@ class RobotContainer:
         ## Initialize Subsystems
         # self.sysDriveTrain = SwerveDrive()
         # self.sysVision = Vision( self.sysDriveTrain.getOdometry )
-        self.sysElevator   = Elevator( 5, 6 )
+        # self.sysElevator   = Elevator( 5, 6 )
         # self.sysCoralWheel = CoralManipulatorWheel( 8 )
         # self.sysCoralPivot = CoralManipulatorPivot( 7, 0.967803 )
         # self.sysAlgae      = AlgaeManipulator()
-        # self.sysClimber    = Climber( 3, 4, 0.9024424 )
+        self.sysClimber    = Climber( 3, 4, 0.9024424 )
         # self.sysClimber    = ClimberSimple( 3, 4, 0.9136312 )
 
         # Vision Prep
@@ -96,7 +96,7 @@ class RobotContainer:
         # self.sysClimber.setDefaultCommand( ClimberUp( self.sysClimber ) )
         # self.driver1.x().onTrue( ClimberOut( self.sysClimber ) )
         # self.driver1.y().toggleOnTrue( ClimberOpenControl( self.sysClimber, self.driver1.getTriggers ) )# NOTE: use self.driver1.getRightTriggerAxis ) ) to only allow open loop to contract climber
-        self.sysClimber.setDefaultCommand( ClimberOpenControl( self.sysClimber, self.driver1.getTriggers ) )
+        self.sysClimber.setDefaultCommand( ClimberOpenLoopControl( self.sysClimber, self.driver1.getTriggers ) )
 
         ## Driver 2 TODO: update for control board + controller
         # Coral Pivot
@@ -136,7 +136,7 @@ class RobotContainer:
         # self.driver1.y().whileTrue( ClimberClimb( self.sysClimber ) )
         #
         # # Coral Pivot
-        # #self.sysCoralPivot.setDefaultCommand()
+        # # self.sysCoralPivot.setDefaultCommand()
         # self.driver1.povDown().toggleOnTrue( SetPivotPosition( self.sysCoralPivot, CoralPivotPositions.L1, "L1" ) )
         # self.driver1.povLeft().toggleOnTrue( SetPivotPosition( self.sysCoralPivot, CoralPivotPositions.L2, "L2" ) )
         # self.driver1.povRight().toggleOnTrue( SetPivotPosition( self.sysCoralPivot, CoralPivotPositions.L3, "L3" ) )
@@ -175,11 +175,16 @@ class RobotContainer:
         #
         # ## Algae
 
-        self.sysElevator.setDefaultCommand(ElevatorByStick(self.sysElevator, self.driver1.getRightUpDown))
-        self.driver1.a().onTrue(ElevatorToPos(self.sysElevator, ElevatorPositions.TROUGH))
-        self.driver1.b().onTrue(ElevatorToPos(self.sysElevator, ElevatorPositions.LOW_CORAL))
-        self.driver1.x().onTrue(ElevatorToPos(self.sysElevator, ElevatorPositions.MED_CORAL))
-        self.driver1.y().onTrue(ElevatorToPos(self.sysElevator, ElevatorPositions.HIGH_CORAL))
+        # self.sysCoralPivot.setDefaultCommand( ControlPivotPosition( self.sysCoralPivot, self.driver2.getLeftUpDown ) )
+
+        # self.sysElevator.setDefaultCommand(ElevatorByStick(self.sysElevator, self.driver1.getRightUpDown))
+        # self.driver1.a().onTrue(ElevatorToPos(self.sysElevator, ElevatorPositions.TROUGH))
+        # self.driver1.b().onTrue(ElevatorToPos(self.sysElevator, ElevatorPositions.LOW_CORAL))
+        # self.driver1.x().onTrue(ElevatorToPos(self.sysElevator, ElevatorPositions.MED_CORAL))
+        # self.driver1.y().onTrue(ElevatorToPos(self.sysElevator, ElevatorPositions.HIGH_CORAL))
+
+        self.sysClimber.setDefaultCommand( ClimberOpenLoopControl( self.sysClimber, self.driver1.getLeftUpDown ) )
+        self.driver1.a().onTrue( ClimberOut( self.sysClimber ) )
 
 
     def __bindDriveOnly(self):

@@ -1,7 +1,9 @@
 import typing
 
 from commands2 import Command, Subsystem
-from subsystems.Climber import Climber, ClimberConstants
+from subsystems.Climber import Climber, ClimberConstants, ClimberPositions
+
+from rev import SparkMax
 
 
 class ClimberOut(Command):
@@ -15,23 +17,27 @@ class ClimberOut(Command):
         self.setName("ClimberOut")
         self.addRequirements(climberSubsystem)
 
+        self.setpoint = ClimberPositions.Prepare
+
     # On Start
     def initialize(self) -> None:
-        self.Climber.setSetpoint(-10.0)  
+        self.Climber.control_type = SparkMax.ControlType.kPosition
+        self.Climber.setSetpoint( ClimberPositions.Prepare )  
+        ...
 
     # Periodic
     def execute(self) -> None:
-        # self.Climber.setPosition(0)
-        pass
+        # self.Climber.__controller
+        ...
 
     # On End
     def end(self, interrupted: bool) -> None:
-        # self.Climber.safe_stop()
+        # self.Climber.control_type = SparkMax.ControlType.kDutyCycle
         pass
 
     # Is Finished
     def isFinished(self) -> bool:
-        return False # self.Climber.atSetpoint()
+        return self.Climber.atSetpoint()
 
     # Run When Disabled
     def runsWhenDisabled(self) -> bool:

@@ -23,15 +23,14 @@ class ClimberPositions:
     Climbing:degrees= 180.0
 
 class ClimberConstants:
-    kP = 5.0
+    kP = 0#5.0
     kI = 0.0
     kD = 0.0
-    kFF = 0.5 # Feed Forward
+    kFF = 0#0.5 # Feed Forward
     kArbFF = 0.0
     kTolerance:degrees = 1.0
 
-    kP_Climb: 0.0
-    kP_Climb = 5.0
+    kP_Climb = 0#5.0
     kI_Climb = 0.0
     kD_Climb = 0.0
     kFF_Climb = 0.0 # Feed Forward
@@ -47,7 +46,7 @@ class ClimberConstants:
 
 class Climber(Subsystem):
     
-    setpoint:float = 45.0
+    setpoint:float = 0.0
     control_type:SparkMax.ControlType = None
 
     # Initialization
@@ -205,7 +204,7 @@ class Climber(Subsystem):
 
             self.__controller.setReference(
                 sp,
-                self.control_type,
+                SparkMax.ControlType.kPosition,
                 slot,
                 arbFF * cosineScalar,
                 SparkClosedLoopController.ArbFFUnits.kVoltage
@@ -217,6 +216,8 @@ class Climber(Subsystem):
             elif self.getPosition() <= ClimberPositions.Prepare - ClimberConstants.kTolerance: # tolerance subtracted to extend farther if needed
                 self.setSetpoint(max(0, self.getSetpoint()), True)
 
+
+            print(self.getSetpoint(), self.control_type)
             # assumes setpoint will be overrided to match duty cycle range
             self.__controller.setReference(
                 self.getSetpoint(),

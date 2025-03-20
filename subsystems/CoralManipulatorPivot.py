@@ -105,14 +105,14 @@ class CoralManipulatorPivot(Subsystem):
         SmartDashboard.putData( 'CoralPivotMech', mech )
 
         ## Simulation
-        self.simMotor = SparkMaxSim( self.motor, DCMotor.NEO550() )
+        self.simMotor = SparkMaxSim( self.motor, DCMotor.NEO() )
         self.simEncoder = self.simMotor.getAlternateEncoderSim()
         self.simEncoder.setPosition( degreesToRotations(-90) )
 
         self.armSim = SingleJointedArmSim(
-            DCMotor.NEO550(),
+            DCMotor.NEO(),
             CoralPivotConstants.gear_ratio,
-            SingleJointedArmSim.estimateMOI( 0.15, 0.5 ), # NOTE: these are random numbers
+            SingleJointedArmSim.estimateMOI( 0.15, 3.25 ),
             0.15,
             degreesToRadians( CoralPivotPositions.MIN ),
             degreesToRadians( CoralPivotPositions.MAX ),
