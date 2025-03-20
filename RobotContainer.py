@@ -94,7 +94,7 @@ class RobotContainer:
         self.driver1.y().toggleOnTrue( ClimberOpenLoopControl( self.sysClimber, self.driver1.getRightUpDown ) )
 
         # Algae
-        self.sysAlgae.setDefaultCommand( AlgaeHold )
+        self.sysAlgae.setDefaultCommand( AlgaeHold( self.sysAlgae ) )
         self.driver1.a().toggleOnTrue( AlgaeGrab( self.sysAlgae ) )
 
         """Driver 2"""
