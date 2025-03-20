@@ -45,8 +45,8 @@ class RobotContainer:
         # self.sysElevator   = Elevator( 5, 6 )
         # self.sysCoralWheel = CoralManipulatorWheel( 8 )
         # self.sysCoralPivot = CoralManipulatorPivot( 7, 0.967803 )
-        # self.sysAlgae      = AlgaeManipulator()
-        self.sysClimber    = Climber( 3, 4, 0.9024424 )
+        self.sysAlgae      = AlgaeManipulator()
+        # self.sysClimber    = Climber( 3, 4, 0.9024424 )
         # self.sysClimber    = ClimberSimple( 3, 4, 0.9136312 )
 
         # Vision Prep
@@ -184,8 +184,12 @@ class RobotContainer:
         # self.driver1.y().onTrue(ElevatorToPos(self.sysElevator, ElevatorPositions.HIGH_CORAL))
 
         # self.sysClimber.setDefaultCommand( ClimberOpenLoopControl( self.sysClimber, self.driver1.getLeftUpDown ) )
-        # # DO NOT USE THISE # self.driver1.a().toggleOnTrue( ClimberOut( self.sysClimber ) )
-        pass
+        # # DO NOT USE THIS # self.driver1.a().toggleOnTrue( ClimberOut( self.sysClimber ) )
+
+
+        self.driver1.a().toggleOnTrue( AlgaeGrab( self.sysAlgae ) )
+        self.driver1.b().toggleOnTrue( AlgaeHold( self.sysAlgae ) )
+        self.driver1.x().toggleOnTrue( cmd.none() )
 
     def __bindDriveOnly(self):
         self.sysDriveTrain.setDefaultCommand(

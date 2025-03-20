@@ -28,11 +28,11 @@ class ColorConstants:
     proximity = 75
 
 class AlgaeManipulatorPositions:
-    MAX = 90.0
-    HOLD = 80.0
-    PLACE = 70.0
+    MAX = 100.0
+    HOLD = 85.0
+    PLACE = 60.0
     GRAB = 35.0
-    MIN = 0.0
+    MIN = 10.0
 
 class AlgaeIntakeState(Enum):
     IN = -0.5
@@ -41,13 +41,13 @@ class AlgaeIntakeState(Enum):
 
 class AlgaeManipulatorConstants:
     # Pivot Constants
-    pivot_kP: float = 8.0
-    pivot_kI: float = 0.0
-    pivot_kD: float = 1.5
+    pivot_kP: float = 0.75
+    pivot_kI: float = 0.00002
+    pivot_kD: float = 0.05
     pivot_kFF: float = 0.0
-    pivot_kArbFF: float = 4.1675
+    pivot_kArbFF: float = 0.97006
     pivot_kV: float = 0.0
-    pivot_kTolerance: float = 0.01
+    pivot_kTolerance: float = 1
 
     pivot_kP_Algae: float = 2.2
     pivot_kI_Algae: float = 0.0
@@ -86,7 +86,7 @@ class AlgaeManipulator(Subsystem):
     __intakeMotor: TalonSRX = None
     intakeState = AlgaeIntakeState.OFF
 
-    __kMotorOffset = 0.6926441
+    __kMotorOffset = 0.5902802
 
     def __init__(self):
         ## Init Motors
@@ -102,7 +102,7 @@ class AlgaeManipulator(Subsystem):
 
         fMotorCfg = SparkMaxConfig()
         fMotorCfg = fMotorCfg.setIdleMode( SparkMaxConfig.IdleMode.kBrake )
-        fMotorCfg = fMotorCfg.inverted(True)
+        # fMotorCfg = fMotorCfg.inverted(True)
         fMotorCfg = fMotorCfg.follow(self.__leadMotor.getDeviceId(), True)
 
         clConfig = ClosedLoopConfig()
