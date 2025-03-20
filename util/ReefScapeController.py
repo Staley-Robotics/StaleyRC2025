@@ -18,124 +18,124 @@ class ReefScapeController:
         self.ConsoleA = CommandJoystick(portA)
         self.ConsoleB = CommandJoystick(portB)
 
-    def C1(self) -> Trigger:
+    def R1(self) -> Trigger: # upper left right
         """
         Returns the C1 designator button on the console.
         """
-        return self.ConsoleA.button(1)
+        return self.ConsoleA.button(10)
 
-    def C2(self) -> Trigger:
+    def R2(self) -> Trigger:
         """
         Returns the C2 designator button on the console.
         """
-        return self.ConsoleA.button(2)
+        return self.ConsoleA.button(11)
 
-    def C3(self) -> Trigger:
+    def R3(self) -> Trigger:
         """
         Returns the C3 designator button on the console.
 
         """
-        return self.ConsoleA.button(3)
+        return self.ConsoleA.button(12)
 
-    def C4(self) -> Trigger:
+    def R4(self) -> Trigger:
         """
         Returns the C4 designator button on the console.
         """
-        return self.ConsoleA.button(4)
+        return self.ConsoleB.button(12)
 
-    def C5(self) -> Trigger:
+    def R5(self) -> Trigger:
         """
         Returns the C5 designator button on the console.
         """
-        return self.ConsoleA.button(5)
+        return self.ConsoleB.button(11)
 
-    def C6(self) -> Trigger:
+    def R6(self) -> Trigger:
         """
         Returns the C6 designator button on the console.
         """
-        return self.ConsoleA.button(6)
+        return self.ConsoleB.button(10)
 
-    def C7(self) -> Trigger:
+    def R7(self) -> Trigger:
         """
         Returns the C7 designator button on the console.
         """
-        return self.ConsoleA.button(7)
+        return self.ConsoleB.button(9)
 
-    def C8(self) -> Trigger:
+    def R8(self) -> Trigger:
         """
         Returns the C8 designator button on the console.
         """
-        return self.ConsoleA.button(8)
+        return self.ConsoleB.button(8)
 
-    def C9(self) -> Trigger:
+    def R9(self) -> Trigger:
         """
         Returns the C9 designator button on the console.
         """
-        return self.ConsoleA.button(9)
+        return self.ConsoleB.button(7)
 
-    def C10(self) -> Trigger:
+    def R10(self) -> Trigger:
         """
         Returns the C10 designator button on the console.
         """
-        return self.ConsoleA.button(10)
+        return self.ConsoleA.button(7)
 
-    def C11(self) -> Trigger:
+    def R11(self) -> Trigger:
         """
         Returns the C11 designator button on the console.
         """
-        return self.ConsoleA.button(11)
+        return self.ConsoleA.button(8)
 
-    def C12(self) -> Trigger:
+    def R12(self) -> Trigger:
         """
         Returns the C12 designator button on the console.
         """
-        return self.ConsoleA.button(12)
+        return self.ConsoleA.button(9)
 
 
     def L1(self) -> Trigger:
         """
         Returns the L1 designator button on the console.
         """
-        return self.ConsoleB.button(1)
+        return self.ConsoleB.button(3)
 
     def L2(self) -> Trigger:
         """
         Returns the L2 designator button on the console.
         """
-        return self.ConsoleB.button(2)
+        return self.ConsoleB.button(4)
 
     def L3(self) -> Trigger:
         """
         Returns the L3 designator button on the console.
         """
-        return self.ConsoleB.button(3)
+        return self.ConsoleB.button(5)
 
     def L4(self) -> Trigger:
         """
         Returns the L4 designator button on the console.
         """
-        return self.ConsoleB.button(4)
+        return self.ConsoleB.button(6)
 
     def Inner(self) -> Trigger:
         """
         Returns the Inner Source designator button on the console.
         """
-        return self.ConsoleB.button(5)
+        return self.ConsoleA.button(4)
 
     def Middle(self) -> Trigger:
         """
         Returns the Middle Source designator button on the console.
         """
-        return self.ConsoleB.button(6)
+        return self.ConsoleA.button(5)
 
     def Outer(self) -> Trigger:
         """
         Returns the Outer Source designator button on the console.
         """
-        return self.ConsoleB.button(7)
+        return self.ConsoleA.button(3)
 
     def Reset(self) -> Trigger:
         """
         Returns the Reset designator button on the console.
         """
-        return self.ConsoleB.button(8)
+        return self.ConsoleA.button(6)

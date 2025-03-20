@@ -215,3 +215,6 @@ class CoralManipulatorPivot(Subsystem):
         #     val += 360
             
         return val
+
+    def setHasCoral(self, hasCoral:typing.Callable[[], bool]) -> None:
+        self.hasCoral = hasCoral

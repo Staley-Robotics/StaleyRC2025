@@ -8,7 +8,7 @@ from ntcore.util import ntproperty
 from subsystems import *
 from commands import *
 from sequences import *
-from util import FalconXboxController, ReefScape
+from util import FalconXboxController, ReefScape, ReefScapeController
 
 from pathplannerlib.auto import AutoBuilder, NamedCommands, PathPlannerPath
 
@@ -30,28 +30,32 @@ class RobotContainer:
         - order: coral wheel, coral pivot, algae, climber, elevator
         '''
         ## Controller Mapping Mode
-        control_mode: str = "Test"  # Can be "Comp", "Practice", "Test", "DriveOnly"
+        control_mode: str = "Comp"  # Can be "Comp", "Practice", "Test", "DriveOnly"
 
-        ## Initialize State
-        ReefScapeState = ReefScape.getInstance()
 
         ## Controllers
         self.driver1 = FalconXboxController(0, squaredInputs=True)
         self.driver2 = FalconXboxController(1, squaredInputs=True)
+        self.controlBoard = ReefScapeController( 2, 3 )
 
         ## Initialize Subsystems
-        # self.sysDriveTrain = SwerveDrive()
-        # self.sysVision = Vision( self.sysDriveTrain.getOdometry )
-        # self.sysElevator   = Elevator( 5, 6 )
-        # self.sysCoralWheel = CoralManipulatorWheel( 8 )
-        # self.sysCoralPivot = CoralManipulatorPivot( 7, 0.967803 )
+        self.sysDriveTrain = SwerveDrive()
+        self.sysVision     = Vision( self.sysDriveTrain.getOdometry )
+        self.sysElevator   = Elevator( 5, 6 )
+        self.sysCoralWheel = CoralManipulatorWheel( 8 )
+        self.sysCoralPivot = CoralManipulatorPivot( 7, 0.967803 )
         self.sysAlgae      = AlgaeManipulator()
-        # self.sysClimber    = Climber( 3, 4, 0.9024424 )
+        self.sysClimber    = Climber( 3, 4, 0.9024424 )
         # self.sysClimber    = ClimberSimple( 3, 4, 0.9136312 )
 
         # Vision Prep
-        # AwaitVisionData( self.sysVision, self.sysDriveTrain ).schedule()
+        AwaitVisionData( self.sysVision, self.sysDriveTrain ).schedule()
+        self.sysCoralPivot.setHasCoral(self.sysCoralWheel.hasCoral)
 
+        ## Initialize State
+        self.ReefScapeState = ReefScape.getInstance()
+        self.ReefScapeState.setHasAlgae( self.sysAlgae.hasAlgae )
+        self.ReefScapeState.setHasCoral( self.sysCoralWheel.hasCoral )
 
         ## Initialize Control Scheme
         ## Driver Controller Button Binding
@@ -65,8 +69,8 @@ class RobotContainer:
             case "DriveOnly":
                 self.__bindDriveOnly()
 
-        # self.__autoChooser = AutoBuilder.buildAutoChooser("")
-        # SmartDashboard.putData("AutoChooser", self.__autoChooser)
+        self.__autoChooser = AutoBuilder.buildAutoChooser("")
+        SmartDashboard.putData("AutoChooser", self.__autoChooser)
 
 
     # Get Autonomous Command
@@ -78,7 +82,45 @@ class RobotContainer:
         return chooserValue if isinstance( chooserValue, Command ) else cmd.none()
 
     def __bindCompetitionControls(self):
-        pass
+        """Driver 1"""
+        # Drive
+        self.sysDriveTrain.setDefaultCommand(
+            DriveByStick( self.sysDriveTrain, self.driver1.getLeftUpDown, self.driver1.getLeftSideToSide, self.driver1.getRightSideToSide )
+        )
+        self.driver1.rightBumper().whileTrue( DriveToPose(self.ReefScapeState.getReefPose) ) # TODO: 
+        self.driver1.back().onTrue( AwaitVisionData( self.sysVision, self.sysDriveTrain ) )
+
+        # Climber
+        self.driver1.y().toggleOnTrue( ClimberOpenLoopControl( self.sysClimber, self.driver1.getRightUpDown ) )
+
+        # Algae
+        self.sysAlgae.setDefaultCommand( AlgaeHold )
+        self.driver1.a().toggleOnTrue( AlgaeGrab( self.sysAlgae ) )
+
+        """Driver 2"""
+        ## Coral
+        # Pivot
+        # self.driver2.a().onTrue( Coral ) # Cycle or something idk
+        self.controlBoard.L1().toggleOnTrue( SetPivotPosition( self.sysCoralPivot, CoralPivotPositions.L1, "L1" ) )
+        self.controlBoard.L2().toggleOnTrue( SetPivotPosition( self.sysCoralPivot, CoralPivotPositions.L2, "L2" ) )
+        self.controlBoard.L3().toggleOnTrue( SetPivotPosition( self.sysCoralPivot, CoralPivotPositions.L3, "L3" ) )
+        self.controlBoard.L4().toggleOnTrue( SetPivotPosition( self.sysCoralPivot, CoralPivotPositions.L4_up, "L4u" ) )
+        # self.controlBoard.L1().toggleOnTrue( SetPivotPosition( self.sysCoralPivot, CoralPivotPositions.L4_down, "L4d" ) )
+
+        # Wheel
+        # self.sysCoralWheel.setDefaultCommand( CoralHold( self.sysCoralWheel ) ) # TODO: implement/create command
+        self.driver2.y().toggleOnTrue( CoralIO( self.sysCoralWheel ) )
+
+
+        # Elevator
+        self.sysElevator.setDefaultCommand(ElevatorByStick(self.sysElevator, self.driver2.getLeftUpDown))
+        self.controlBoard.L1().onTrue(ElevatorToPos(self.sysElevator, ElevatorPositions.TROUGH))
+        self.controlBoard.L2().onTrue(ElevatorToPos(self.sysElevator, ElevatorPositions.LOW_CORAL))
+        self.controlBoard.L3().onTrue(ElevatorToPos(self.sysElevator, ElevatorPositions.MED_CORAL))
+        self.controlBoard.L4().onTrue(ElevatorToPos(self.sysElevator, ElevatorPositions.HIGH_CORAL))
+
+        # self.controlBoard.Reset().whileTrue( DriveToPose(self.ReefScapeState.getReefPose) )
+
 
     def __bindPracticeControls(self):
         ## Driver 1

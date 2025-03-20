@@ -1,6 +1,7 @@
 from .FalconDefaultCommand import *
 from .FalconLogger import *
 from .FalconXboxController import *
+from .ReefScapeController import *
 from .NtTunableFloat24 import *
 from .ReefScape import *
 
@@ -10,6 +11,7 @@ __all__ = [
     "FalconXboxController",
     "NTTunableFloat",
     "ReefScape",
+    "ReefScapeController",
     "SourceSelect",
     "SourceSide",
     "RobotMode",
