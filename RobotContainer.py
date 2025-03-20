@@ -1,6 +1,6 @@
 # FRC Imports
 from wpilib import SendableChooser, SmartDashboard
-from commands2 import Command, cmd
+from commands2 import Command, cmd, ConditionalCommand
 
 from ntcore.util import ntproperty
 
@@ -26,7 +26,7 @@ class RobotContainer:
         """
 
         '''
-        Testing Logging:
+        Testing Logging: 
         - order: coral wheel, coral pivot, algae, climber, elevator
         '''
         ## Controller Mapping Mode
@@ -94,8 +94,8 @@ class RobotContainer:
         self.driver1.y().toggleOnTrue( ClimberOpenLoopControl( self.sysClimber, self.driver1.getRightUpDown ) )
 
         # Algae
-        self.sysAlgae.setDefaultCommand( AlgaeHold( self.sysAlgae ) )
-        self.driver1.a().toggleOnTrue( AlgaeGrab( self.sysAlgae ) )
+        # self.sysAlgae.setDefaultCommand( AlgaeHold( self.sysAlgae ) )
+        # self.driver1.a().toggleOnTrue( AlgaeGrab( self.sysAlgae ) )
 
         """Driver 2"""
         ## Coral
@@ -107,7 +107,10 @@ class RobotContainer:
         self.controlBoard.L4().toggleOnTrue( SetPivotPosition( self.sysCoralPivot, CoralPivotPositions.L4_up, "L4u" ) )
         # self.controlBoard.L1().toggleOnTrue( SetPivotPosition( self.sysCoralPivot, CoralPivotPositions.L4_down, "L4d" ) )
 
+        self.driver2.a().toggleOnTrue( SetPivotPosition( self.sysCoralPivot, CoralPivotPositions.SOURCE, 'Source') ).toggleOnTrue(CoralIO(self.sysCoralWheel))
+
         # Wheel
+        # self.sysCoralWheel.setDefaultCommand( ConditionalCommand( CoralHold( self.sysCoralWheel ), cmd.none(), self.sysCoralWheel.hasCoral ) )
         # self.sysCoralWheel.setDefaultCommand( CoralHold( self.sysCoralWheel ) ) # TODO: implement/create command
         self.driver2.y().toggleOnTrue( CoralIO( self.sysCoralWheel ) )
 
@@ -118,6 +121,8 @@ class RobotContainer:
         self.controlBoard.L2().onTrue(ElevatorToPos(self.sysElevator, ElevatorPositions.LOW_CORAL))
         self.controlBoard.L3().onTrue(ElevatorToPos(self.sysElevator, ElevatorPositions.MED_CORAL))
         self.controlBoard.L4().onTrue(ElevatorToPos(self.sysElevator, ElevatorPositions.HIGH_CORAL))
+
+        self.driver2.a().onTrue(ElevatorToPos(self.sysElevator, ElevatorPositions.BOTTOM))
 
         # self.controlBoard.Reset().whileTrue( DriveToPose(self.ReefScapeState.getReefPose) )
 

@@ -99,10 +99,11 @@ class AlgaeManipulator(Subsystem):
         # Init motors and config
         lMotorCfg = SparkMaxConfig()
         lMotorCfg = lMotorCfg.setIdleMode( SparkMaxConfig.IdleMode.kBrake )
+        lMotorCfg = lMotorCfg.inverted(True)
 
         fMotorCfg = SparkMaxConfig()
         fMotorCfg = fMotorCfg.setIdleMode( SparkMaxConfig.IdleMode.kBrake )
-        # fMotorCfg = fMotorCfg.inverted(True)
+        fMotorCfg = fMotorCfg.inverted(False)
         fMotorCfg = fMotorCfg.follow(self.__leadMotor.getDeviceId(), True)
 
         clConfig = ClosedLoopConfig()
@@ -125,7 +126,7 @@ class AlgaeManipulator(Subsystem):
 
         encConfig = AbsoluteEncoderConfig()
         encConfig = encConfig.zeroOffset(self.__kMotorOffset)
-        encConfig = encConfig.zeroCentered(True)
+        encConfig = encConfig.zeroCentered(True).inverted(False)
 
         # Apply configs
         lMotorCfg.apply(clConfig)

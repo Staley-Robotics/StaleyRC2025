@@ -27,7 +27,8 @@ class AlgaeGrab(Command):
 
     # On End
     def end(self, interrupted:bool) -> None:
-        pass
+        self.Algae.setIntake(AlgaeIntakeState.OFF)
+        self.Algae.setSetpoint(AlgaeManipulatorPositions.HOLD)
 
     # Is Finished
     def isFinished(self) -> bool:

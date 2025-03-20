@@ -12,6 +12,7 @@ from .Coral.SetCoralWheelSpeed import *
 from .Coral.CoralWheelIn import *
 from .Coral.CoralWheelOut import *
 from .Coral.SetPivotPosition import *
+from .Coral.CoralHold import *
 
 from .Drive.AwaitVisionData import *
 from .Drive.DriveByStick import *
@@ -41,6 +42,7 @@ __all__ = [
 
     "CoralWheelIn",
     "CoralWheelOut",
+    "CoralHold",
     "SetPivotPosition",
 
     "AwaitVisionData",
