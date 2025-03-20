@@ -32,7 +32,8 @@ class ClimberOut(Command):
 
     # On End
     def end(self, interrupted: bool) -> None:
-        # self.Climber.control_type = SparkMax.ControlType.kDutyCycle
+        self.Climber.control_type = SparkMax.ControlType.kDutyCycle
+        self.Climber.setSetpoint( 0.0, True )
         pass
 
     # Is Finished

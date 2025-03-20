@@ -183,9 +183,9 @@ class RobotContainer:
         # self.driver1.x().onTrue(ElevatorToPos(self.sysElevator, ElevatorPositions.MED_CORAL))
         # self.driver1.y().onTrue(ElevatorToPos(self.sysElevator, ElevatorPositions.HIGH_CORAL))
 
-        self.sysClimber.setDefaultCommand( ClimberOpenLoopControl( self.sysClimber, self.driver1.getLeftUpDown ) )
-        self.driver1.a().onTrue( ClimberOut( self.sysClimber ) )
-
+        # self.sysClimber.setDefaultCommand( ClimberOpenLoopControl( self.sysClimber, self.driver1.getLeftUpDown ) )
+        # # DO NOT USE THISE # self.driver1.a().toggleOnTrue( ClimberOut( self.sysClimber ) )
+        pass
 
     def __bindDriveOnly(self):
         self.sysDriveTrain.setDefaultCommand(

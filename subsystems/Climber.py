@@ -19,7 +19,7 @@ class ClimberSpeeds:
 
 class ClimberPositions:
     NotInUse:degrees = 200.0
-    Prepare:degrees = 0.0
+    Prepare:degrees = 5.0
     Climbing:degrees= 180.0
 
 class ClimberConstants:
@@ -95,7 +95,7 @@ class Climber(Subsystem):
 
         # Apply configs
         lMotorCfg.apply(clConfig)
-        fMotorCfg.apply(encConfig)
+        lMotorCfg.apply(encConfig)
         
         self.__leadMotor.configure( lMotorCfg, SparkBase.ResetMode.kResetSafeParameters, SparkBase.PersistMode.kPersistParameters )
         self.__followMotor.configure( fMotorCfg, SparkBase.ResetMode.kResetSafeParameters, SparkBase.PersistMode.kPersistParameters )
@@ -211,13 +211,17 @@ class Climber(Subsystem):
             )
         else: # kDutyCycle
             # Safeties - check if position nearing bounds, only allow to move away from bound
-            if self.getPosition() >= ClimberPositions.Climbing - ClimberConstants.kTolerance:
-                self.setSetpoint(min(0, self.getSetpoint()), True)
-            elif self.getPosition() <= ClimberPositions.Prepare - ClimberConstants.kTolerance: # tolerance subtracted to extend farther if needed
+            pos = self.getPosition() + 90.0
+            if pos > 360.0: pos -= 360.0
+            if pos < 0.0: pos += 360.0
+
+            if pos <= 90.0: #>= ClimberPositions.Climbing - ClimberConstants.kTolerance:
                 self.setSetpoint(max(0, self.getSetpoint()), True)
+            elif pos >= 270.0: #ClimberPositions.Prepare - ClimberConstants.kTolerance: # tolerance subtracted to extend farther if needed
+                self.setSetpoint(min(0, self.getSetpoint()), True)
 
 
-            print(self.getSetpoint(), self.control_type)
+            # print(self.getSetpoint(), self.control_type)
             # assumes setpoint will be overrided to match duty cycle range
             self.__controller.setReference(
                 self.getSetpoint(),
