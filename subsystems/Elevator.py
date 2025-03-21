@@ -42,10 +42,10 @@ class ElevatorPositions:
     TOP:inches = 76.0 # maximum height
     MIDDLE:inches = (BOTTOM + TOP) / 2
 
-    TROUGH:inches = 35.0
-    LOW_CORAL:inches = 42.0
-    MED_CORAL:inches = 52.0
-    HIGH_CORAL:inches = 60.0
+    L1:inches = 35.0
+    L2:inches = 42.0
+    L3:inches = 52.0
+    L4:inches = 60.0
 
 class Elevator(Subsystem):
     __setpoint = 0.0

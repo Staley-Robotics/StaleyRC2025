@@ -13,7 +13,7 @@ class ToReef(SequentialCommandGroup):
             ParallelCommandGroup(
                 DriveToPose(drive),
                 ElevatorToPos(elevator, 20),
-                SetPivotPosition(coralPivot, CoralManipulatorPivot.PivotPositions.L2, 'L2'),
+                SetPivotPosition(coralPivot, CoralPivotPositions.L2, 'L2'),
             ),
             CoralWheelOut(coralManipulator, CoralManipulatorWheel.WheelSpeeds.OUT, 'OUT'),
         )

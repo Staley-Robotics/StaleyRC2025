@@ -1,20 +1,26 @@
 from commands2 import Subsystem
-from wpilib import RobotState, DigitalInput, SmartDashboard
+from wpilib import RobotState, RobotBase, DigitalInput, SmartDashboard
 from ntcore import NetworkTable, NetworkTableInstance
+from ntcore.util import ntproperty
 
 from rev import SparkMax, SparkMaxConfig
 
-from util import FalconLogger
+from util import FalconLogger, NTTunableFloat
 
 class CoralManipulatorWheel(Subsystem):
+
+    # simHasCoral = lambda a: NTTunableFloat('/SimOutputs/CoralWheel/hasCoral', 0). or ntproprty idk how it works
 
     class WheelSpeeds:
         STOP: float = 0
         IN: float = -0.6
+        SLIGHT_IN: float = -0.4 # only meant for short distances, avoid slamming into mechanism
         OUT: float = 0.6
 
     # Initialization
     def __init__(self, motor_port:int) -> None:
+        # if RobotBase.isSimulation(): self.hasCoral = self.simHasCoral
+
         # motor
         self.motor = SparkMax( motor_port, SparkMax.MotorType.kBrushless )
         self.ls = self.motor.getReverseLimitSwitch()
@@ -34,7 +40,7 @@ class CoralManipulatorWheel(Subsystem):
         self.stalled_frames = 0
         self.free_spin = False
 
-        SmartDashboard.putData("Wheel", self)
+        SmartDashboard.putData("CoralWheel", self)
 
     # Periodic Loop
     def periodic(self) -> None:

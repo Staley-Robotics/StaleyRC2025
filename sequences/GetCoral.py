@@ -15,7 +15,7 @@ class GetCoral(SequentialCommandGroup):
                 # FollowPathSelect(drive, "Example Pickup"),
                 DriveToPose(drive, ReefScape.getReefPose),
                 ElevatorToPos(elevator, 0),
-                SetPivotPosition(coralPivot, CoralManipulatorPivot.PivotPositions.SOURCE, 'Source'),
+                SetPivotPosition(coralPivot, CoralPivotPositions.SOURCE, 'Source'),
             ),
             CoralWheelIn(coralManipulator),
         )

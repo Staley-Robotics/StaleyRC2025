@@ -110,17 +110,15 @@ class RobotContainer:
         self.driver2.a().toggleOnTrue( SetPivotPosition( self.sysCoralPivot, CoralPivotPositions.SOURCE, 'Source') ).toggleOnTrue(CoralIO(self.sysCoralWheel))
 
         # Wheel
-        # self.sysCoralWheel.setDefaultCommand( ConditionalCommand( CoralHold( self.sysCoralWheel ), cmd.none(), self.sysCoralWheel.hasCoral ) )
-        # self.sysCoralWheel.setDefaultCommand( CoralHold( self.sysCoralWheel ) ) # TODO: implement/create command
+        self.sysCoralWheel.setDefaultCommand( ConditionalCommand( CoralHold( self.sysCoralWheel ), cmd.none(), self.sysCoralWheel.hasCoral ) )
         self.driver2.y().toggleOnTrue( CoralIO( self.sysCoralWheel ) )
-
 
         # Elevator
         self.sysElevator.setDefaultCommand(ElevatorByStick(self.sysElevator, self.driver2.getLeftUpDown))
-        self.controlBoard.L1().onTrue(ElevatorToPos(self.sysElevator, ElevatorPositions.TROUGH))
-        self.controlBoard.L2().onTrue(ElevatorToPos(self.sysElevator, ElevatorPositions.LOW_CORAL))
-        self.controlBoard.L3().onTrue(ElevatorToPos(self.sysElevator, ElevatorPositions.MED_CORAL))
-        self.controlBoard.L4().onTrue(ElevatorToPos(self.sysElevator, ElevatorPositions.HIGH_CORAL))
+        self.controlBoard.L1().onTrue(ElevatorToPos(self.sysElevator, ElevatorPositions.L1))
+        self.controlBoard.L2().onTrue(ElevatorToPos(self.sysElevator, ElevatorPositions.L2))
+        self.controlBoard.L3().onTrue(ElevatorToPos(self.sysElevator, ElevatorPositions.L3))
+        self.controlBoard.L4().onTrue(ElevatorToPos(self.sysElevator, ElevatorPositions.L4))
 
         self.driver2.a().onTrue(ElevatorToPos(self.sysElevator, ElevatorPositions.BOTTOM))
 
@@ -162,9 +160,9 @@ class RobotContainer:
         # Elevator
         # self.driver2.start().toggleOnTrue( ElevatorByStick( self.sysElevator, self.driver2.getRightUpDown ) ) NOTE: if manual control wanted
         self.driver2.a().toggleOnTrue( ElevatorToPos( self.sysElevator, ElevatorPositions.BOTTOM ) )
-        self.driver2.b().toggleOnTrue( ElevatorToPos( self.sysElevator, ElevatorPositions.LOW_CORAL ) )
-        self.driver2.x().toggleOnTrue( ElevatorToPos( self.sysElevator, ElevatorPositions.MED_CORAL ) )
-        self.driver2.y().toggleOnTrue( ElevatorToPos( self.sysElevator, ElevatorPositions.HIGH_CORAL ) )
+        self.driver2.b().toggleOnTrue( ElevatorToPos( self.sysElevator, ElevatorPositions.L2 ) )
+        self.driver2.x().toggleOnTrue( ElevatorToPos( self.sysElevator, ElevatorPositions.L3 ) )
+        self.driver2.y().toggleOnTrue( ElevatorToPos( self.sysElevator, ElevatorPositions.L4 ) )
 
     def __bindTestControls(self):
         # # DriveTrain
