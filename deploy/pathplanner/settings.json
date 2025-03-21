@@ -1,6 +1,6 @@
 {
-  "robotWidth": 0.787,
-  "robotLength": 0.787,
+  "robotWidth": 0.67,
+  "robotLength": 0.67,
   "holonomicMode": true,
   "pathFolders": [
     "Algee Deposit",

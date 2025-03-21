@@ -5,7 +5,7 @@
     "data": {
       "commands": [
         {
-          "type": "sequential",
+          "type": "parallel",
           "data": {
             "commands": [
               {
@@ -19,6 +19,12 @@
                 "data": {
                   "name": "L4 Elevator"
                 }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "L4 Pivot"
+                }
               }
             ]
           }
@@ -26,7 +32,7 @@
         {
           "type": "named",
           "data": {
-            "name": "L4 Drop Off"
+            "name": "Coral Out"
           }
         }
       ]

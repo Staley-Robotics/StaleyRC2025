@@ -242,3 +242,21 @@ class RobotContainer:
         )
 
         self.driver1.a().onTrue( cmd.runOnce(self.sysDriveTrain.resetOdometry) )
+
+
+    def __InitNamedCommands(self):
+        """
+        Initialize Named Commands for PathPlanner
+        """
+        NamedCommands.registerCommand("L4 Elevator", ElevatorToPos(self.sysElevator, ElevatorPositions.L4))
+        NamedCommands.registerCommand("L3 Elevator", ElevatorToPos(self.sysElevator, ElevatorPositions.L3))
+        NamedCommands.registerCommand("L2 Elevator", ElevatorToPos(self.sysElevator, ElevatorPositions.L2))
+        NamedCommands.registerCommand("L1 Elevator", ElevatorToPos(self.sysElevator, ElevatorPositions.L1))
+
+        NamedCommands.registerCommand("L4 Pivot", SetPivotPosition(self.sysCoralPivot, CoralPivotPositions.L4_up, "L4u"))
+        NamedCommands.registerCommand("L3 Pivot", SetPivotPosition(self.sysCoralPivot, CoralPivotPositions.L3, "L3"))
+        NamedCommands.registerCommand("L2 Pivot", SetPivotPosition(self.sysCoralPivot, CoralPivotPositions.L2, "L2"))
+        NamedCommands.registerCommand("L1 Pivot", SetPivotPosition(self.sysCoralPivot, CoralPivotPositions.L1, "L1"))
+
+        NamedCommands.registerCommand("Coral In", CoralWheelIn(self.sysCoralWheel))
+        NamedCommands.registerCommand("Wait For Pickup", CoralWheelIn(self.sysCoralWheel))
