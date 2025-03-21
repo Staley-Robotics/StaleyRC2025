@@ -13,6 +13,7 @@ from .Coral.CoralWheelIn import *
 from .Coral.CoralWheelOut import *
 from .Coral.SetPivotPosition import *
 from .Coral.CoralHold import *
+from .Coral.CoralDefault import *
 
 from .Drive.AwaitVisionData import *
 from .Drive.DriveByStick import *
@@ -40,6 +41,7 @@ __all__ = [
     "ClimberOut",
     "ClimberStay",
 
+    "CoralDefault",
     "CoralWheelIn",
     "CoralWheelOut",
     "CoralHold",

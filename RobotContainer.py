@@ -114,7 +114,8 @@ class RobotContainer:
         self.driver2.a().toggleOnTrue( SetPivotPosition( self.sysCoralPivot, CoralPivotPositions.SOURCE, 'Source') ).toggleOnTrue(CoralIO(self.sysCoralWheel))
 
         # Wheel
-        self.sysCoralWheel.setDefaultCommand( ConditionalCommand( CoralHold( self.sysCoralWheel ), cmd.none(), self.sysCoralWheel.hasCoral ) )
+        #self.sysCoralWheel.setDefaultCommand( ConditionalCommand( CoralHold( self.sysCoralWheel ), cmd.none(), self.sysCoralWheel.hasCoral ) )
+        self.sysCoralWheel.setDefaultCommand( CoralDefault( self.sysCoralWheel ) )
         self.driver2.y().toggleOnTrue( CoralIO( self.sysCoralWheel ) )
 
         # Elevator

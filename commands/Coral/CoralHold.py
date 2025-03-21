@@ -18,8 +18,12 @@ class CoralHold(Command):
 
         self.addRequirements(coralWheelSys)
         self.setName( f'{self.__class__.__name__}' )
+
+        self.hasSlipped = False
     
     def initialize(self):
+        self.setName( "CoralHold" )
+        self.hasSlipped = False
         # self.wheelSys.setSpeed( CoralManipulatorWheel.WheelSpeeds.OUT )
         ...
     
@@ -27,9 +31,15 @@ class CoralHold(Command):
         if not self.wheelSys.hasCoral():
             self.timer.start()
             self.wheelSys.setSpeed(CoralManipulatorWheel.WheelSpeeds.SLIGHT_IN)
+            self.hasSlipped = True
 
     def end(self, interrupted):
+        self.timer.stop()
+        self.timer.reset()
         self.wheelSys.setSpeed( CoralManipulatorWheel.WheelSpeeds.STOP )
     
     def isFinished(self):
-        return (self.wheelSys.hasCoral() and self.timer.isRunning() ) or self.timer.get() >= 1
+        if self.hasSlipped and ( self.wheelSys.hasCoral() or self.timer.hasElapsed( 1.0 ) ):
+            return True
+        return False
+        #return (self.wheelSys.hasCoral() and self.timer.isRunning() ) or self.timer.get() >= 1
