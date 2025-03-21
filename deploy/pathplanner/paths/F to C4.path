@@ -1,0 +1,54 @@
+{
+  "version": "2025.0",
+  "waypoints": [
+    {
+      "anchor": {
+        "x": 1.6741331308551706,
+        "y": 0.6340247633998228
+      },
+      "prevControl": null,
+      "nextControl": {
+        "x": 2.3965210360138105,
+        "y": 1.1395894945957323
+      },
+      "isLocked": false,
+      "linkedName": "F"
+    },
+    {
+      "anchor": {
+        "x": 5.762694256648403,
+        "y": 3.8523871102846616
+      },
+      "prevControl": {
+        "x": 8.262370082310268,
+        "y": 2.2346208844866062
+      },
+      "nextControl": null,
+      "isLocked": false,
+      "linkedName": "C4"
+    }
+  ],
+  "rotationTargets": [],
+  "constraintZones": [],
+  "pointTowardsZones": [],
+  "eventMarkers": [],
+  "globalConstraints": {
+    "maxVelocity": 3.0,
+    "maxAcceleration": 3.0,
+    "maxAngularVelocity": 540.0,
+    "maxAngularAcceleration": 720.0,
+    "nominalVoltage": 12.0,
+    "unlimited": false
+  },
+  "goalEndState": {
+    "velocity": 0,
+    "rotation": 180.0
+  },
+  "reversed": false,
+  "folder": "Coral Deposit",
+  "idealStartingState": {
+    "velocity": 0,
+    "rotation": 53.0
+  },
+  "useDefaultConstraints": true
+}

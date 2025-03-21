@@ -1,31 +1,30 @@
-import typing
-
 from commands2 import Command, Subsystem
-from subsystems.SampleSubsystem import SampleSubsystem
+from subsystems.Algae import AlgaeManipulator, AlgaeManipulatorPositions, AlgaeIntakeState
 
-class SampleCommand(Command):
+class AlgaeEject(Command):
     # Variable Declaration
-    m_subsystem:SampleSubsystem = None
-    m_getValue:typing.Callable[[],float] = lambda: 0.0
-    
+    Algae:AlgaeManipulator = None
+
     # Initialization
     def __init__( self,
                   mySubsystem:Subsystem,
-                  myValue: typing.Callable[[], float] = lambda: 0.0
                 ) -> None:
         # Command Attributes
-        self.m_subsystem:SampleSubsystem = mySubsystem
-        self.m_getValue = myValue
-        self.setName( "SampleCommand" )
+        self.Algae:AlgaeManipulator = mySubsystem
+        self.setName( "AlgaeEject" )
         self.addRequirements( mySubsystem )
 
     # On Start
     def initialize(self) -> None:
-        pass
+        if not self.Algae.hasAlgae():
+            self.cancel()
+        else:
+            self.Algae.setIntake(AlgaeIntakeState.OUT)
+            self.Algae.setSetpoint(AlgaeManipulatorPositions.PLACE)
 
     # Periodic
     def execute(self) -> None:
-        self.m_subsystem.setSetpoint( self.m_getValue() )
+        pass
 
     # On End
     def end(self, interrupted:bool) -> None:
@@ -33,7 +32,7 @@ class SampleCommand(Command):
 
     # Is Finished
     def isFinished(self) -> bool:
-        return False
+        return not self.Algae.hasAlgae()
 
     # Run When Disabled
     def runsWhenDisabled(self) -> bool:

@@ -1,0 +1,54 @@
+{
+  "version": "2025.0",
+  "waypoints": [
+    {
+      "anchor": {
+        "x": 1.6741331308551706,
+        "y": 0.6340247633998228
+      },
+      "prevControl": null,
+      "nextControl": {
+        "x": 2.2996163379668824,
+        "y": 1.1799998774176284
+      },
+      "isLocked": false,
+      "linkedName": "F"
+    },
+    {
+      "anchor": {
+        "x": 5.777494213478346,
+        "y": 4.033892120191638
+      },
+      "prevControl": {
+        "x": 8.596115112304686,
+        "y": 2.9149139404296873
+      },
+      "nextControl": null,
+      "isLocked": false,
+      "linkedName": "A2"
+    }
+  ],
+  "rotationTargets": [],
+  "constraintZones": [],
+  "pointTowardsZones": [],
+  "eventMarkers": [],
+  "globalConstraints": {
+    "maxVelocity": 3.0,
+    "maxAcceleration": 3.0,
+    "maxAngularVelocity": 540.0,
+    "maxAngularAcceleration": 720.0,
+    "nominalVoltage": 12.0,
+    "unlimited": false
+  },
+  "goalEndState": {
+    "velocity": 0,
+    "rotation": 0.0
+  },
+  "reversed": false,
+  "folder": "Algee Deposit",
+  "idealStartingState": {
+    "velocity": 0,
+    "rotation": 53.0
+  },
+  "useDefaultConstraints": true
+}

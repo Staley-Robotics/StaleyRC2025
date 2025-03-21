@@ -1,0 +1,100 @@
+{
+  "version": "2025.0",
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "parallel",
+          "data": {
+            "commands": [
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "S1 to C1"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "L4 Elevator"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "L4 Pivot"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Coral Out"
+          }
+        },
+        {
+          "type": "parallel",
+          "data": {
+            "commands": [
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "C1 to A"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "L1 Elevator"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Wait For Pickup"
+          }
+        },
+        {
+          "type": "parallel",
+          "data": {
+            "commands": [
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "A to C12"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "L4 Elevator"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "L4 Pivot"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Coral Out"
+          }
+        }
+      ]
+    }
+  },
+  "resetOdom": false,
+  "folder": null,
+  "choreoAuto": false
+}

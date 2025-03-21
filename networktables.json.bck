@@ -1,0 +1,10 @@
+[
+  {
+    "name": "/Settings/Elevator/ControlSpeed",
+    "type": "int",
+    "value": 1,
+    "properties": {
+      "persistent": true
+    }
+  }
+]
