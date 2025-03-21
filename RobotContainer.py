@@ -101,6 +101,7 @@ class RobotContainer:
         # Algae
         self.sysAlgae.setDefaultCommand( AlgaeHold( self.sysAlgae ) )
         self.driver1.a().toggleOnTrue( AlgaeGrab( self.sysAlgae ) )
+        self.driver1.b().toggleOnTrue( AlgaeEject( self.sysAlgae ) )
 
         """Driver 2"""
         ## Coral

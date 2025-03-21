@@ -43,8 +43,8 @@ class ElevatorPositions:
     MIDDLE:inches = (BOTTOM + TOP) / 2
 
     L1:inches = 35.0
-    L2:inches = 42.0
-    L3:inches = 52.0
+    L2:inches = 52.6
+    L3:inches = 68.6
     L4:inches = 60.0
 
 class Elevator(Subsystem):
