@@ -59,11 +59,11 @@ class Elevator(Subsystem):
         self.__leadEncoder = self.__leadMotor.getEncoder()
         self.__followEncoder = self.__followMotor.getEncoder()
         self.__pidController = self.__leadMotor.getClosedLoopController()
-
+        
         self.__leadEncoder.setPosition(ElevatorPositions.BOTTOM)
 
-        self.__topSwitch = self.__leadMotor.getReverseLimitSwitch()
-        self.__bottomSwitch = self.__leadMotor.getForwardLimitSwitch()
+        self.__topSwitch = self.__leadMotor.getForwardLimitSwitch()
+        self.__bottomSwitch = self.__leadMotor.getReverseLimitSwitch()
 
         # configuration
         lMotorCfg = SparkMaxConfig()
@@ -155,6 +155,9 @@ class Elevator(Subsystem):
         # Limit Switches
         FalconLogger.logInput("Elevator/TopLimitSwitch", self.__topSwitch.get())
         FalconLogger.logInput("Elevator/BottomLimitSwitch", self.__bottomSwitch.get())
+
+        if self.__bottomSwitch.get():
+            self.__leadEncoder.setPosition( ElevatorPositions.BOTTOM )
 
         if RobotState.isDisabled():
             self.stop()
