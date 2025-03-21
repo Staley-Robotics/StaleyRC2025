@@ -69,13 +69,12 @@ class RobotContainer:
             case "DriveOnly":
                 self.__bindDriveOnly()
 
-        ## Initialize Auto Chooser
-        self.__autoChooser = AutoBuilder.buildAutoChooser("")
-        SmartDashboard.putData("AutoChooser", self.__autoChooser)
-
         ## Initialize Named Commands
         self.__InitNamedCommands()
 
+        ## Initialize Auto Chooser
+        self.__autoChooser = AutoBuilder.buildAutoChooser("")
+        SmartDashboard.putData("AutoChooser", self.__autoChooser)
 
     # Get Autonomous Command
     def getAutonomousCommand(self) -> Command:
@@ -263,5 +262,5 @@ class RobotContainer:
         NamedCommands.registerCommand("L2 Pivot", SetPivotPosition(self.sysCoralPivot, CoralPivotPositions.L2, "L2"))
         NamedCommands.registerCommand("L1 Pivot", SetPivotPosition(self.sysCoralPivot, CoralPivotPositions.L1, "L1"))
 
-        NamedCommands.registerCommand("Coral In", CoralWheelIn(self.sysCoralWheel))
+        NamedCommands.registerCommand("Coral Out", CoralWheelOut(self.sysCoralWheel))
         NamedCommands.registerCommand("Wait For Pickup", CoralWheelIn(self.sysCoralWheel))
