@@ -69,8 +69,12 @@ class RobotContainer:
             case "DriveOnly":
                 self.__bindDriveOnly()
 
+        ## Initialize Auto Chooser
         self.__autoChooser = AutoBuilder.buildAutoChooser("")
         SmartDashboard.putData("AutoChooser", self.__autoChooser)
+
+        ## Initialize Named Commands
+        self.__InitNamedCommands()
 
 
     # Get Autonomous Command
@@ -87,7 +91,7 @@ class RobotContainer:
         self.sysDriveTrain.setDefaultCommand(
             DriveByStick( self.sysDriveTrain, self.driver1.getLeftUpDown, self.driver1.getLeftSideToSide, self.driver1.getRightSideToSide )
         )
-        self.driver1.rightBumper().whileTrue( DriveToPose(self.ReefScapeState.getReefPose) ) # TODO: 
+        self.driver1.rightBumper().whileTrue( DriveToPose(self.ReefScapeState.getReefPose) ) # TODO:
         self.driver1.back().onTrue( AwaitVisionData( self.sysVision, self.sysDriveTrain ) )
 
         # Climber
@@ -242,3 +246,21 @@ class RobotContainer:
         )
 
         self.driver1.a().onTrue( cmd.runOnce(self.sysDriveTrain.resetOdometry) )
+
+
+    def __InitNamedCommands(self):
+        """
+        Initialize Named Commands for PathPlanner
+        """
+        NamedCommands.registerCommand("L4 Elevator", ElevatorToPos(self.sysElevator, ElevatorPositions.L4))
+        NamedCommands.registerCommand("L3 Elevator", ElevatorToPos(self.sysElevator, ElevatorPositions.L3))
+        NamedCommands.registerCommand("L2 Elevator", ElevatorToPos(self.sysElevator, ElevatorPositions.L2))
+        NamedCommands.registerCommand("L1 Elevator", ElevatorToPos(self.sysElevator, ElevatorPositions.L1))
+
+        NamedCommands.registerCommand("L4 Pivot", SetPivotPosition(self.sysCoralPivot, CoralPivotPositions.L4_up, "L4u"))
+        NamedCommands.registerCommand("L3 Pivot", SetPivotPosition(self.sysCoralPivot, CoralPivotPositions.L3, "L3"))
+        NamedCommands.registerCommand("L2 Pivot", SetPivotPosition(self.sysCoralPivot, CoralPivotPositions.L2, "L2"))
+        NamedCommands.registerCommand("L1 Pivot", SetPivotPosition(self.sysCoralPivot, CoralPivotPositions.L1, "L1"))
+
+        NamedCommands.registerCommand("Coral In", CoralWheelIn(self.sysCoralWheel))
+        NamedCommands.registerCommand("Wait For Pickup", CoralWheelIn(self.sysCoralWheel))
