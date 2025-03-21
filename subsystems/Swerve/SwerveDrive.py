@@ -53,7 +53,7 @@ class SwerveDrive(Subsystem):
         self.__modules = [
             SwerveModule( 0, 1, 2, 1, -0.329590 ), # 97.471 ),
             SwerveModule( 1, 3, 4, 2, 0.249023 ), #5.361 ),
-            SwerveModule( 2, 5, 6, 3, -0.104004 ), #298.828 ),325439
+            SwerveModule( 2, 5, 6, 3, -0.052979 ), #-0.104004 ), #298.828 ),325439
             SwerveModule( 3, 7, 8, 4, 0.423584 ) #60.557 )0.334473
         ]
 
