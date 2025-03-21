@@ -21,13 +21,13 @@
                     {
                       "type": "named",
                       "data": {
-                        "name": "L3 Elevator"
+                        "name": "L2 Elevator"
                       }
                     },
                     {
                       "type": "named",
                       "data": {
-                        "name": "L3 Pivot"
+                        "name": "L2 Pivot"
                       }
                     }
                   ]

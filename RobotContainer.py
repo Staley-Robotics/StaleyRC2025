@@ -268,4 +268,4 @@ class RobotContainer:
 
         NamedCommands.registerCommand("Coral Out", CoralWheelOut(self.sysCoralWheel))
         NamedCommands.registerCommand("Wait For Pickup", CoralWheelIn(self.sysCoralWheel))
-        NamedCommands.registerCommand("Coral Hold", CoralDefault( self.sysCoralWheel ))
+        NamedCommands.registerCommand("Coral Hold", CoralHoldAuto( self.sysCoralWheel ))

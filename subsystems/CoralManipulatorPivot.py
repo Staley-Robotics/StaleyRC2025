@@ -34,15 +34,15 @@ class CoralPivotConstants:
     kTolerance = 1.0 # math.pi / 10
     
 class CoralPivotPositions: # NOTE: these are wrong
-    MIN:degrees = -90
+    MIN:degrees = -74
     MAX:degrees = 90
     START:degrees = -90
-    SOURCE:degrees = 0
+    SOURCE:degrees = 5
     HOLD:degrees = 90
 
     Neg45:degrees = -45
 
-    L1:degrees = -80 #Trough
+    L1:degrees = 10 #Trough
     L2:degrees = -40.0
     L3:degrees = -40.0
     L4_up:degrees = 45
