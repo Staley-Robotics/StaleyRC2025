@@ -91,14 +91,15 @@ class RobotContainer:
             DriveByStick( self.sysDriveTrain, self.driver1.getLeftUpDown, self.driver1.getLeftSideToSide, self.driver1.getRightSideToSide )
         )
         self.driver1.rightBumper().whileTrue( DriveToPose(self.ReefScapeState.getReefPose) ) # TODO:
+        self.driver1.leftBumper().onTrue( cmd.runOnce( self.sysDriveTrain.changeDriveSpeedPercent ) )
         self.driver1.back().onTrue( AwaitVisionData( self.sysVision, self.sysDriveTrain ) )
 
         # Climber
-        self.driver1.y().toggleOnTrue( ClimberOpenLoopControl( self.sysClimber, self.driver1.getTriggers ) ).toggleOnTrue( AlgaeOut( self.sysAlgae ) )
+        # self.driver1.y().toggleOnTrue( ClimberOpenLoopControl( self.sysClimber, self.driver1.getTriggers ) ).toggleOnTrue( AlgaeOut( self.sysAlgae ) )
 
         # Algae
-        # self.sysAlgae.setDefaultCommand( AlgaeHold( self.sysAlgae ) )
-        # self.driver1.a().toggleOnTrue( AlgaeGrab( self.sysAlgae ) )
+        self.sysAlgae.setDefaultCommand( AlgaeHold( self.sysAlgae ) )
+        self.driver1.a().toggleOnTrue( AlgaeGrab( self.sysAlgae ) )
 
         """Driver 2"""
         ## Coral

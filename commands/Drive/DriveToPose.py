@@ -33,10 +33,12 @@ class DriveToPose(SequentialCommandGroup):
     def initialize(self) -> None:
         target_pose = self.getPose()
 
+
         __pathCommand = AutoBuilder.pathfindToPoseFlipped( target_pose, self.constraints, 0.0)
+        self._commands: list[Command] = []
         self.addCommands( __pathCommand )
         super().initialize()
 
     def end(self, interrupted: bool) -> None:
+        # self._commands: list[Command] = []
         super().end(interrupted)
-        self._commands: list[Command] = []
