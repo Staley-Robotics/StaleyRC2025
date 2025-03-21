@@ -45,7 +45,7 @@ class RobotContainer:
         self.sysCoralWheel = CoralManipulatorWheel( 8 )
         self.sysCoralPivot = CoralManipulatorPivot( 7, 0.967803 )
         self.sysAlgae      = AlgaeManipulator()
-        self.sysClimber    = Climber( 3, 4, 0.9024424 )
+        self.sysClimber    = Climber( 3, 4, 0.7306183 )
         # self.sysClimber    = ClimberSimple( 3, 4, 0.9136312 )
 
         # Vision Prep
@@ -94,7 +94,7 @@ class RobotContainer:
         self.driver1.back().onTrue( AwaitVisionData( self.sysVision, self.sysDriveTrain ) )
 
         # Climber
-        self.driver1.y().toggleOnTrue( ClimberOpenLoopControl( self.sysClimber, self.driver1.getRightUpDown ) )
+        self.driver1.y().toggleOnTrue( ClimberOpenLoopControl( self.sysClimber, self.driver1.getTriggers ) ).toggleOnTrue( AlgaeOut( self.sysAlgae ) )
 
         # Algae
         # self.sysAlgae.setDefaultCommand( AlgaeHold( self.sysAlgae ) )
@@ -109,6 +109,7 @@ class RobotContainer:
         self.controlBoard.L3().toggleOnTrue( SetPivotPosition( self.sysCoralPivot, CoralPivotPositions.L3, "L3" ) )
         self.controlBoard.L4().toggleOnTrue( SetPivotPosition( self.sysCoralPivot, CoralPivotPositions.L4_up, "L4u" ) )
         # self.controlBoard.L1().toggleOnTrue( SetPivotPosition( self.sysCoralPivot, CoralPivotPositions.L4_down, "L4d" ) )
+        self.driver2.b().toggleOnTrue( ControlPivotPosition( self.sysCoralPivot, self.driver2.getRightUpDown ) )
 
         self.driver2.a().toggleOnTrue( SetPivotPosition( self.sysCoralPivot, CoralPivotPositions.SOURCE, 'Source') ).toggleOnTrue(CoralIO(self.sysCoralWheel))
 
