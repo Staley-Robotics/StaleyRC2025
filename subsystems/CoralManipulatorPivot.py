@@ -43,8 +43,8 @@ class CoralPivotPositions: # NOTE: these are wrong
     Neg45:degrees = -45
 
     L1:degrees = -80 #Trough
-    L2:degrees = rotationsToDegrees(0.236)
-    L3:degrees = rotationsToDegrees(0.236)
+    L2:degrees = -40.0
+    L3:degrees = -40.0
     L4_up:degrees = 45
     L4_down:degrees = 30
 

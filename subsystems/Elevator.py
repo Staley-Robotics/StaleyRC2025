@@ -90,10 +90,10 @@ class Elevator(Subsystem):
         encConfig = encConfig.positionConversionFactor( convFactor ).velocityConversionFactor( convFactor / 60)
 
         lsConfig = LimitSwitchConfig()
-        lsConfig = lsConfig.forwardLimitSwitchType(LimitSwitchConfig.Type.kNormallyOpen)
-        lsConfig = lsConfig.reverseLimitSwitchType(LimitSwitchConfig.Type.kNormallyClosed)
-        lsConfig = lsConfig.forwardLimitSwitchEnabled(False)
-        lsConfig = lsConfig.reverseLimitSwitchEnabled(False)
+        # lsConfig = lsConfig.forwardLimitSwitchType(LimitSwitchConfig.Type.kNormallyOpen)
+        lsConfig = lsConfig.reverseLimitSwitchType(LimitSwitchConfig.Type.kNormallyOpen)
+        # lsConfig = lsConfig.forwardLimitSwitchEnabled(False)
+        lsConfig = lsConfig.reverseLimitSwitchEnabled(True)
 
         # Apply Configs
         lMotorCfg.apply(clCfg)
