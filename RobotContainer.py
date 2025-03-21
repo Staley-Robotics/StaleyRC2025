@@ -50,6 +50,7 @@ class RobotContainer:
 
         # Vision Prep
         AwaitVisionData( self.sysVision, self.sysDriveTrain ).schedule()
+
         self.sysCoralPivot.setHasCoral(self.sysCoralWheel.hasCoral)
 
         ## Initialize State
@@ -266,3 +267,4 @@ class RobotContainer:
 
         NamedCommands.registerCommand("Coral Out", CoralWheelOut(self.sysCoralWheel))
         NamedCommands.registerCommand("Wait For Pickup", CoralWheelIn(self.sysCoralWheel))
+        NamedCommands.registerCommand("Coral Hold", CoralDefault( self.sysCoralWheel ))
