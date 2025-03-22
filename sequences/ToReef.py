@@ -4,18 +4,14 @@ from commands2 import SequentialCommandGroup, ParallelCommandGroup
 
 from subsystems import *
 from commands import *
+from util import ReefScape
 
 
 class ToReef(SequentialCommandGroup):
     def __init__(self, coralManipulator: CoralManipulatorWheel, coralPivot: CoralManipulatorPivot, elevator: Elevator,
                  drive: SwerveDrive):
         super().__init__(
-            ParallelCommandGroup(
-                DriveToPose(drive),
-                ElevatorToPos(elevator, 20),
-                SetPivotPosition(coralPivot, CoralPivotPositions.L2, 'L2'),
-            ),
-            CoralWheelOut(coralManipulator, CoralManipulatorWheel.WheelSpeeds.OUT, 'OUT'),
+            DriveToPose(drive, ReefScape.getReefPose)
         )
 
         self.setName("ToReef")

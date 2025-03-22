@@ -318,3 +318,7 @@ class ReefScape(Subsystem):
     @classmethod
     def getReefPose(self) -> Pose2d:
         return ReefScapePositions.Reef._member_map_[ self._current_reef_side.name ].value
+
+    @classmethod
+    def getCoralPose(self) -> Pose2d:
+        return ReefScapePositions.Source._member_map_[ self._current_source_side.name ]._member_map_[ self._current_select.name ].value
