@@ -47,6 +47,31 @@
           "data": {
             "name": "Coral Out"
           }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "C6 to OC6"
+          }
+        },
+        {
+          "type": "parallel",
+          "data": {
+            "commands": [
+              {
+                "type": "named",
+                "data": {
+                  "name": "MIN Elevator"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "MIN Pivot"
+                }
+              }
+            ]
+          }
         }
       ]
     }

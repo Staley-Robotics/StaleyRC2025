@@ -8,7 +8,7 @@ from ntcore.util import ntproperty
 from subsystems import *
 from commands import *
 from sequences import *
-from util import FalconXboxController, ReefScape, ReefScapeController
+from util import FalconXboxController, ReefScape, ReefScapeController, SourceSelect
 
 from pathplannerlib.auto import AutoBuilder, NamedCommands, PathPlannerPath
 
@@ -120,6 +120,14 @@ class RobotContainer:
         #self.sysCoralWheel.setDefaultCommand( ConditionalCommand( CoralHold( self.sysCoralWheel ), cmd.none(), self.sysCoralWheel.hasCoral ) )
         self.sysCoralWheel.setDefaultCommand( CoralDefault( self.sysCoralWheel ) )
         self.driver2.y().toggleOnTrue( CoralIO( self.sysCoralWheel ) )
+
+        # Source
+        self.controlBoard.Inner().onTrue( cmd.runOnce(self.ReefScapeState.setSourceSelect(SourceSelect.INNER)))
+        self.controlBoard.Middle().onTrue( cmd.runOnce(self.ReefScapeState.setSourceSelect(SourceSelect.MIDDLE)))
+        self.controlBoard.Outer().onTrue( cmd.runOnce(self.ReefScapeState.setSourceSelect(SourceSelect.OUTER)))
+
+        self.controlBoard.Reset().onTrue( cmd.runOnce(self.ReefScapeState.changeSourceSide()))
+
 
         # Elevator
         self.sysElevator.setDefaultCommand(ElevatorByStick(self.sysElevator, self.driver2.getLeftUpDown))
@@ -260,11 +268,13 @@ class RobotContainer:
         NamedCommands.registerCommand("L3 Elevator", ElevatorToPos(self.sysElevator, ElevatorPositions.L3))
         NamedCommands.registerCommand("L2 Elevator", ElevatorToPos(self.sysElevator, ElevatorPositions.L2))
         NamedCommands.registerCommand("L1 Elevator", ElevatorToPos(self.sysElevator, ElevatorPositions.L1))
+        NamedCommands.registerCommand("MIN Elevator", ElevatorToPos(self.sysElevator, ElevatorPositions.BOTTOM))
 
         NamedCommands.registerCommand("L4 Pivot", SetPivotPosition(self.sysCoralPivot, CoralPivotPositions.L4_up, "L4u"))
         NamedCommands.registerCommand("L3 Pivot", SetPivotPosition(self.sysCoralPivot, CoralPivotPositions.L3, "L3"))
         NamedCommands.registerCommand("L2 Pivot", SetPivotPosition(self.sysCoralPivot, CoralPivotPositions.L2, "L2"))
         NamedCommands.registerCommand("L1 Pivot", SetPivotPosition(self.sysCoralPivot, CoralPivotPositions.L1, "L1"))
+        NamedCommands.registerCommand("MIN Pivot", SetPivotPosition(self.sysCoralPivot, CoralPivotPositions.MIN, "L0"))
 
         NamedCommands.registerCommand("Coral Out", CoralWheelOut(self.sysCoralWheel))
         NamedCommands.registerCommand("Wait For Pickup", CoralWheelIn(self.sysCoralWheel))
