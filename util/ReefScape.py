@@ -118,7 +118,7 @@ class ReefScape(Subsystem):
     def __init__(self):
         self.setHasCoral(lambda: False)
         self.setHasAlgae(lambda: False)
-        self.elevatorAtPosition(lambda: False)
+        self.setElevatorAtPosition(lambda: False)
 
         # Logging for the robot
         self.__log.putString("RobotMode", str(self._current_mode))
@@ -301,7 +301,7 @@ class ReefScape(Subsystem):
     def setHasAlgae(self, hasAlgae: Callable[[], bool]):
         self.__lamdaGetHasAlgae = hasAlgae
 
-    def elevatorAtPosition(self, atPosition: Callable[[], bool]):
+    def setElevatorAtPosition(self, atPosition: Callable[[], bool]):
         self.__lamdaElevatorAtPosition = atPosition
 
     # Lambdas
