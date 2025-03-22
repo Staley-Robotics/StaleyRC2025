@@ -32,11 +32,12 @@ class ColorConstants:
 class AlgaeManipulatorPositions:
     MAX = 100.0
     HOLD = 85.0
-    PLACE = 60.0
+    PLACE = 98.0
     GRAB = 35.0
     MIN = 10.0
 
 class AlgaeIntakeState(Enum):
+    HOLD = -0.2
     IN = -0.5
     OUT = 0.5
     OFF = 0
@@ -71,8 +72,7 @@ class AlgaeManipulatorConstants:
     intake_kGearRatio: float = 10.3333
     intake_kOffsetRotations: float = 0.0
 
-    maxAlgaeDistance =  21 # TODO: measure
-    minAlgaeDistance = 5   #       currently just manipulator dims - 5
+    maxAlgaeDistance = 200
 
     class NeoSim:
         kMaxRpm = DCMotor.NEO(2).freeSpeed * kSecondsPerMinute
@@ -349,4 +349,4 @@ class AlgaeManipulator(Subsystem):
             # inRangeBlue = inRange( color.blue * 255, ColorConstants.blue, ColorConstants.tolerence )
 
             # return inProximity and inRangeRed and inRangeGreen and inRangeBlue
-            return AlgaeManipulatorConstants.minAlgaeDistance < self.__tofSensor.getRange() < AlgaeManipulatorConstants.maxAlgaeDistance
+            return self.__tofSensor.getRange() < AlgaeManipulatorConstants.maxAlgaeDistance

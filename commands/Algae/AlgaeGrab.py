@@ -32,7 +32,7 @@ class AlgaeGrab(Command):
 
     # Is Finished
     def isFinished(self) -> bool:
-        return self.Algae.hasAlgae()
+        return False#self.Algae.hasAlgae()
 
 
     # Run When Disabled
