@@ -8,7 +8,7 @@ from ntcore.util import ntproperty
 from subsystems import *
 from commands import *
 from sequences import *
-from util import FalconXboxController, ReefScape, ReefScapeController
+from util import FalconXboxController, ReefScape, ReefScapeController, SourceSelect
 
 from pathplannerlib.auto import AutoBuilder, NamedCommands, PathPlannerPath
 
@@ -116,6 +116,14 @@ class RobotContainer:
         #self.sysCoralWheel.setDefaultCommand( ConditionalCommand( CoralHold( self.sysCoralWheel ), cmd.none(), self.sysCoralWheel.hasCoral ) )
         self.sysCoralWheel.setDefaultCommand( CoralDefault( self.sysCoralWheel ) )
         self.driver2.y().toggleOnTrue( CoralIO( self.sysCoralWheel ) )
+
+        # Source
+        self.controlBoard.Inner().onTrue( cmd.runOnce(self.ReefScapeState.setSourceSelect(SourceSelect.INNER)))
+        self.controlBoard.Middle().onTrue( cmd.runOnce(self.ReefScapeState.setSourceSelect(SourceSelect.MIDDLE)))
+        self.controlBoard.Outer().onTrue( cmd.runOnce(self.ReefScapeState.setSourceSelect(SourceSelect.OUTER)))
+
+        self.controlBoard.Reset().onTrue( cmd.runOnce(self.ReefScapeState.changeSourceSide()))
+
 
         # Elevator
         self.sysElevator.setDefaultCommand(ElevatorByStick(self.sysElevator, self.driver2.getLeftUpDown))
