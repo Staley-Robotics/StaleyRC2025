@@ -14,7 +14,7 @@ class CoralIO(SelectCommand):
                 False:CoralWheelIn(coralSys),
                 True:CoralWheelOut(coralSys),
             },
-            coralSys.hasCoral
+            lambda: coralSys.hasCoral() or coralSys.getCurrentCommand().getName() == "CoralHold"
         )
         
         self.setName("CoralIO")

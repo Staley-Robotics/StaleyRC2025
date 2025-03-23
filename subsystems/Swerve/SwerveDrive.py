@@ -102,6 +102,7 @@ class SwerveDrive(Subsystem):
         # PathPlannerLogging.setLogCurrentPoseCallback( self.__field.setRobotPose )
         PathPlannerLogging.setLogTargetPoseCallback( self.__field.getObject('targetPose').setPose )
         PathPlannerLogging.setLogActivePathCallback( self.__field.getObject('path').setPoses )
+        SmartDashboard.putData( 'Drive', self )
 
     def shouldFlipPath(self) -> bool:
         return DriverStation.getAlliance() == DriverStation.Alliance.kRed
@@ -287,3 +288,11 @@ class SwerveDrive(Subsystem):
 
     def toggleFieldRelative(self) -> None:
         self.__DriveFieldRelative = not self.__DriveFieldRelative
+    
+    def changeDriveSpeedPercent(self) -> None:
+        if self.__DriveMaxSpeedPercent == 0.75:
+            self.__DriveMaxSpeedPercent = 0.35
+        elif self.__DriveMaxSpeedPercent == 0.35:
+            self.__DriveMaxSpeedPercent = 0.75
+    # def setRotSpeedPercent(self, val:float) -> None:
+    #     self.__DriveMaxSpeedPercent = val

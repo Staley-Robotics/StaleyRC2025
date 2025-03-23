@@ -1,6 +1,6 @@
 from commands2 import Command
 
-from subsystems.Elevator import Elevator
+from subsystems import Elevator, CoralManipulatorPivot, CoralPivotPositions
 
 from typing import Callable
 
@@ -9,17 +9,20 @@ from ntcore.util import ntproperty
 
 class ElevatorResync(Command):
         
-    def __init__(self, elevatorSubsystem: Elevator):
+    def __init__(self, elevatorSubsystem: Elevator, coralSubsystem:CoralManipulatorPivot):
         self.__elevator = elevatorSubsystem
+        self.__coral = coralSubsystem
 
         self.setName("ElevatorResync")
-        self.addRequirements(self.__elevator)
+        self.addRequirements(elevatorSubsystem, coralSubsystem)
 
     def initialize(self):
-        ...
+        if self.__coral.getPosition() < -60:
+            self.__coral.setSetpoint( -60 )
 
     def execute(self):
-        self.__elevator.setOpenControl( -0.5 )
+        if self.__coral.atSetpoint():
+            self.__elevator.setOpenControl( -0.5 )
     
     def end(self):
         self.__elevator.resetPosition()

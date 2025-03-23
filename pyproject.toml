@@ -14,9 +14,11 @@ robotpy_extras = [
     "phoenix6",
     "phoenix5",
     "rev",
+    #"playingwithfusion",
     "pathplannerlib"
 ]
 
 requires = [
-    "robotpy-urcl==2025.0.1"
+    "robotpy-urcl==2025.0.1",
+    "robotpy-playingwithfusion==2025.1.23.1"
 ]

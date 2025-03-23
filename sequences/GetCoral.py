@@ -8,17 +8,10 @@ from util import ReefScape
 
 
 class GetCoral(SequentialCommandGroup):
-    def __init__(self, coralManipulator: CoralManipulatorWheel, coralPivot: CoralManipulatorPivot, elevator: Elevator,
-                 drive: SwerveDrive):
+    def __init__(self, drive: SwerveDrive):
         super().__init__(
-            ParallelCommandGroup(
-                # FollowPathSelect(drive, "Example Pickup"),
-                DriveToPose(drive, ReefScape.getReefPose),
-                ElevatorToPos(elevator, 0),
-                SetPivotPosition(coralPivot, CoralPivotPositions.SOURCE, 'Source'),
-            ),
-            CoralWheelIn(coralManipulator),
+            DriveToPose(drive, ReefScape.getCoralPose),
         )
 
         self.setName("GetCoral")
-        self.addRequirements(coralManipulator, coralPivot, elevator, drive)
+        self.addRequirements(drive)

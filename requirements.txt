@@ -11,6 +11,7 @@ robotpy[pathplannerlib]
 
 ## Others
 robotpy-urcl==2025.0.1
+robotpy-playingwithfusion==2025.1.23.1
 
 # This is required for running 'robotpy sync' on nkc macs
 certifi; platform_system=="Darwin"

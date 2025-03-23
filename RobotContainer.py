@@ -8,7 +8,7 @@ from ntcore.util import ntproperty
 from subsystems import *
 from commands import *
 from sequences import *
-from util import FalconXboxController, ReefScape, ReefScapeController
+from util import FalconXboxController, ReefScape, ReefScapeController, SourceSelect
 
 from pathplannerlib.auto import AutoBuilder, NamedCommands, PathPlannerPath
 
@@ -45,11 +45,12 @@ class RobotContainer:
         self.sysCoralWheel = CoralManipulatorWheel( 8 )
         self.sysCoralPivot = CoralManipulatorPivot( 7, 0.967803 )
         self.sysAlgae      = AlgaeManipulator()
-        self.sysClimber    = Climber( 3, 4, 0.9024424 )
+        self.sysClimber    = Climber( 3, 4, 0.7306183 )
         # self.sysClimber    = ClimberSimple( 3, 4, 0.9136312 )
 
         # Vision Prep
         AwaitVisionData( self.sysVision, self.sysDriveTrain ).schedule()
+
         self.sysCoralPivot.setHasCoral(self.sysCoralWheel.hasCoral)
 
         ## Initialize State
@@ -90,32 +91,42 @@ class RobotContainer:
         self.sysDriveTrain.setDefaultCommand(
             DriveByStick( self.sysDriveTrain, self.driver1.getLeftUpDown, self.driver1.getLeftSideToSide, self.driver1.getRightSideToSide )
         )
-        self.driver1.rightBumper().whileTrue( DriveToPose(self.ReefScapeState.getReefPose) ) # TODO:
+        self.driver1.rightBumper().whileTrue( DriveToPose(self.ReefScapeState.getReefPose) ) # TODO: Make better and more consistent, use sequences
+        self.driver1.leftBumper().onTrue( cmd.runOnce( self.sysDriveTrain.changeDriveSpeedPercent ) )
         self.driver1.back().onTrue( AwaitVisionData( self.sysVision, self.sysDriveTrain ) )
+        self.driver1.start().onTrue( cmd.runOnce( self.sysDriveTrain.toggleFieldRelative ) )
 
         # Climber
-        self.driver1.y().toggleOnTrue( ClimberOpenLoopControl( self.sysClimber, self.driver1.getRightUpDown ) )
+        # self.driver1.y().toggleOnTrue( ClimberOpenLoopControl( self.sysClimber, self.driver1.getTriggers ) ).toggleOnTrue( AlgaeOut( self.sysAlgae ) )
 
         # Algae
-        # self.sysAlgae.setDefaultCommand( AlgaeHold( self.sysAlgae ) )
-        # self.driver1.a().toggleOnTrue( AlgaeGrab( self.sysAlgae ) )
+        self.sysAlgae.setDefaultCommand( AlgaeHold( self.sysAlgae ) )
+        self.driver1.a().whileTrue( AlgaeGrab( self.sysAlgae ) )
+        self.driver1.b().whileTrue( AlgaeEject( self.sysAlgae ) )
 
         """Driver 2"""
         ## Coral
         # Pivot
-        # self.driver2.a().onTrue( Coral ) # Cycle or something idk
         self.controlBoard.L1().toggleOnTrue( SetPivotPosition( self.sysCoralPivot, CoralPivotPositions.L1, "L1" ) )
         self.controlBoard.L2().toggleOnTrue( SetPivotPosition( self.sysCoralPivot, CoralPivotPositions.L2, "L2" ) )
         self.controlBoard.L3().toggleOnTrue( SetPivotPosition( self.sysCoralPivot, CoralPivotPositions.L3, "L3" ) )
         self.controlBoard.L4().toggleOnTrue( SetPivotPosition( self.sysCoralPivot, CoralPivotPositions.L4_up, "L4u" ) )
         # self.controlBoard.L1().toggleOnTrue( SetPivotPosition( self.sysCoralPivot, CoralPivotPositions.L4_down, "L4d" ) )
+        self.driver2.b().toggleOnTrue( ControlPivotPosition( self.sysCoralPivot, self.driver2.getRightUpDown ) )
 
         self.driver2.a().toggleOnTrue( SetPivotPosition( self.sysCoralPivot, CoralPivotPositions.SOURCE, 'Source') ).toggleOnTrue(CoralIO(self.sysCoralWheel))
 
         # Wheel
-        #self.sysCoralWheel.setDefaultCommand( ConditionalCommand( CoralHold( self.sysCoralWheel ), cmd.none(), self.sysCoralWheel.hasCoral ) )
         self.sysCoralWheel.setDefaultCommand( CoralDefault( self.sysCoralWheel ) )
         self.driver2.y().toggleOnTrue( CoralIO( self.sysCoralWheel ) )
+
+        # Source
+        self.controlBoard.Inner().onTrue( cmd.runOnce(self.ReefScapeState.setSourceSelect(SourceSelect.INNER)))
+        self.controlBoard.Middle().onTrue( cmd.runOnce(self.ReefScapeState.setSourceSelect(SourceSelect.MIDDLE)))
+        self.controlBoard.Outer().onTrue( cmd.runOnce(self.ReefScapeState.setSourceSelect(SourceSelect.OUTER)))
+
+        self.controlBoard.Reset().onTrue( cmd.runOnce(self.ReefScapeState.changeSourceSide()))
+
 
         # Elevator
         self.sysElevator.setDefaultCommand(ElevatorByStick(self.sysElevator, self.driver2.getLeftUpDown))
@@ -123,8 +134,9 @@ class RobotContainer:
         self.controlBoard.L2().onTrue(ElevatorToPos(self.sysElevator, ElevatorPositions.L2))
         self.controlBoard.L3().onTrue(ElevatorToPos(self.sysElevator, ElevatorPositions.L3))
         self.controlBoard.L4().onTrue(ElevatorToPos(self.sysElevator, ElevatorPositions.L4))
+        self.controlBoard.Reset().onTrue(ElevatorResync(self.sysElevator, self.sysCoralPivot))
 
-        self.driver2.a().onTrue(ElevatorToPos(self.sysElevator, ElevatorPositions.BOTTOM))
+        self.driver2.a().onTrue(ElevatorToPos(self.sysElevator, ElevatorPositions.BOTTOM)) # Source button, also moves pivot
 
         # self.controlBoard.Reset().whileTrue( DriveToPose(self.ReefScapeState.getReefPose) )
 
@@ -256,11 +268,17 @@ class RobotContainer:
         NamedCommands.registerCommand("L3 Elevator", ElevatorToPos(self.sysElevator, ElevatorPositions.L3))
         NamedCommands.registerCommand("L2 Elevator", ElevatorToPos(self.sysElevator, ElevatorPositions.L2))
         NamedCommands.registerCommand("L1 Elevator", ElevatorToPos(self.sysElevator, ElevatorPositions.L1))
+        NamedCommands.registerCommand("MIN Elevator", ElevatorToPos(self.sysElevator, ElevatorPositions.BOTTOM))
+
+        NamedCommands.registerCommand("L3.5 Elevator", ElevatorToPos( self.sysElevator, ElevatorPositions.L35 ))
+        NamedCommands.registerCommand("L2.5 Elevator", ElevatorToPos( self.sysElevator, ElevatorPositions.L25 ))
 
         NamedCommands.registerCommand("L4 Pivot", SetPivotPosition(self.sysCoralPivot, CoralPivotPositions.L4_up, "L4u"))
         NamedCommands.registerCommand("L3 Pivot", SetPivotPosition(self.sysCoralPivot, CoralPivotPositions.L3, "L3"))
         NamedCommands.registerCommand("L2 Pivot", SetPivotPosition(self.sysCoralPivot, CoralPivotPositions.L2, "L2"))
         NamedCommands.registerCommand("L1 Pivot", SetPivotPosition(self.sysCoralPivot, CoralPivotPositions.L1, "L1"))
+        NamedCommands.registerCommand("MIN Pivot", SetPivotPosition(self.sysCoralPivot, CoralPivotPositions.MIN, "L0"))
 
         NamedCommands.registerCommand("Coral Out", CoralWheelOut(self.sysCoralWheel))
         NamedCommands.registerCommand("Wait For Pickup", CoralWheelIn(self.sysCoralWheel))
+        NamedCommands.registerCommand("Coral Hold", CoralHoldAuto( self.sysCoralWheel ))

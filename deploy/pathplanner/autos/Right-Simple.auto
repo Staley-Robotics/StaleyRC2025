@@ -5,25 +5,38 @@
     "data": {
       "commands": [
         {
-          "type": "parallel",
+          "type": "deadline",
           "data": {
             "commands": [
               {
-                "type": "path",
+                "type": "parallel",
                 "data": {
-                  "pathName": "Right Start to C5"
+                  "commands": [
+                    {
+                      "type": "path",
+                      "data": {
+                        "pathName": "Right Start to C6"
+                      }
+                    },
+                    {
+                      "type": "named",
+                      "data": {
+                        "name": "L2 Elevator"
+                      }
+                    },
+                    {
+                      "type": "named",
+                      "data": {
+                        "name": "L2 Pivot"
+                      }
+                    }
+                  ]
                 }
               },
               {
                 "type": "named",
                 "data": {
-                  "name": "L4 Elevator"
-                }
-              },
-              {
-                "type": "named",
-                "data": {
-                  "name": "L4 Pivot"
+                  "name": "Coral Hold"
                 }
               }
             ]

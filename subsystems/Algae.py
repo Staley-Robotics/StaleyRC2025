@@ -18,6 +18,8 @@ from phoenix5 import WPI_TalonSRX, TalonSRX, TalonSRXControlMode, NeutralMode
 
 from rev import SparkMax, SparkMaxConfig, SparkMaxSim, SparkBase, ClosedLoopConfig, SparkClosedLoopController, ClosedLoopSlot, AbsoluteEncoderConfig, ColorSensorV3
 
+from playingwithfusion import TimeOfFlight
+
 from util import FalconLogger
 
 class ColorConstants:
@@ -30,11 +32,12 @@ class ColorConstants:
 class AlgaeManipulatorPositions:
     MAX = 100.0
     HOLD = 85.0
-    PLACE = 60.0
+    PLACE = 98.0
     GRAB = 35.0
     MIN = 10.0
 
 class AlgaeIntakeState(Enum):
+    HOLD = -0.2
     IN = -0.5
     OUT = 0.5
     OFF = 0
@@ -68,6 +71,8 @@ class AlgaeManipulatorConstants:
 
     intake_kGearRatio: float = 10.3333
     intake_kOffsetRotations: float = 0.0
+
+    maxAlgaeDistance = 200
 
     class NeoSim:
         kMaxRpm = DCMotor.NEO(2).freeSpeed * kSecondsPerMinute
@@ -142,7 +147,9 @@ class AlgaeManipulator(Subsystem):
         # Algae Detection Sensor
         # self.__irBeam = DigitalInput(3)
         if RobotBase.isSimulation(): self.__irBeam = DigitalInput(3)
-        self.__colorSensor = ColorSensorV3(I2C.Port(0))
+        # self.__colorSensor = ColorSensorV3(I2C.Port(0))
+        self.__tofSensor = TimeOfFlight( 0 ) # TODO: how get can id?
+        self.__tofSensor.setRangingMode( TimeOfFlight.RangingMode.kShort, 24 )
 
         # Mechanism 2d stuff
         mech = Mechanism2d(30, 40, Color8Bit(50,50,70))
@@ -155,6 +162,7 @@ class AlgaeManipulator(Subsystem):
         # Shuffleboard
         SmartDashboard.putData( "Algae", self )
         SmartDashboard.putData( "AlgaeMech", mech )
+        SmartDashboard.putData( "AlgaeTofSensor", self.__tofSensor )
         #Shuffleboard.getTab("AlgaeManipulator").add("AlgaeManipulator", self)
 
         # Pivot Simulation
@@ -200,10 +208,10 @@ class AlgaeManipulator(Subsystem):
         FalconLogger.logInput("AlgaeManipulator/Intake/MotorVoltage", self.__intakeMotor.getMotorOutputVoltage())
 
         # Input Logging - Algae Sensor
-        FalconLogger.logInput("AlgaeManipulator/Sensor/Proximity", self.__colorSensor.getProximity() )
-        FalconLogger.logInput("AlgaeManipulator/Sensor/Color.red", self.__colorSensor.getColor().red )
-        FalconLogger.logInput("AlgaeManipulator/Sensor/Color.blue", self.__colorSensor.getColor().blue )
-        FalconLogger.logInput("AlgaeManipulator/Sensor/Color.green", self.__colorSensor.getColor().green )
+        # FalconLogger.logInput("AlgaeManipulator/Sensor/Proximity", self.__colorSensor.getProximity() )
+        # FalconLogger.logInput("AlgaeManipulator/Sensor/Color.red", self.__colorSensor.getColor().red )
+        # FalconLogger.logInput("AlgaeManipulator/Sensor/Color.blue", self.__colorSensor.getColor().blue )
+        # FalconLogger.logInput("AlgaeManipulator/Sensor/Color.green", self.__colorSensor.getColor().green )
 
         # Run
         if RobotState.isDisabled():
@@ -331,13 +339,14 @@ class AlgaeManipulator(Subsystem):
         if RobotBase.isSimulation():
             return not self.__irBeam.get()
         else:
-            def inRange(actual, target, tolerance):
-                return abs( target - actual ) < tolerance
+            # def inRange(actual, target, tolerance):
+            #     return abs( target - actual ) < tolerance
 
-            color = self.__colorSensor.getColor()
-            inProximity = self.__colorSensor.getProximity() > ColorConstants.proximity
-            inRangeRed = inRange( color.red * 255, ColorConstants.red, ColorConstants.tolerence )
-            inRangeGreen = inRange( color.green * 255, ColorConstants.green, ColorConstants.tolerence )
-            inRangeBlue = inRange( color.blue * 255, ColorConstants.blue, ColorConstants.tolerence )
+            # color = self.__colorSensor.getColor()
+            # inProximity = self.__colorSensor.getProximity() > ColorConstants.proximity
+            # inRangeRed = inRange( color.red * 255, ColorConstants.red, ColorConstants.tolerence )
+            # inRangeGreen = inRange( color.green * 255, ColorConstants.green, ColorConstants.tolerence )
+            # inRangeBlue = inRange( color.blue * 255, ColorConstants.blue, ColorConstants.tolerence )
 
-            return inProximity and inRangeRed and inRangeGreen and inRangeBlue
+            # return inProximity and inRangeRed and inRangeGreen and inRangeBlue
+            return self.__tofSensor.getRange() < AlgaeManipulatorConstants.maxAlgaeDistance

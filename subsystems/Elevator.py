@@ -24,7 +24,7 @@ class ElevatorConstants:
     _kFF = 0.001 # Feed Forward
 
     _kOffset = 0.0
-    _kAtSetpointTolerance:inches = 0.1
+    _kAtSetpointTolerance:inches = 0.25
 
     _pulleyDiameter:inches = 2.256
     _pulleyRadius:inches = 2.256 / 2
@@ -43,8 +43,10 @@ class ElevatorPositions:
     MIDDLE:inches = (BOTTOM + TOP) / 2
 
     L1:inches = 35.0
-    L2:inches = 42.0
-    L3:inches = 52.0
+    L2:inches = 52.6
+    L25:inches = (L2 + 3.0)
+    L3:inches = 68.6
+    L35:inches = (L3 + 3.0)
     L4:inches = 60.0
 
 class Elevator(Subsystem):
@@ -59,11 +61,11 @@ class Elevator(Subsystem):
         self.__leadEncoder = self.__leadMotor.getEncoder()
         self.__followEncoder = self.__followMotor.getEncoder()
         self.__pidController = self.__leadMotor.getClosedLoopController()
-
+        
         self.__leadEncoder.setPosition(ElevatorPositions.BOTTOM)
 
-        self.__topSwitch = self.__leadMotor.getReverseLimitSwitch()
-        self.__bottomSwitch = self.__leadMotor.getForwardLimitSwitch()
+        self.__topSwitch = self.__leadMotor.getForwardLimitSwitch()
+        self.__bottomSwitch = self.__leadMotor.getReverseLimitSwitch()
 
         # configuration
         lMotorCfg = SparkMaxConfig()
@@ -90,10 +92,10 @@ class Elevator(Subsystem):
         encConfig = encConfig.positionConversionFactor( convFactor ).velocityConversionFactor( convFactor / 60)
 
         lsConfig = LimitSwitchConfig()
-        lsConfig = lsConfig.forwardLimitSwitchType(LimitSwitchConfig.Type.kNormallyOpen)
-        lsConfig = lsConfig.reverseLimitSwitchType(LimitSwitchConfig.Type.kNormallyClosed)
-        lsConfig = lsConfig.forwardLimitSwitchEnabled(False)
-        lsConfig = lsConfig.reverseLimitSwitchEnabled(False)
+        # lsConfig = lsConfig.forwardLimitSwitchType(LimitSwitchConfig.Type.kNormallyOpen)
+        lsConfig = lsConfig.reverseLimitSwitchType(LimitSwitchConfig.Type.kNormallyOpen)
+        # lsConfig = lsConfig.forwardLimitSwitchEnabled(False)
+        lsConfig = lsConfig.reverseLimitSwitchEnabled(True)
 
         # Apply Configs
         lMotorCfg.apply(clCfg)
@@ -107,7 +109,7 @@ class Elevator(Subsystem):
         self.__followMotor.configure(fMotorCfg, SparkBase.ResetMode.kResetSafeParameters, SparkBase.PersistMode.kPersistParameters)
 
         # Mechanism2d
-        mech = Mechanism2d( 30, 50, Color8Bit(50,50,70) )
+        mech = Mechanism2d( 30, 90, Color8Bit(50,50,70) )
         mechRoot = mech.getRoot( "ElevatorRoot", 15, 10 )
         mechFrame = mechRoot.appendLigament("outerFrame", 10, 90, lineWidth=12, color=Color8Bit(Color.kGray))
         self.mechElevatorTarget = mechFrame.appendLigament("ElevatorTarget", 0, 0, lineWidth=6, color=Color8Bit(Color.kYellow))
@@ -155,6 +157,9 @@ class Elevator(Subsystem):
         # Limit Switches
         FalconLogger.logInput("Elevator/TopLimitSwitch", self.__topSwitch.get())
         FalconLogger.logInput("Elevator/BottomLimitSwitch", self.__bottomSwitch.get())
+
+        if self.__bottomSwitch.get():
+            self.__leadEncoder.setPosition( ElevatorPositions.BOTTOM )
 
         if RobotState.isDisabled():
             self.stop()

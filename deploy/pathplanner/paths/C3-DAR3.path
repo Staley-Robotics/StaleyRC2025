@@ -8,24 +8,24 @@
       },
       "prevControl": null,
       "nextControl": {
-        "x": 8.311420281974115,
-        "y": 4.465086452908142
+        "x": 5.89713141153345,
+        "y": 4.3985218874354475
       },
       "isLocked": false,
       "linkedName": "C3"
     },
     {
       "anchor": {
-        "x": 1.6894951249993277,
-        "y": 7.429456016570803
+        "x": 5.782648026315789,
+        "y": 4.467598684210526
       },
       "prevControl": {
-        "x": 1.3991986932929983,
-        "y": 7.538654056877209
+        "x": 5.7516393426684855,
+        "y": 4.219529215032109
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "A"
+      "linkedName": "C3 DA"
     }
   ],
   "rotationTargets": [],
@@ -42,10 +42,10 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": -53.0
+    "rotation": 160.34617594194677
   },
   "reversed": false,
-  "folder": "Pickup",
+  "folder": "Dealgae",
   "idealStartingState": {
     "velocity": 0,
     "rotation": 180.0

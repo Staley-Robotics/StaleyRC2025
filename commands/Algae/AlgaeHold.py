@@ -16,12 +16,15 @@ class AlgaeHold(Command):
 
     # On Start
     def initialize(self) -> None:
-        self.m_subsystem.setIntake( AlgaeIntakeState.OFF )
+        self.m_subsystem.setIntake( AlgaeIntakeState.HOLD )
         self.m_subsystem.setSetpoint( AlgaeManipulatorPositions.HOLD )
 
     # Periodic
     def execute(self) -> None:
-        pass
+        if self.m_subsystem.hasAlgae():
+            self.m_subsystem.setIntake( AlgaeIntakeState.HOLD )
+        else:
+            self.m_subsystem.setIntake( AlgaeIntakeState.OFF )
 
     # On End
     def end(self, interrupted:bool) -> None:

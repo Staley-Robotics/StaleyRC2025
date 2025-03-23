@@ -118,7 +118,7 @@ class ReefScape(Subsystem):
     def __init__(self):
         self.setHasCoral(lambda: False)
         self.setHasAlgae(lambda: False)
-        self.elevatorAtPosition(lambda: False)
+        self.setElevatorAtPosition(lambda: False)
 
         # Logging for the robot
         self.__log.putString("RobotMode", str(self._current_mode))
@@ -301,7 +301,7 @@ class ReefScape(Subsystem):
     def setHasAlgae(self, hasAlgae: Callable[[], bool]):
         self.__lamdaGetHasAlgae = hasAlgae
 
-    def elevatorAtPosition(self, atPosition: Callable[[], bool]):
+    def setElevatorAtPosition(self, atPosition: Callable[[], bool]):
         self.__lamdaElevatorAtPosition = atPosition
 
     # Lambdas
@@ -318,3 +318,7 @@ class ReefScape(Subsystem):
     @classmethod
     def getReefPose(self) -> Pose2d:
         return ReefScapePositions.Reef._member_map_[ self._current_reef_side.name ].value
+
+    @classmethod
+    def getCoralPose(self) -> Pose2d:
+        return ReefScapePositions.Source._member_map_[ self._current_source_side.name ]._member_map_[ self._current_select.name ].value

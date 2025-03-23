@@ -3,29 +3,29 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 5.869243421052631,
-        "y": 4.150082236842105
+        "x": 5.782648026315789,
+        "y": 4.467598684210526
       },
       "prevControl": null,
       "nextControl": {
-        "x": 8.311420281974115,
-        "y": 4.465086452908142
+        "x": 5.782648026315789,
+        "y": 3.7171052631578942
       },
       "isLocked": false,
-      "linkedName": "C3"
+      "linkedName": "C3 DA"
     },
     {
       "anchor": {
-        "x": 1.6894951249993277,
-        "y": 7.429456016570803
+        "x": 5.773026315789473,
+        "y": 3.5824013157894736
       },
       "prevControl": {
-        "x": 1.3991986932929983,
-        "y": 7.538654056877209
+        "x": 5.753782894736841,
+        "y": 4.3617598684210535
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "A"
+      "linkedName": "C4 DA"
     }
   ],
   "rotationTargets": [],
@@ -42,13 +42,13 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": -53.0
+    "rotation": -168.99645914825047
   },
   "reversed": false,
-  "folder": "Pickup",
+  "folder": "Dealgae",
   "idealStartingState": {
     "velocity": 0,
-    "rotation": 180.0
+    "rotation": 160.34617594194677
   },
   "useDefaultConstraints": true
 }

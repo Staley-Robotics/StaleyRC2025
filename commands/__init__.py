@@ -1,6 +1,7 @@
 from .Algae.AlgaeEject import *
 from .Algae.AlgaeGrab import *
 from .Algae.AlgaeHold import *
+from .Algae.AlgaeOut import *
 
 from .Climber.ClimberUp import *
 from .Climber.ClimberOpenLoopControl import *
@@ -13,6 +14,7 @@ from .Coral.CoralWheelIn import *
 from .Coral.CoralWheelOut import *
 from .Coral.SetPivotPosition import *
 from .Coral.CoralHold import *
+from .Coral.CoralHoldAuto import *
 from .Coral.CoralDefault import *
 
 from .Drive.AwaitVisionData import *
@@ -34,6 +36,7 @@ __all__ = [
     "AlgaeEject",
     "AlgaeGrab",
     "AlgaeHold",
+    "AlgaeOut",
 
     "ClimberUp",
     "ClimberOpenLoopControl",
@@ -45,6 +48,7 @@ __all__ = [
     "CoralWheelIn",
     "CoralWheelOut",
     "CoralHold",
+    "CoralHoldAuto",
     "SetPivotPosition",
 
     "AwaitVisionData",
