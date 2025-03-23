@@ -270,6 +270,9 @@ class RobotContainer:
         NamedCommands.registerCommand("L1 Elevator", ElevatorToPos(self.sysElevator, ElevatorPositions.L1))
         NamedCommands.registerCommand("MIN Elevator", ElevatorToPos(self.sysElevator, ElevatorPositions.BOTTOM))
 
+        NamedCommands.registerCommand("L3.5 Elevator", ElevatorToPos( self.sysElevator, ElevatorPositions.L35 ))
+        NamedCommands.registerCommand("L2.5 Elevator", ElevatorToPos( self.sysElevator, ElevatorPositions.L25 ))
+
         NamedCommands.registerCommand("L4 Pivot", SetPivotPosition(self.sysCoralPivot, CoralPivotPositions.L4_up, "L4u"))
         NamedCommands.registerCommand("L3 Pivot", SetPivotPosition(self.sysCoralPivot, CoralPivotPositions.L3, "L3"))
         NamedCommands.registerCommand("L2 Pivot", SetPivotPosition(self.sysCoralPivot, CoralPivotPositions.L2, "L2"))

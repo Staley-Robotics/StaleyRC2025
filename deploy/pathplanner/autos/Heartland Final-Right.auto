@@ -15,19 +15,19 @@
                     {
                       "type": "path",
                       "data": {
-                        "pathName": "Left Start to C1"
+                        "pathName": "Right Start to C6"
                       }
                     },
                     {
                       "type": "named",
                       "data": {
-                        "name": "L2 Elevator"
+                        "name": "L3 Elevator"
                       }
                     },
                     {
                       "type": "named",
                       "data": {
-                        "name": "L2 Pivot"
+                        "name": "L3 Pivot"
                       }
                     }
                   ]
@@ -47,11 +47,48 @@
           "data": {
             "name": "Coral Out"
           }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "DA-R56"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "R56-R78"
+          }
+        },
+        {
+          "type": "parallel",
+          "data": {
+            "commands": [
+              {
+                "type": "named",
+                "data": {
+                  "name": "L2.5 Elevator"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "L2 Pivot"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "DA-R78"
+          }
         }
       ]
     }
   },
-  "resetOdom": false,
+  "resetOdom": true,
   "folder": null,
   "choreoAuto": false
 }

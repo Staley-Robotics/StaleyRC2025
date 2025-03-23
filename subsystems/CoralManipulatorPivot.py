@@ -31,7 +31,7 @@ class CoralPivotConstants:
     kD_Coral = 0.3
     kArbFF_Coral = 0.6
 
-    kTolerance = 1.0 # math.pi / 10
+    kTolerance = 1.0 if not RobotBase.isSimulation() else 1.5 # math.pi / 10
     
 class CoralPivotPositions: # NOTE: these are wrong
     MIN:degrees = -74

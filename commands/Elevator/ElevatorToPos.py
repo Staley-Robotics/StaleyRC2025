@@ -13,6 +13,9 @@ class ElevatorToPos(Command):
     def initialize(self):
         self.__elevator.setSetpoint(self.__position)
 
+    # def execute(self):
+    #     print( f"Elevator({self.__position})")
+
     def isFinished(self):
         return self.__elevator.atSetpoint()
     

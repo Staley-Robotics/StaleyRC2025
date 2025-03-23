@@ -25,8 +25,9 @@ class SetPivotPosition(Command):
         self.pivot.setSetpoint( self.setpoint )
 
     # Periodic
-    def execute(self) -> None:
-        pass
+    # def execute(self) -> None:
+    #     print( f"Pivot({self.setpoint}) {self.pivot.getPosition()}")
+    #     pass
 
     # On End
     def end(self, interrupted:bool) -> None:
