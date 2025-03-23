@@ -19,6 +19,7 @@ from .Drive.AwaitVisionData import *
 from .Drive.DriveByStick import *
 from .Drive.DriveByStickRotate import *
 from .Drive.DriveToPose import *
+from .Drive.DriveToRotation import *
 from .Drive.FollowPathSelect import *
 
 from .Elevator.ElevatorByStick import *
@@ -51,6 +52,7 @@ __all__ = [
     "DriveByStick",
     "DriveByStickRotate",
     "DriveToPose",
+    "DriveToRotation",
     "FollowPathSelect",
 
     "ElevatorByStick",
@@ -59,5 +61,5 @@ __all__ = [
 
     "CoralWheelOpenControl",
     "ControlPivotPosition",
-    "ClimberPosition"
+    "ClimberPosition",
 ]
