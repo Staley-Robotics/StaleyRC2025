@@ -100,8 +100,8 @@ class SwerveDrive(Subsystem):
         )
 
         # PathPlannerLogging.setLogCurrentPoseCallback( self.__field.setRobotPose )
-        PathPlannerLogging.setLogTargetPoseCallback( self.__field.getObject('targetPose').setPose )
-        PathPlannerLogging.setLogActivePathCallback( self.__field.getObject('path').setPoses )
+        # PathPlannerLogging.setLogTargetPoseCallback( self.__field.getObject('targetPose').setPose )
+        # PathPlannerLogging.setLogActivePathCallback( self.__field.getObject('path').setPoses )
         SmartDashboard.putData( 'Drive', self )
 
     def shouldFlipPath(self) -> bool:

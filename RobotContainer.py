@@ -2,6 +2,9 @@
 from wpilib import SendableChooser, SmartDashboard
 from commands2 import Command, cmd, ConditionalCommand
 
+from wpimath.geometry import Rotation2d
+from wpimath.units import *
+
 from ntcore.util import ntproperty
 
 # Local Imports
@@ -30,7 +33,7 @@ class RobotContainer:
         - order: coral wheel, coral pivot, algae, climber, elevator
         '''
         ## Controller Mapping Mode
-        control_mode: str = "Comp"  # Can be "Comp", "Practice", "Test", "DriveOnly"
+        control_mode: str = "Test"  # Can be "Comp", "Practice", "Test", "DriveOnly"
 
 
         ## Controllers
@@ -181,11 +184,24 @@ class RobotContainer:
         self.driver2.y().toggleOnTrue( ElevatorToPos( self.sysElevator, ElevatorPositions.L4 ) )
 
     def __bindTestControls(self):
-        # # DriveTrain
-        # self.sysDriveTrain.setDefaultCommand(
-        #     DriveByStick( self.sysDriveTrain, self.driver1.getLeftUpDown, self.driver1.getLeftSideToSide, self.driver1.getRightSideToSide )
-        # )
-        #
+        # DriveTrain
+        def toggleDrive():
+            assert self.sysDriveTrain.getDefaultCommand() is not None
+
+            if self.sysDriveTrain.getDefaultCommand().getName() == "DriveByStick":
+                self.sysDriveTrain.setDefaultCommand( autoRotStick )
+            else:
+                self.sysDriveTrain.setDefaultCommand( normalStick )
+
+            self.sysDriveTrain.getCurrentCommand().cancel()
+
+        normalStick = DriveByStick( self.sysDriveTrain, self.driver1.getLeftUpDown, self.driver1.getLeftSideToSide, self.driver1.getRightSideToSide )
+        autoRotStick = DriveByStickRotate( self.sysDriveTrain, self.driver1.getLeftUpDown, self.driver1.getLeftSideToSide, self.driver1.getRightSideToSide, ReefScape.getTargetRotation )
+
+        self.sysDriveTrain.setDefaultCommand( normalStick )
+        #self.driver1.a().onTrue( cmd.runOnce( toggleDrive ) )
+        self.driver1.a().onTrue( autoRotStick )
+
         # # Algae
         # self.sysAlgae.setDefaultCommand( AlgaeHold( self.sysAlgae ) )
         # self.driver1.a().whileTrue( AlgaeGrab( self.sysAlgae ) )
@@ -248,9 +264,9 @@ class RobotContainer:
         # # DO NOT USE THIS # self.driver1.a().toggleOnTrue( ClimberOut( self.sysClimber ) )
 
 
-        self.driver1.a().toggleOnTrue( AlgaeGrab( self.sysAlgae ) )
-        self.driver1.b().toggleOnTrue( AlgaeHold( self.sysAlgae ) )
-        self.driver1.x().toggleOnTrue( cmd.none() )
+        # self.driver1.a().toggleOnTrue( AlgaeGrab( self.sysAlgae ) )
+        # self.driver1.b().toggleOnTrue( AlgaeHold( self.sysAlgae ) )
+        # self.driver1.x().toggleOnTrue( cmd.none() )
 
     def __bindDriveOnly(self):
         self.sysDriveTrain.setDefaultCommand(

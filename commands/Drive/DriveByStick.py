@@ -26,7 +26,7 @@ class DriveByStick(Command):
                   frcRotation: typing.Callable[[], float] = lambda: 0.0,
                 ) -> None:
         # Command Attributes
-        self.__subsystem:SwerveDrive = mySubsystem
+        self.subsystem:SwerveDrive = mySubsystem
         self.setName( "DriveByStick" )
         self.addRequirements( mySubsystem )
 
@@ -40,7 +40,7 @@ class DriveByStick(Command):
 
     # Periodic
     def execute(self) -> None:
-        self.__subsystem.runPercentInputs( self.getX(), self.getY(), self.getR() )
+        self.subsystem.runPercentInputs( self.getX(), self.getY(), self.getR() )
 
     # On End
     def end(self, interrupted:bool) -> None:
