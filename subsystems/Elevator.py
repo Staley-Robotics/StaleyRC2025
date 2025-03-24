@@ -15,13 +15,13 @@ from rev import SparkMax, SparkBase, SparkMaxConfig, ClosedLoopConfig, ClosedLoo
 from util import FalconLogger
 
 class ElevatorConstants:
-    _kP = 0.4
+    _kP = 0.2#0.4
     _kI = 0.0
     _kD = 0.0
     _kG = 0.0 # force to overcome gravity
     _kS = 0.0 # force to overcome friction
     _kV = 0.0 # Apply __ voltage for target velocity
-    _kFF = 0.001 # Feed Forward
+    _kFF = 0.0#0.001 # Feed Forward
 
     _kOffset = 0.0
     _kAtSetpointTolerance:inches = 0.25
@@ -42,12 +42,14 @@ class ElevatorPositions:
     TOP:inches = 76.0 # maximum height
     MIDDLE:inches = (BOTTOM + TOP) / 2
 
+    SOURCE:inches = BOTTOM
+
     L1:inches = 35.0
     L2:inches = 52.6
     L25:inches = (L2 + 3.0)
     L3:inches = 68.6
     L35:inches = (L3 + 3.0)
-    L4:inches = 60.0
+    L4:inches = TOP
 
 class Elevator(Subsystem):
     __setpoint = 0.0
@@ -158,8 +160,9 @@ class Elevator(Subsystem):
         FalconLogger.logInput("Elevator/TopLimitSwitch", self.__topSwitch.get())
         FalconLogger.logInput("Elevator/BottomLimitSwitch", self.__bottomSwitch.get())
 
-        if self.__bottomSwitch.get():
+        if self.__bottomSwitch.get() and self.getHeight() != ElevatorPositions.BOTTOM:
             self.__leadEncoder.setPosition( ElevatorPositions.BOTTOM )
+            self.setSetpoint( self.getHeight() )
 
         if RobotState.isDisabled():
             self.stop()

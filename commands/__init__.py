@@ -12,6 +12,7 @@ from .Climber.ClimberStay import *
 from .Coral.SetCoralWheelSpeed import *
 from .Coral.CoralWheelIn import *
 from .Coral.CoralWheelOut import *
+from .Coral.CoralWheelReleaseL4 import *
 from .Coral.SetPivotPosition import *
 from .Coral.CoralHold import *
 from .Coral.CoralHoldAuto import *
@@ -26,6 +27,7 @@ from .Drive.FollowPathSelect import *
 from .Elevator.ElevatorByStick import *
 from .Elevator.ElevatorResync import *
 from .Elevator.ElevatorToPos import *
+from .Elevator.ElevatorScoreL4 import *
 
 from .Testing.ControlPivotPosition import *
 from .Testing.CoralWheelOpenControl import *
@@ -47,6 +49,7 @@ __all__ = [
     "CoralDefault",
     "CoralWheelIn",
     "CoralWheelOut",
+    "CoralWheelReleaseL4",
     "CoralHold",
     "CoralHoldAuto",
     "SetPivotPosition",
@@ -60,6 +63,7 @@ __all__ = [
     "ElevatorByStick",
     "ElevatorResync",
     "ElevatorToPos",
+    "ElevatorScoreL4",
 
     "CoralWheelOpenControl",
     "ControlPivotPosition",

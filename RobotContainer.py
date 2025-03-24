@@ -1,6 +1,6 @@
 # FRC Imports
 from wpilib import SendableChooser, SmartDashboard
-from commands2 import Command, cmd, ConditionalCommand
+from commands2 import Command, cmd, ConditionalCommand, ParallelDeadlineGroup
 
 from wpimath.geometry import Rotation2d
 from wpimath.units import *
@@ -28,7 +28,7 @@ class RobotContainer:
         Initializes RobotContainer
         """
         ## Controller Mapping Mode
-        control_mode: str = "Comp"  # Can be "Comp", "Practice", "Test", "DriveOnly"
+        control_mode: str = "Test"  # Can be "Comp", "Practice", "Test", "DriveOnly"
 
 
         ## Controllers
@@ -38,7 +38,7 @@ class RobotContainer:
 
         ## Initialize Subsystems
         self.sysDriveTrain = SwerveDrive()
-        self.sysVision     = Vision( self.sysDriveTrain.getOdometry )
+        self.sysVision     = Vision( self.sysDriveTrain.apply_vision_measurement )
         self.sysElevator   = Elevator( 5, 6 )
         self.sysCoralWheel = CoralManipulatorWheel( 8 )
         self.sysCoralPivot = CoralManipulatorPivot( 7, 0.967803 )
@@ -179,23 +179,87 @@ class RobotContainer:
         self.driver2.y().toggleOnTrue( ElevatorToPos( self.sysElevator, ElevatorPositions.L4 ) )
 
     def __bindTestControls(self):
-        # DriveTrain
-        def toggleDrive():
-            assert self.sysDriveTrain.getDefaultCommand() is not None
+        """Driver 1"""
+        # Drive
+        self.sysDriveTrain.setDefaultCommand(
+            DriveByStick( self.sysDriveTrain, self.driver1.getLeftUpDown, self.driver1.getLeftSideToSide, self.driver1.getRightSideToSide )
+        )
+        self.driver1.rightBumper().whileTrue( DriveToPose(self.ReefScapeState.getReefPose) ) # TODO: Make better and more consistent, use sequences
+        self.driver1.leftBumper().onTrue( cmd.runOnce( self.sysDriveTrain.changeDriveSpeedPercent ) )
+        self.driver1.back().onTrue( AwaitVisionData( self.sysVision, self.sysDriveTrain ) )
+        self.driver1.start().onTrue( cmd.runOnce( self.sysDriveTrain.toggleFieldRelative ) )
 
-            if self.sysDriveTrain.getDefaultCommand().getName() == "DriveByStick":
-                self.sysDriveTrain.setDefaultCommand( autoRotStick )
-            else:
-                self.sysDriveTrain.setDefaultCommand( normalStick )
+        # Climber
+        # self.driver1.y().toggleOnTrue( ClimberOpenLoopControl( self.sysClimber, self.driver1.getTriggers ) ).toggleOnTrue( AlgaeOut( self.sysAlgae ) )
 
-            self.sysDriveTrain.getCurrentCommand().cancel()
+        # Algae
+        self.sysAlgae.setDefaultCommand( AlgaeHold( self.sysAlgae ) )
+        self.driver1.a().whileTrue( AlgaeGrab( self.sysAlgae ) )
+        self.driver1.b().whileTrue( AlgaeEject( self.sysAlgae ) )
 
-        normalStick = DriveByStick( self.sysDriveTrain, self.driver1.getLeftUpDown, self.driver1.getLeftSideToSide, self.driver1.getRightSideToSide )
-        autoRotStick = DriveByStickRotate( self.sysDriveTrain, self.driver1.getLeftUpDown, self.driver1.getLeftSideToSide, self.driver1.getRightSideToSide, ReefScape.getTargetRotation )
+        """Driver 2"""
+        ## Coral
+        # Pivot
+        self.sysCoralPivot.setDefaultCommand( ControlPivotPosition( self.sysCoralPivot, self.driver2.getRightUpDown ) )
+        self.controlBoard.L1().toggleOnTrue( SetPivotPosition( self.sysCoralPivot, CoralPivotPositions.L1, "L1" ) )
+        self.controlBoard.L2().toggleOnTrue( SetPivotPosition( self.sysCoralPivot, CoralPivotPositions.L2, "L2" ) )
+        self.controlBoard.L3().toggleOnTrue( SetPivotPosition( self.sysCoralPivot, CoralPivotPositions.L3, "L3" ) )
+        self.controlBoard.L4().toggleOnTrue( SetPivotPosition( self.sysCoralPivot, CoralPivotPositions.L4_up, "L4u" ) )
+        SmartDashboard.putData('PivotL1', SetPivotPosition( self.sysCoralPivot, CoralPivotPositions.L1, "L1" ))
+        SmartDashboard.putData('PivotL2', SetPivotPosition( self.sysCoralPivot, CoralPivotPositions.L2, "L2" ))
+        SmartDashboard.putData('PivotL3', SetPivotPosition( self.sysCoralPivot, CoralPivotPositions.L3, "L3" ))
+        SmartDashboard.putData('PivotL4u', SetPivotPosition( self.sysCoralPivot, CoralPivotPositions.L4_up, "L4u" ))
+        # self.controlBoard.L1().toggleOnTrue( SetPivotPosition( self.sysCoralPivot, CoralPivotPositions.L4_down, "L4d" ) )
+        # self.driver2.b().toggleOnTrue( ControlPivotPosition( self.sysCoralPivot, self.driver2.getRightUpDown ) )
 
-        self.sysDriveTrain.setDefaultCommand( normalStick )
-        #self.driver1.a().onTrue( cmd.runOnce( toggleDrive ) )
-        self.driver1.a().onTrue( autoRotStick )
+        self.driver2.a().toggleOnTrue( SetPivotPosition( self.sysCoralPivot, CoralPivotPositions.SOURCE, 'Source') ).toggleOnTrue(CoralWheelIn(self.sysCoralWheel))
+
+        # Wheel
+        self.sysCoralWheel.setDefaultCommand( CoralDefault( self.sysCoralWheel ) )
+        self.driver2.y().toggleOnTrue( CoralIO( self.sysCoralWheel ) )
+
+        # Source
+        self.controlBoard.Inner().onTrue( cmd.runOnce(self.ReefScapeState.setSourceSelect(SourceSelect.INNER)))
+        self.controlBoard.Middle().onTrue( cmd.runOnce(self.ReefScapeState.setSourceSelect(SourceSelect.MIDDLE)))
+        self.controlBoard.Outer().onTrue( cmd.runOnce(self.ReefScapeState.setSourceSelect(SourceSelect.OUTER)))
+
+        self.controlBoard.Reset().onTrue( cmd.runOnce(self.ReefScapeState.changeSourceSide()))
+
+
+        # Elevator
+        self.sysElevator.setDefaultCommand(ElevatorByStick(self.sysElevator, self.driver2.getLeftUpDown))
+        self.controlBoard.L1().onTrue(ElevatorToPos(self.sysElevator, ElevatorPositions.L1))
+        self.controlBoard.L2().onTrue(ElevatorToPos(self.sysElevator, ElevatorPositions.L2))
+        self.controlBoard.L3().onTrue(ElevatorToPos(self.sysElevator, ElevatorPositions.L3))
+        self.controlBoard.L4().onTrue(ElevatorToPos(self.sysElevator, ElevatorPositions.L4))
+        self.controlBoard.Reset().onTrue(ElevatorResync(self.sysElevator, self.sysCoralPivot))
+        SmartDashboard.putData('ElevatorL1', ElevatorToPos(self.sysElevator, ElevatorPositions.L1))
+        SmartDashboard.putData('ElevatorL2', ElevatorToPos(self.sysElevator, ElevatorPositions.L2))
+        SmartDashboard.putData('ElevatorL3', ElevatorToPos(self.sysElevator, ElevatorPositions.L3))
+        SmartDashboard.putData('ElevatorL4', ElevatorToPos(self.sysElevator, ElevatorPositions.L4))
+
+        self.driver2.a().onTrue(ElevatorToPos(self.sysElevator, ElevatorPositions.SOURCE)) # Source button, also moves pivot
+        self.driver2.x().onTrue(ElevatorScoreL4(self.sysElevator, self.sysCoralWheel))
+
+        # self.controlBoard.Reset().whileTrue( DriveToPose(self.ReefScapeState.getReefPose) )
+
+        # DriveTrain        
+        # def toggleDrive():
+        #     assert self.sysDriveTrain.getDefaultCommand() is not None
+
+        #     if self.sysDriveTrain.getDefaultCommand().getName() == "DriveByStick":
+        #         self.sysDriveTrain.setDefaultCommand( autoRotStick )
+        #     else:
+        #         self.sysDriveTrain.setDefaultCommand( normalStick )
+
+        #     self.sysDriveTrain.getCurrentCommand().cancel()
+
+        # normalStick = DriveByStick( self.sysDriveTrain, self.driver1.getLeftUpDown, self.driver1.getLeftSideToSide, self.driver1.getRightSideToSide )
+        # autoRotStick = DriveByStickRotate( self.sysDriveTrain, self.driver1.getLeftUpDown, self.driver1.getLeftSideToSide, self.driver1.getRightSideToSide, ReefScape.getTargetRotation )
+
+        # self.sysDriveTrain.setDefaultCommand( normalStick )
+        # #self.driver1.a().onTrue( cmd.runOnce( toggleDrive ) )
+        # self.driver1.a().onTrue( autoRotStick )
 
         # # Algae
         # self.sysAlgae.setDefaultCommand( AlgaeHold( self.sysAlgae ) )
