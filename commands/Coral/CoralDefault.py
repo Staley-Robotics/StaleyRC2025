@@ -35,8 +35,11 @@ class CoralDefault(ConditionalCommand):
         self.addRequirements(coralWheelSys)
         self.setName( f'{self.__class__.__name__}' )
     
-    def initialize(self):
-        super().initialize()
+    # def initialize(self):
+    #     super().initialize()
+
+    def execute(self):
+        super().execute()
 
         if self.selectedCommand != None:
             self.setName( self.selectedCommand.getName() )

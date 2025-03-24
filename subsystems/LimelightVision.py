@@ -6,21 +6,19 @@ from ntcore import NetworkTableInstance
 
 from wpimath.estimator import SwerveDrive4PoseEstimator
 from wpimath.geometry import Pose2d
-from wpimath.units import degreesToRadians
+from wpimath.units import degreesToRadians, seconds
 
 class Limelight:
-    def __init__(self, sysID:str, odometryGetter:typing.Callable[[], SwerveDrive4PoseEstimator]):
+    def __init__(self, sysID:str, visionApplier:typing.Callable[[Pose2d, seconds, tuple[float]], None]):
         ## Subsystem setup
         self.sysID = sysID
-        self.get_odometry = odometryGetter
+        self.apply_measurement = visionApplier
 
         ## Networktable setup
         table = NetworkTableInstance.getDefault().getTable(sysID)
         self.poseSub = table.getDoubleArrayTopic('botpose_wpiblue').subscribe([])
-        # self.targetSub = table.getDoubleArrayTopic('t2d').subscribe([])
 
-        # self.last_pose = Pose2d()
-        self.rotation_stddev = 1.
+        self.rotation_stddev = 1.0
 
     def array2d_to_botpose(self, data:list[float]) -> Pose2d:
         '''
@@ -34,20 +32,20 @@ class Limelight:
         :returns Pose2d: returns current pose if there was new data, else None
         '''
         data = self.poseSub.readQueue()
-        hadNewData = False
 
         for pose_data in data:
             if pose_data.value[0] != 0:
-                hadNewData = True
 
                 self.last_pose = self.array2d_to_botpose(pose_data.value)
-                self.get_odometry().addVisionMeasurement(
-                    self.last_pose,
-                    pose_data.time/1000000.0 - (pose_data.value[6]/1000),
-                    [1.,1.,self.rotation_stddev]
-                )
 
-        # if hadNewData: return self.last_pose
+                # TODO: change stddev by number of tags
+                # TODO: change stddev by distance from tags
+
+                self.apply_measurement(self.last_pose,
+                                       pose_data.time/1000000.0 - (pose_data.value[6]/1000),
+                                       [1.,1.,self.rotation_stddev]
+                                       )
+
 
 '''
 limelight pose_data reference:
@@ -66,11 +64,11 @@ class Vision(Subsystem):
 
     Limelight_IDs = ('one','two','three')
 
-    def __init__(self, odometryGetter:typing.Callable[[], SwerveDrive4PoseEstimator]):
-        self.cameras = [Limelight( f'limelight-{i}', odometryGetter) for i in self.Limelight_IDs]
+    def __init__(self, visionApplier:typing.Callable[[Pose2d, seconds, tuple[float]], None]):
+        self.cameras = [Limelight( f'limelight-{i}', visionApplier) for i in self.Limelight_IDs]
 
         self.has_received_data = False
-        self.last_pose = Pose2d()
+        # self.last_pose = Pose2d()
 
     def periodic(self):
         outputs = [camera.update_botpose() for camera in self.cameras]

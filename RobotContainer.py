@@ -27,13 +27,8 @@ class RobotContainer:
         """
         Initializes RobotContainer
         """
-
-        '''
-        Testing Logging: 
-        - order: coral wheel, coral pivot, algae, climber, elevator
-        '''
         ## Controller Mapping Mode
-        control_mode: str = "Test"  # Can be "Comp", "Practice", "Test", "DriveOnly"
+        control_mode: str = "Comp"  # Can be "Comp", "Practice", "Test", "DriveOnly"
 
 
         ## Controllers
@@ -110,12 +105,13 @@ class RobotContainer:
         """Driver 2"""
         ## Coral
         # Pivot
+        self.sysCoralPivot.setDefaultCommand( ControlPivotPosition( self.sysCoralPivot, self.driver2.getRightUpDown ) )
         self.controlBoard.L1().toggleOnTrue( SetPivotPosition( self.sysCoralPivot, CoralPivotPositions.L1, "L1" ) )
         self.controlBoard.L2().toggleOnTrue( SetPivotPosition( self.sysCoralPivot, CoralPivotPositions.L2, "L2" ) )
         self.controlBoard.L3().toggleOnTrue( SetPivotPosition( self.sysCoralPivot, CoralPivotPositions.L3, "L3" ) )
         self.controlBoard.L4().toggleOnTrue( SetPivotPosition( self.sysCoralPivot, CoralPivotPositions.L4_up, "L4u" ) )
         # self.controlBoard.L1().toggleOnTrue( SetPivotPosition( self.sysCoralPivot, CoralPivotPositions.L4_down, "L4d" ) )
-        self.driver2.b().toggleOnTrue( ControlPivotPosition( self.sysCoralPivot, self.driver2.getRightUpDown ) )
+        # self.driver2.b().toggleOnTrue( ControlPivotPosition( self.sysCoralPivot, self.driver2.getRightUpDown ) )
 
         self.driver2.a().toggleOnTrue( SetPivotPosition( self.sysCoralPivot, CoralPivotPositions.SOURCE, 'Source') ).toggleOnTrue(CoralIO(self.sysCoralWheel))
 
@@ -142,7 +138,6 @@ class RobotContainer:
         self.driver2.a().onTrue(ElevatorToPos(self.sysElevator, ElevatorPositions.BOTTOM)) # Source button, also moves pivot
 
         # self.controlBoard.Reset().whileTrue( DriveToPose(self.ReefScapeState.getReefPose) )
-
 
     def __bindPracticeControls(self):
         ## Driver 1

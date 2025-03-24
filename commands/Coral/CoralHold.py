@@ -18,28 +18,26 @@ class CoralHold(Command):
 
         self.addRequirements(coralWheelSys)
         self.setName( f'{self.__class__.__name__}' )
-
-        self.hasSlipped = False
     
     def initialize(self):
-        self.setName( "CoralHold" )
-        self.hasSlipped = False
-        # self.wheelSys.setSpeed( CoralManipulatorWheel.WheelSpeeds.OUT )
-        ...
-    
-    def execute(self):
-        if not self.wheelSys.hasCoral():
-            self.timer.start()
-            self.wheelSys.setSpeed(CoralManipulatorWheel.WheelSpeeds.SLIGHT_IN)
-            self.hasSlipped = True
-
-    def end(self, interrupted):
         self.timer.stop()
         self.timer.reset()
-        self.wheelSys.setSpeed( CoralManipulatorWheel.WheelSpeeds.STOP )
+        self.setName( "CoralHold" )
+    
+    def execute(self):
+        if not self.wheelSys.ls.get():
+            if not self.timer.isRunning():
+                self.timer.restart()
+        else:
+            self.timer.reset()
+
+        self.wheelSys.setSpeed(CoralManipulatorWheel.WheelSpeeds.SLIGHT_IN)
+
+    def end(self, interrupted):
+        if not interrupted: # lost coral
+            self.wheelSys.set_has_coral(False)
+            self.wheelSys.setSpeed( CoralManipulatorWheel.WheelSpeeds.STOP )
+        # else: # ejecting / failed and intaking
     
     def isFinished(self):
-        if self.hasSlipped and ( self.wheelSys.hasCoral() or self.timer.hasElapsed( 1.0 ) ):
-            return True
-        return False
-        #return (self.wheelSys.hasCoral() and self.timer.isRunning() ) or self.timer.get() >= 1
+        return self.timer.hasElapsed( 1.5 )

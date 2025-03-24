@@ -8,7 +8,7 @@ from wpimath.estimator import SwerveDrive4PoseEstimator
 from wpimath.geometry import Rotation2d, Translation2d, Pose2d, Pose3d, Transform2d
 from wpimath.kinematics import SwerveDrive4Kinematics, SwerveModulePosition, SwerveModuleState, SwerveDrive4Odometry, ChassisSpeeds
 from wpimath.system.plant import DCMotor
-from wpimath.units import lbsToKilograms
+from wpimath.units import lbsToKilograms, seconds
 
 from ntcore.util import ntproperty
 
@@ -76,6 +76,7 @@ class SwerveDrive(Subsystem):
             self.__getModulePositions(),
             Pose2d(8.7, 4, Rotation2d(0)) # This is where we would set an initial pose on the field
         )
+        self.disable_vision_updates = False
 
         self.stop()
 
@@ -87,7 +88,7 @@ class SwerveDrive(Subsystem):
         robotConfig = RobotConfig.fromGUISettings()
         AutoBuilder.configure(
             pose_supplier = self.__visionOdometry.getEstimatedPosition,
-            reset_pose = self.__visionOdometry.resetPose,
+            reset_pose = self.resetOdometry,
             robot_relative_speeds_supplier = self.getChassisSpeeds,
             output = lambda speeds, feedforwards: self.runChassisSpeeds(speeds),
             controller = PPHolonomicDriveController(
@@ -294,5 +295,22 @@ class SwerveDrive(Subsystem):
             self.__DriveMaxSpeedPercent = 0.35
         elif self.__DriveMaxSpeedPercent == 0.35:
             self.__DriveMaxSpeedPercent = 0.75
-    # def setRotSpeedPercent(self, val:float) -> None:
-    #     self.__DriveMaxSpeedPercent = val
+    
+    def apply_vision_measurement(self, pose:Pose2d, timestamp:seconds, stddev:tuple[float]) -> None:
+
+        if self.disable_vision_updates:
+            return
+
+        # dont apply if rotation or motion is over certain boundary
+        if self.__gyro.get_angular_velocity_z_device().value > SwerveDriveConstants.kMaxRotationSpeed/3 or self.getChassisSpeeds().vx > 1 or self.getChassisSpeeds().vy > 1:
+            return
+
+
+        self.__visionOdometry.addVisionMeasurement(
+            pose,
+            timestamp,
+            stddev
+            )
+    
+    def set_vision_disabled(self, val:bool) -> None:
+        self.disable_vision_updates = val
