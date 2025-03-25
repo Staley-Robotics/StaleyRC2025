@@ -6,18 +6,20 @@ from wpilib.shuffleboard import Shuffleboard
 from wpilib.simulation import ElevatorSim, RoboRioSim, BatterySim
 from wpimath.system.plant import DCMotor
 from wpimath.units import *
+from wpimath.controller import PIDController
 rotations_per_inch = float
 rotations_per_meter = float
 
 from rev import SparkMax, SparkBase, SparkMaxConfig, ClosedLoopConfig, ClosedLoopSlot, SparkMaxSim, LimitSwitchConfig, EncoderConfig
 
+from playingwithfusion import TimeOfFlight
 
 from util import FalconLogger
 
 class ElevatorConstants:
-    _kP = 0.2#0.4
+    _kP = 0.15#0.15
     _kI = 0.0
-    _kD = 0.0
+    _kD = 0.0#0.01
     _kG = 0.0 # force to overcome gravity
     _kS = 0.0 # force to overcome friction
     _kV = 0.0 # Apply __ voltage for target velocity
@@ -33,6 +35,8 @@ class ElevatorConstants:
     _carriageMass:kilograms = 10.0 # Estimated
 
     _motorRotsPerHeightInches =  1 / _gearRatio * (_pulleyDiameter * math.pi)
+
+    _tofMountingHeight = 76 - 43 + 0.15 # TODO: measure
 
 class ElevatorPositions:
     """
@@ -60,6 +64,7 @@ class Elevator(Subsystem):
         self.__leadMotor = SparkMax(leadMotorId, SparkBase.MotorType.kBrushless)
         self.__followMotor = SparkMax(followMotorId, SparkBase.MotorType.kBrushless)
 
+        # get motor objs
         self.__leadEncoder = self.__leadMotor.getEncoder()
         self.__followEncoder = self.__followMotor.getEncoder()
         self.__pidController = self.__leadMotor.getClosedLoopController()
@@ -68,6 +73,10 @@ class Elevator(Subsystem):
 
         self.__topSwitch = self.__leadMotor.getForwardLimitSwitch()
         self.__bottomSwitch = self.__leadMotor.getReverseLimitSwitch()
+
+        self.__tofSensor = TimeOfFlight( 2 ) # TODO: can id??? # ~43 inches from tof to elevator at max
+        self.__tofSensor.setRangingMode( TimeOfFlight.RangingMode.kShort, 24 ) # checked, is within short range
+        # self.__tofSensor.setRangeOfInterest( 4, 0, 12, 16 )
 
         # configuration
         lMotorCfg = SparkMaxConfig()
@@ -104,11 +113,17 @@ class Elevator(Subsystem):
         lMotorCfg.apply(encConfig)
         lMotorCfg.apply(lsConfig)
 
-        # Apply Configs
         fMotorCfg.apply(encConfig)
 
         self.__leadMotor.configure(lMotorCfg, SparkBase.ResetMode.kResetSafeParameters, SparkBase.PersistMode.kPersistParameters)
         self.__followMotor.configure(fMotorCfg, SparkBase.ResetMode.kResetSafeParameters, SparkBase.PersistMode.kPersistParameters)
+
+        # Closed Loop
+        # self.__pidController = PIDController(
+        #     ElevatorConstants._kP,
+        #     ElevatorConstants._kI,
+        #     ElevatorConstants._kD
+        # )
 
         # Mechanism2d
         mech = Mechanism2d( 30, 90, Color8Bit(50,50,70) )
@@ -120,6 +135,8 @@ class Elevator(Subsystem):
 
         SmartDashboard.putData("Elevator", self)
         SmartDashboard.putData("ElevatorMech", mech)
+        SmartDashboard.putData("Elevator_ToF", self.__tofSensor)
+        # SmartDashboard.putData("Elevator_PID", self.__pidController)
 
         ## Simulation
         self.__simMotor = SparkMaxSim(self.__leadMotor, DCMotor.NEO() )
@@ -160,6 +177,9 @@ class Elevator(Subsystem):
         FalconLogger.logInput("Elevator/TopLimitSwitch", self.__topSwitch.get())
         FalconLogger.logInput("Elevator/BottomLimitSwitch", self.__bottomSwitch.get())
 
+        # ToF
+        FalconLogger.logInput("Elevator/ToFmeasurement_mm", self.__tofSensor.getRange())
+
         if self.__bottomSwitch.get() and self.getHeight() != ElevatorPositions.BOTTOM:
             self.__leadEncoder.setPosition( ElevatorPositions.BOTTOM )
             self.setSetpoint( self.getHeight() )
@@ -187,7 +207,8 @@ class Elevator(Subsystem):
         self.mechElevatorActual.setLength( self.getHeight() - 34.0 )
         self.mechElevatorTarget.setLength( self.getSetpoint() - 34.0 )
 
-        FalconLogger.logOutput("Elevator/ActualHeight_in", self.getHeight())
+        FalconLogger.logOutput("Elevator/ActualHeightToF_in", self.getHeight())
+        FalconLogger.logOutput("Elevator/ActualHeightEncoder_in", self.__leadEncoder.getPosition())
         FalconLogger.logOutput("Elevator/TargetHeight_in", self.getSetpoint())
         
     
@@ -210,6 +231,8 @@ class Elevator(Subsystem):
             SparkBase.ControlType.kPosition, 
             ClosedLoopSlot.kSlot0
         )
+        # val = self.__pidController.calculate( self.getHeight(),  self.getSetpoint())
+        # self.__leadMotor.set(val)
 
     def stop(self) -> None:
         self.setSetpoint(self.getHeight())
@@ -234,6 +257,8 @@ class Elevator(Subsystem):
         Get the current height of the elevator (ground to coral pivot axle)
         """
         return self.__leadEncoder.getPosition()
+        # tof_height = metersToInches(self.__tofSensor.getRange() / 1000) + ElevatorConstants._tofMountingHeight
+        # return tof_height
 
     def getSwitchesState(self) -> int:
         '''

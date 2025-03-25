@@ -162,7 +162,7 @@ class AlgaeManipulator(Subsystem):
         # Shuffleboard
         SmartDashboard.putData( "Algae", self )
         SmartDashboard.putData( "AlgaeMech", mech )
-        SmartDashboard.putData( "AlgaeTofSensor", self.__tofSensor )
+        SmartDashboard.putData( "Algae_ToF", self.__tofSensor )
         #Shuffleboard.getTab("AlgaeManipulator").add("AlgaeManipulator", self)
 
         # Pivot Simulation
