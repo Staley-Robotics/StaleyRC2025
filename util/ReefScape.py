@@ -3,6 +3,7 @@ from typing import Callable
 
 from commands2 import Subsystem
 from ntcore import NetworkTable, NetworkTableInstance
+from wpilib import DriverStation
 from wpimath.geometry import Pose2d, Rotation2d
 
 
@@ -23,14 +24,14 @@ class ReefScapePositions(Enum):
 
     class Source(Enum):
         class LEFT(Enum):
-            OUTER: Pose2d = Pose2d(1.7, 7.413, Rotation2d.fromDegrees(-27))
-            MIDDLE: Pose2d = Pose2d(1.2, 7.051, Rotation2d.fromDegrees(-27))
-            INNER: Pose2d = Pose2d(0.660, 6.681, Rotation2d.fromDegrees(-27))
+            OUTER: Pose2d = Pose2d(1.7, 7.413, Rotation2d.fromDegrees(126))
+            MIDDLE: Pose2d = Pose2d(1.2, 7.051, Rotation2d.fromDegrees(126))
+            INNER: Pose2d = Pose2d(0.660, 6.681, Rotation2d.fromDegrees(126))
 
         class RIGHT(Enum):
-            OUTER: Pose2d = Pose2d(1.459, 0.79, Rotation2d.fromDegrees(46.5))
-            MIDDLE: Pose2d = Pose2d(1.202, 1.029, Rotation2d.fromDegrees(46.5))
-            INNER: Pose2d = Pose2d(0.734, 1.340, Rotation2d.fromDegrees(46.5))
+            OUTER: Pose2d = Pose2d(1.459, 0.79, Rotation2d.fromDegrees(234))
+            MIDDLE: Pose2d = Pose2d(1.202, 1.029, Rotation2d.fromDegrees(234))
+            INNER: Pose2d = Pose2d(0.734, 1.340, Rotation2d.fromDegrees(234))
 
 class RobotMode(Enum):
     TEST = auto()
@@ -116,6 +117,7 @@ class ReefScape(Subsystem):
     __log: NetworkTable = NetworkTableInstance.getDefault().getTable("/ReefScapeState")
 
     def __init__(self):
+        self.setGetPose(lambda: Pose2d())
         self.setHasCoral(lambda: False)
         self.setHasAlgae(lambda: False)
         self.setElevatorAtPosition(lambda: False)
@@ -297,15 +299,20 @@ class ReefScape(Subsystem):
 
     # Getters and Setters for what the robot has, and where the elevator is
 
+    def setGetPose(self, getPose: Callable[[], Pose2d]):
+        self.__getPose = getPose
+
     def setHasCoral(self, hasCoral: Callable[[], bool]):
         self.__hasCoral = hasCoral
-        self.__log.putBoolean("HasCoral", hasCoral())
 
     def setHasAlgae(self, hasAlgae: Callable[[], bool]):
         self.__lamdaGetHasAlgae = hasAlgae
 
     def setElevatorAtPosition(self, atPosition: Callable[[], bool]):
         self.__lamdaElevatorAtPosition = atPosition
+
+    def getCurrentPose(self):
+        return self.__getPose()
 
     def getHasCoral(self):
         return self.__hasCoral()
@@ -332,12 +339,18 @@ class ReefScape(Subsystem):
         if instance.getHasCoral():
             return self.getReefPose().rotation()
         else:
-            side_name = instance._current_source_side.name
-            select_name = instance._current_select.name
+            # Get Side of Field Information
+            pose:Pose2d = instance.getCurrentPose()
+            side_name = 'LEFT' if pose.Y() > 4.10 else 'RIGHT'
+
+            # Transform Side Information for Red Alliance
+            if DriverStation.getAlliance() == DriverStation.Alliance.kRed:
+                side_name = 'LEFT' if side_name == 'RIGHT' else 'RIGHT'
+
+            # Return
             if side_name == 'LEFT':
-                return ReefScapePositions.Source.LEFT._member_map_[select_name].value.rotation()
-            elif side_name == 'RIGHT':
-                return ReefScapePositions.Source.RIGHT._member_map_[select_name].value.rotation()
-            else:
-                # Handle AUTO or other cases
-                return ReefScapePositions.Source.LEFT._member_map_[select_name].value.rotation()  # Default fallback
+                p:Pose2d = ReefScapePositions.Source.LEFT._member_map_['INNER'].value
+                return p.rotation()
+            if side_name == 'RIGHT':
+                p:Pose2d = ReefScapePositions.Source.RIGHT._member_map_['INNER'].value
+                return p.rotation()
