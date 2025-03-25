@@ -2,7 +2,7 @@ import typing, threading
 import math
 
 from commands2 import Subsystem
-from wpilib import RobotState, SmartDashboard, Field2d, DriverStation
+from wpilib import RobotState, SmartDashboard, Field2d, DriverStation, RobotBase
 from wpilib.shuffleboard import Shuffleboard
 from wpimath.estimator import SwerveDrive4PoseEstimator
 from wpimath.geometry import Rotation2d, Translation2d, Pose2d, Pose3d, Transform2d
@@ -92,7 +92,7 @@ class SwerveDrive(Subsystem):
             robot_relative_speeds_supplier = self.getChassisSpeeds,
             output = lambda speeds, feedforwards: self.runChassisSpeeds(speeds),
             controller = PPHolonomicDriveController(
-                PIDConstants(5.0, 0.0, 0.0),
+                PIDConstants(0.8, 0.0, 0.0),
                 PIDConstants(5.0, 0.0, 0.0)
             ),
             robot_config = robotConfig,
@@ -298,7 +298,7 @@ class SwerveDrive(Subsystem):
     
     def apply_vision_measurement(self, pose:Pose2d, timestamp:seconds, stddev:tuple[float]) -> None:
 
-        if self.disable_vision_updates:
+        if self.disable_vision_updates or RobotState.isAutonomous():
             return
 
         # dont apply if rotation or motion is over certain boundary

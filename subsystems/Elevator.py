@@ -24,7 +24,7 @@ class ElevatorConstants:
     _kFF = 0.0#0.001 # Feed Forward
 
     _kOffset = 0.0
-    _kAtSetpointTolerance:inches = 0.25
+    _kAtSetpointTolerance:inches = 1.5
 
     _pulleyDiameter:inches = 2.256
     _pulleyRadius:inches = 2.256 / 2

@@ -184,7 +184,7 @@ class RobotContainer:
         self.sysDriveTrain.setDefaultCommand(
             DriveByStick( self.sysDriveTrain, self.driver1.getLeftUpDown, self.driver1.getLeftSideToSide, self.driver1.getRightSideToSide )
         )
-        self.driver1.rightBumper().whileTrue( DriveToPose(self.ReefScapeState.getReefPose) ) # TODO: Make better and more consistent, use sequences
+        self.driver1.rightBumper().onTrue( DriveByStickRotate( self.sysDriveTrain, self.driver1.getLeftUpDown, self.driver1.getLeftSideToSide, self.driver1.getRightSideToSide, ReefScape.getTargetRotation ) ) # TODO: Make better and more consistent, use sequences
         self.driver1.leftBumper().onTrue( cmd.runOnce( self.sysDriveTrain.changeDriveSpeedPercent ) )
         self.driver1.back().onTrue( AwaitVisionData( self.sysVision, self.sysDriveTrain ) )
         self.driver1.start().onTrue( cmd.runOnce( self.sysDriveTrain.toggleFieldRelative ) )
@@ -254,12 +254,12 @@ class RobotContainer:
 
         #     self.sysDriveTrain.getCurrentCommand().cancel()
 
-        # normalStick = DriveByStick( self.sysDriveTrain, self.driver1.getLeftUpDown, self.driver1.getLeftSideToSide, self.driver1.getRightSideToSide )
-        # autoRotStick = DriveByStickRotate( self.sysDriveTrain, self.driver1.getLeftUpDown, self.driver1.getLeftSideToSide, self.driver1.getRightSideToSide, ReefScape.getTargetRotation )
+        normalStick = DriveByStick( self.sysDriveTrain, self.driver1.getLeftUpDown, self.driver1.getLeftSideToSide, self.driver1.getRightSideToSide )
+        autoRotStick = DriveByStickRotate( self.sysDriveTrain, self.driver1.getLeftUpDown, self.driver1.getLeftSideToSide, self.driver1.getRightSideToSide, ReefScape.getTargetRotation )
 
-        # self.sysDriveTrain.setDefaultCommand( normalStick )
-        # #self.driver1.a().onTrue( cmd.runOnce( toggleDrive ) )
-        # self.driver1.a().onTrue( autoRotStick )
+        self.sysDriveTrain.setDefaultCommand( normalStick )
+        #self.driver1.a().onTrue( cmd.runOnce( toggleDrive ) )
+        self.driver1.a().onTrue( autoRotStick )
 
         # # Algae
         # self.sysAlgae.setDefaultCommand( AlgaeHold( self.sysAlgae ) )

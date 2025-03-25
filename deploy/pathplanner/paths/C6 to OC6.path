@@ -45,7 +45,7 @@
     "rotation": 115.06620806663584
   },
   "reversed": false,
-  "folder": "Off Reef",
+  "folder": null,
   "idealStartingState": {
     "velocity": 0,
     "rotation": 119.99999999999999
