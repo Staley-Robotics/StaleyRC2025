@@ -55,6 +55,7 @@ class RobotContainer:
         self.ReefScapeState = ReefScape.getInstance()
         self.ReefScapeState.setHasAlgae( self.sysAlgae.hasAlgae )
         self.ReefScapeState.setHasCoral( self.sysCoralWheel.hasCoral )
+        self.ReefScapeState.setGetPose( self.sysDriveTrain.getPose )
 
         ## Initialize Control Scheme
         ## Driver Controller Button Binding
@@ -184,7 +185,8 @@ class RobotContainer:
         self.sysDriveTrain.setDefaultCommand(
             DriveByStick( self.sysDriveTrain, self.driver1.getLeftUpDown, self.driver1.getLeftSideToSide, self.driver1.getRightSideToSide )
         )
-        self.driver1.rightBumper().whileTrue( DriveToPose(self.ReefScapeState.getReefPose) ) # TODO: Make better and more consistent, use sequences
+        #self.driver1.rightBumper().whileTrue( DriveToPose(self.ReefScapeState.getReefPose) ) # TODO: Make better and more consistent, use sequences
+        self.driver1.rightBumper().toggleOnTrue( DriveByStickRotate( self.sysDriveTrain, self.driver1.getLeftUpDown, self.driver1.getLeftSideToSide, self.driver1.getRightSideToSide, ReefScape.getTargetRotation ) )
         self.driver1.leftBumper().onTrue( cmd.runOnce( self.sysDriveTrain.changeDriveSpeedPercent ) )
         self.driver1.back().onTrue( AwaitVisionData( self.sysVision, self.sysDriveTrain ) )
         self.driver1.start().onTrue( cmd.runOnce( self.sysDriveTrain.toggleFieldRelative ) )

@@ -117,6 +117,7 @@ class ReefScape(Subsystem):
     __log: NetworkTable = NetworkTableInstance.getDefault().getTable("/ReefScapeState")
 
     def __init__(self):
+        self.setGetPose(lambda: Pose2d())
         self.setHasCoral(lambda: False)
         self.setHasAlgae(lambda: False)
         self.setElevatorAtPosition(lambda: False)
