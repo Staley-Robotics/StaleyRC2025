@@ -21,4 +21,4 @@ class CoralWheelIn(Command):
         self.wheelSys.setSpeed( CoralManipulatorWheel.WheelSpeeds.STOP )
     
     def isFinished(self):
-        return self.wheelSys.hasCoral()
+        return self.wheelSys.ls.get() # hasCoral()

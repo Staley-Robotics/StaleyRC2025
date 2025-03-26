@@ -11,7 +11,7 @@ from ntcore.util import ntproperty
 from subsystems import *
 from commands import *
 from sequences import *
-from util import FalconXboxController, ReefScape, ReefScapeController, SourceSelect
+from util import FalconXboxController, ReefScape, ReefScapeController, SourceSelect, ReefSide
 
 from pathplannerlib.auto import AutoBuilder, NamedCommands, PathPlannerPath
 
@@ -180,16 +180,33 @@ class RobotContainer:
         self.driver2.y().toggleOnTrue( ElevatorToPos( self.sysElevator, ElevatorPositions.L4 ) )
 
     def __bindTestControls(self):
+
+        """ Console """
+        self.controlBoard.R1().onTrue( cmd.runOnce( lambda: self.ReefScapeState.setTarget( ReefSide.R1 ) ).ignoringDisable(True) )
+        self.controlBoard.R2().onTrue( cmd.runOnce( lambda: self.ReefScapeState.setTarget( ReefSide.R2 ) ).ignoringDisable(True) )
+        self.controlBoard.R3().onTrue( cmd.runOnce( lambda: self.ReefScapeState.setTarget( ReefSide.R3 ) ).ignoringDisable(True) )
+        self.controlBoard.R4().onTrue( cmd.runOnce( lambda: self.ReefScapeState.setTarget( ReefSide.R4 ) ).ignoringDisable(True) )
+        self.controlBoard.R5().onTrue( cmd.runOnce( lambda: self.ReefScapeState.setTarget( ReefSide.R5 ) ).ignoringDisable(True) )
+        self.controlBoard.R6().onTrue( cmd.runOnce( lambda: self.ReefScapeState.setTarget( ReefSide.R6 ) ).ignoringDisable(True) )
+        self.controlBoard.R7().onTrue( cmd.runOnce( lambda: self.ReefScapeState.setTarget( ReefSide.R7 ) ).ignoringDisable(True) )
+        self.controlBoard.R8().onTrue( cmd.runOnce( lambda: self.ReefScapeState.setTarget( ReefSide.R8 ) ).ignoringDisable(True) )
+        self.controlBoard.R9().onTrue( cmd.runOnce( lambda: self.ReefScapeState.setTarget( ReefSide.R9 ) ).ignoringDisable(True) )
+        self.controlBoard.R10().onTrue( cmd.runOnce( lambda: self.ReefScapeState.setTarget( ReefSide.R10 ) ).ignoringDisable(True) )
+        self.controlBoard.R11().onTrue( cmd.runOnce( lambda: self.ReefScapeState.setTarget( ReefSide.R11 ) ).ignoringDisable(True) )
+        self.controlBoard.R12().onTrue( cmd.runOnce( lambda: self.ReefScapeState.setTarget( ReefSide.R12 ) ).ignoringDisable(True) )
+
         """Driver 1"""
         # Drive
         self.sysDriveTrain.setDefaultCommand(
             DriveByStick( self.sysDriveTrain, self.driver1.getLeftUpDown, self.driver1.getLeftSideToSide, self.driver1.getRightSideToSide )
         )
+        
         #self.driver1.rightBumper().whileTrue( DriveToPose(self.ReefScapeState.getReefPose) ) # TODO: Make better and more consistent, use sequences
         self.driver1.rightBumper().toggleOnTrue( DriveByStickRotate( self.sysDriveTrain, self.driver1.getLeftUpDown, self.driver1.getLeftSideToSide, self.driver1.getRightSideToSide, ReefScape.getTargetRotation ) )
         self.driver1.leftBumper().onTrue( cmd.runOnce( self.sysDriveTrain.changeDriveSpeedPercent ) )
         self.driver1.back().onTrue( AwaitVisionData( self.sysVision, self.sysDriveTrain ) )
         self.driver1.start().onTrue( cmd.runOnce( self.sysDriveTrain.toggleFieldRelative ) )
+        self.driver1.leftStick().onTrue( cmd.runOnce( self.sysDriveTrain.toggleFieldRelative ) )
 
         # Climber
         # self.driver1.y().toggleOnTrue( ClimberOpenLoopControl( self.sysClimber, self.driver1.getTriggers ) ).toggleOnTrue( AlgaeOut( self.sysAlgae ) )
@@ -256,12 +273,12 @@ class RobotContainer:
 
         #     self.sysDriveTrain.getCurrentCommand().cancel()
 
-        normalStick = DriveByStick( self.sysDriveTrain, self.driver1.getLeftUpDown, self.driver1.getLeftSideToSide, self.driver1.getRightSideToSide )
-        autoRotStick = DriveByStickRotate( self.sysDriveTrain, self.driver1.getLeftUpDown, self.driver1.getLeftSideToSide, self.driver1.getRightSideToSide, ReefScape.getTargetRotation )
+        # normalStick = DriveByStick( self.sysDriveTrain, self.driver1.getLeftUpDown, self.driver1.getLeftSideToSide, self.driver1.getRightSideToSide )
+        # autoRotStick = DriveByStickRotate( self.sysDriveTrain, self.driver1.getLeftUpDown, self.driver1.getLeftSideToSide, self.driver1.getRightSideToSide, ReefScape.getTargetRotation )
 
-        self.sysDriveTrain.setDefaultCommand( normalStick )
-        #self.driver1.a().onTrue( cmd.runOnce( toggleDrive ) )
-        self.driver1.a().onTrue( autoRotStick )
+        # self.sysDriveTrain.setDefaultCommand( normalStick )
+        # #self.driver1.a().onTrue( cmd.runOnce( toggleDrive ) )
+        # self.driver1.a().onTrue( autoRotStick )
 
         # # Algae
         # self.sysAlgae.setDefaultCommand( AlgaeHold( self.sysAlgae ) )

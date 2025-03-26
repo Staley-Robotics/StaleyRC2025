@@ -8,7 +8,7 @@ class ControlPivotPosition(Command):
     # Variable Declaration
     pivot:CoralManipulatorPivot = None
     # m_getValue:typing.Callable[[],float] = lambda: 0.0
-    controlMult = ntproperty('/Setting/CoralManipulatoPivot/ControlSpeed', 1.75)
+    controlMult = ntproperty('/Setting/CoralManipulatoPivot/ControlSpeed', 3.50)
     
     # Initialization
     def __init__( self,
