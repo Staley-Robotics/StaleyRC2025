@@ -14,7 +14,7 @@ class CoralManipulatorWheel(Subsystem):
     class WheelSpeeds:
         STOP: float = 0
         IN: float = -0.6
-        SLIGHT_IN: float = -0.4 # only meant for short distances, avoid slamming into mechanism
+        SLIGHT_IN: float = -0.05 # only meant for short distances, avoid slamming into mechanism
         OUT: float = 0.6
 
     # Initialization
@@ -34,7 +34,7 @@ class CoralManipulatorWheel(Subsystem):
         motorConfig = motorConfig.inverted(True)
 
         lsConfig = LimitSwitchConfig()
-        lsConfig = lsConfig.reverseLimitSwitchEnabled( True ).reverseLimitSwitchType( LimitSwitchConfig.Type.kNormallyOpen )
+        lsConfig = lsConfig.reverseLimitSwitchEnabled( False ).reverseLimitSwitchType( LimitSwitchConfig.Type.kNormallyOpen )
 
         motorConfig.apply(lsConfig)
 
