@@ -1,0 +1,54 @@
+{
+  "version": "2025.0",
+  "waypoints": [
+    {
+      "anchor": {
+        "x": 3.531167763157894,
+        "y": 3.072450657894737
+      },
+      "prevControl": null,
+      "nextControl": {
+        "x": 3.200470890410959,
+        "y": 3.2061001712328765
+      },
+      "isLocked": false,
+      "linkedName": "C8 DA"
+    },
+    {
+      "anchor": {
+        "x": 3.2305222602739723,
+        "y": 3.701947773972603
+      },
+      "prevControl": {
+        "x": 3.0351883561643835,
+        "y": 3.3413313356164385
+      },
+      "nextControl": null,
+      "isLocked": false,
+      "linkedName": "C9 DA"
+    }
+  ],
+  "rotationTargets": [],
+  "constraintZones": [],
+  "pointTowardsZones": [],
+  "eventMarkers": [],
+  "globalConstraints": {
+    "maxVelocity": 3.0,
+    "maxAcceleration": 3.0,
+    "maxAngularVelocity": 540.0,
+    "maxAngularAcceleration": 720.0,
+    "nominalVoltage": 12.0,
+    "unlimited": false
+  },
+  "goalEndState": {
+    "velocity": 0,
+    "rotation": -12.994616791916487
+  },
+  "reversed": false,
+  "folder": "Dealgae",
+  "idealStartingState": {
+    "velocity": 0,
+    "rotation": 92.72631099390624
+  },
+  "useDefaultConstraints": true
+}

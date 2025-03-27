@@ -24,7 +24,7 @@ class ElevatorResync(Command):
         if self.__coral.atSetpoint():
             self.__elevator.setOpenControl( -0.5 )
     
-    def end(self):
+    def end(self, interrupted):
         self.__elevator.resetPosition()
         self.__elevator.stop()
 

@@ -42,7 +42,7 @@ class SwerveDrive(Subsystem):
     __DriveMaxSpeedPercent = ntproperty( "/Settings/Driver1/MaxSpeedPercent", 0.75 )
     __DriveMaxRotationPercent = ntproperty( "/Settings/Driver1/MaxRotationPercent", 0.36 )
 
-    __setpoint:ChassisSpeeds = None
+    __setpoint:ChassisSpeeds = ChassisSpeeds()
     __setpointStates = [ SwerveModuleState(), SwerveModuleState(), SwerveModuleState(), SwerveModuleState() ]
     # __odometryLock = False
 

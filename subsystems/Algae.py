@@ -349,4 +349,4 @@ class AlgaeManipulator(Subsystem):
             # inRangeBlue = inRange( color.blue * 255, ColorConstants.blue, ColorConstants.tolerence )
 
             # return inProximity and inRangeRed and inRangeGreen and inRangeBlue
-            return self.__tofSensor.getRange() < AlgaeManipulatorConstants.maxAlgaeDistance
+            return self.__tofSensor.getAmbientLightLevel() != 0 and self.__tofSensor.getRange() < AlgaeManipulatorConstants.maxAlgaeDistance

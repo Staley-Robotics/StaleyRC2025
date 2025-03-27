@@ -331,7 +331,20 @@ class ReefScape(Subsystem):
     @classmethod
     def getCoralPose(self) -> Pose2d:
         instance = self.getInstance()
-        return ReefScapePositions.Source._member_map_[ instance._current_source_side.name ]._member_map_[ self._current_select.name ].value
+        pos = instance._current_source_side.name
+        
+        if pos == "AUTO":
+            pose:Pose2d = instance.getCurrentPose()
+            pos = 'LEFT' if pose.Y() > 4.10 else 'RIGHT'
+
+            # Transform Side Information for Red Alliance
+            if DriverStation.getAlliance() == DriverStation.Alliance.kRed:
+                pos = 'LEFT' if pos == 'RIGHT' else 'RIGHT'
+        
+        if pos == "LEFT":
+            return ReefScapePositions.Source.LEFT._member_map_[ self._current_select.name ].value
+        if pos == "RIGHT":
+            return ReefScapePositions.Source.RIGHT._member_map_[ self._current_select.name ].value
 
     @classmethod
     def getTargetRotation(self) -> Rotation2d:

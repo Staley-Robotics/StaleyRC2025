@@ -26,6 +26,7 @@ class Estimator:
     #     self.measures[timestamp if timestamp else getTime()] = value
     
     def get_estimation(self) -> float:
+        if len(self.measures) == 0: return 0
         return sum(self.measures.values()) / len(self.measures)
 
     def update(self):
@@ -33,7 +34,7 @@ class Estimator:
 
         self.measures[now] = self.getter()
 
-        for time in self.measures:
+        for time in tuple(self.measures.keys()):
             if now - time > self.msr_dur:
                 del self.measures[time]
 
@@ -57,7 +58,7 @@ class ElevatorConstants:
 
     _motorRotsPerHeightInches =  1 / _gearRatio * (_pulleyDiameter * math.pi)
 
-    _tofMountingHeight = 76 - 43 + 0.15 # TODO: measure
+    _tofMountingHeight = 34.75 - metersToInches(58/1000)
 
 class ElevatorPositions:
     """
@@ -203,6 +204,7 @@ class Elevator(Subsystem):
 
         # ToF
         FalconLogger.logInput("Elevator/ToFmeasurement_mm", self.__tofSensor.getRange())
+        
 
         ## Updates
         # sync position
@@ -210,16 +212,17 @@ class Elevator(Subsystem):
         if self.__bottomSwitch.get() and self.getHeight() != ElevatorPositions.BOTTOM:
             self.__leadEncoder.setPosition( ElevatorPositions.BOTTOM )
             self.setSetpoint( self.getHeight() )
-        # by tof
+        # # by tof
         self.__tofEstimator.update()
-        if self.atSetpoint() and not self.last_setpoint_arrival:
-            self.last_setpoint_arrival = getTime()
-        else:
-            self.last_setpoint_arrival = None
+        # if self.atSetpoint() and not self.last_setpoint_arrival:
+        #     self.last_setpoint_arrival = getTime()
+        # else:
+        #     self.last_setpoint_arrival = 0
         
-        if getTime() - self.last_setpoint_arrival > self.__tofEstimator.msr_dur:
-            self.__leadEncoder.setPosition(self.__tofEstimator.get_estimation())
-            self.last_setpoint_arrival = getTime()
+        # if self.__tofSensor.getAmbientLightLevel() != 0 and getTime() - self.last_setpoint_arrival > self.__tofEstimator.msr_dur:
+        #     # self.__leadEncoder.setPosition(metersToInches(self.__tofEstimator.get_estimation() / 1000) + ElevatorConstants._tofMountingHeight)
+
+        #     self.last_setpoint_arrival = getTime()
 
         ## Run subsystem
         if RobotState.isDisabled():
@@ -242,7 +245,8 @@ class Elevator(Subsystem):
         self.mechElevatorActual.setLength( self.getHeight() - 34.0 )
         self.mechElevatorTarget.setLength( self.getSetpoint() - 34.0 )
 
-        FalconLogger.logOutput("Elevator/ActualHeightToF_in", self.getHeight())
+        FalconLogger.logOutput("Elevator/ActualHeightToF_in", metersToInches(self.__tofSensor.getRange() / 1000) + ElevatorConstants._tofMountingHeight)
+        FalconLogger.logInput("Elevator/ToFestimation_in", metersToInches(self.__tofEstimator.get_estimation() / 1000) + ElevatorConstants._tofMountingHeight)
         FalconLogger.logOutput("Elevator/ActualHeightEncoder_in", self.__leadEncoder.getPosition())
         FalconLogger.logOutput("Elevator/TargetHeight_in", self.getSetpoint())
         
@@ -292,8 +296,6 @@ class Elevator(Subsystem):
         Get the current height of the elevator (ground to coral pivot axle)
         """
         return self.__leadEncoder.getPosition()
-        # tof_height = metersToInches(self.__tofSensor.getRange() / 1000) + ElevatorConstants._tofMountingHeight
-        # return tof_height
 
     def getSwitchesState(self) -> int:
         '''
