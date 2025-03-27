@@ -1,7 +1,7 @@
 import math
 from commands2 import Subsystem
 
-from wpilib import SmartDashboard, RobotBase, RobotState, Mechanism2d, Color8Bit, RobotController, Color
+from wpilib import SmartDashboard, RobotBase, RobotState, Mechanism2d, Color8Bit, RobotController, Color, getTime
 from wpilib.shuffleboard import Shuffleboard
 from wpilib.simulation import ElevatorSim, RoboRioSim, BatterySim
 from wpimath.system.plant import DCMotor
@@ -15,6 +15,27 @@ from rev import SparkMax, SparkBase, SparkMaxConfig, ClosedLoopConfig, ClosedLoo
 from playingwithfusion import TimeOfFlight
 
 from util import FalconLogger
+
+class Estimator:
+    def __init__(self, measurement_duration:seconds, getter:typing.Callable[[], float]) -> None:
+        self.measures = {} # timestamp:value
+        self.msr_dur = measurement_duration
+        self.getter = getter
+    
+    # def add_measure(self, value:float, timestamp:seconds|None=None ) -> None:
+    #     self.measures[timestamp if timestamp else getTime()] = value
+    
+    def get_estimation(self) -> float:
+        return sum(self.measures.values()) / len(self.measures)
+
+    def update(self):
+        now = getTime()
+
+        self.measures[now] = self.getter()
+
+        for time in self.measures:
+            if now - time > self.msr_dur:
+                del self.measures[time]
 
 class ElevatorConstants:
     _kP = 0.15#0.15
@@ -77,6 +98,8 @@ class Elevator(Subsystem):
         self.__tofSensor = TimeOfFlight( 2 ) # TODO: can id??? # ~43 inches from tof to elevator at max
         self.__tofSensor.setRangingMode( TimeOfFlight.RangingMode.kShort, 24 ) # checked, is within short range
         # self.__tofSensor.setRangeOfInterest( 4, 0, 12, 16 )
+        self.__tofEstimator = Estimator(0.5, self.__tofSensor.getRange)
+        self.last_setpoint_arrival = getTime()
 
         # configuration
         lMotorCfg = SparkMaxConfig()
@@ -157,6 +180,7 @@ class Elevator(Subsystem):
         self.__elevatorSim.setState( inchesToMeters( self.getHeight() ), 0.0 )
 
     def periodic(self):
+        ## Logging
         # Lead motor
         FalconLogger.logInput("Elevator/Lead/MotorInput", self.__leadMotor.get()) # current speed of motor
         FalconLogger.logInput("Elevator/Lead/MotorOutput", self.__leadMotor.getAppliedOutput())
@@ -180,17 +204,28 @@ class Elevator(Subsystem):
         # ToF
         FalconLogger.logInput("Elevator/ToFmeasurement_mm", self.__tofSensor.getRange())
 
+        ## Updates
+        # sync position
+        # by limit switch
         if self.__bottomSwitch.get() and self.getHeight() != ElevatorPositions.BOTTOM:
             self.__leadEncoder.setPosition( ElevatorPositions.BOTTOM )
             self.setSetpoint( self.getHeight() )
+        # by tof
+        self.__tofEstimator.update()
+        if self.atSetpoint() and not self.last_setpoint_arrival:
+            self.last_setpoint_arrival = getTime()
+        else:
+            self.last_setpoint_arrival = None
+        
+        if getTime() - self.last_setpoint_arrival > self.__tofEstimator.msr_dur:
+            self.__leadEncoder.setPosition(self.__tofEstimator.get_estimation())
+            self.last_setpoint_arrival = getTime()
 
+        ## Run subsystem
         if RobotState.isDisabled():
             self.stop()
         else: 
             self.run()
-        
-        ### Open loop
-        # self.__leadMotor.set( self.openSpeed() )
         
         ## Safety Measure:
         #TODO: measure standard applied output and velocities to establish safe zones
