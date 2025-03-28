@@ -299,8 +299,8 @@ class SwerveDrive(Subsystem):
     
     def changeDriveSpeedPercent(self) -> None:
         if self.__DriveMaxSpeedPercent == 0.75:
-            self.__DriveMaxSpeedPercent = 0.35
-        elif self.__DriveMaxSpeedPercent == 0.35:
+            self.__DriveMaxSpeedPercent = 0.45
+        elif self.__DriveMaxSpeedPercent == 0.45:
             self.__DriveMaxSpeedPercent = 0.75
     
     def apply_vision_measurement(self, pose:Pose2d, timestamp:seconds, stddev:tuple[float]) -> None:
