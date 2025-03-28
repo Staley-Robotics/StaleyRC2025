@@ -28,10 +28,10 @@ class CoralHold(Command):
         if not self.wheelSys.ls.get():
             if not self.timer.isRunning():
                 self.timer.restart()
+            self.wheelSys.setSpeed(CoralManipulatorWheel.WheelSpeeds.IN)
         else:
             self.timer.reset()
-
-        self.wheelSys.setSpeed(CoralManipulatorWheel.WheelSpeeds.SLIGHT_IN)
+            self.wheelSys.setSpeed(CoralManipulatorWheel.WheelSpeeds.SLIGHT_IN)
 
     def end(self, interrupted):
         if not interrupted: # lost coral

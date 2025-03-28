@@ -14,7 +14,7 @@ class CoralManipulatorWheel(Subsystem):
     class WheelSpeeds:
         STOP: float = 0
         IN: float = -0.6
-        SLIGHT_IN: float = -0.05 # only meant for short distances, avoid slamming into mechanism
+        SLIGHT_IN: float = -0.06 # only meant for short distances, avoid slamming into mechanism
         OUT: float = 0.6
 
     # Initialization
@@ -70,10 +70,7 @@ class CoralManipulatorWheel(Subsystem):
 
     # Run the Subsystem
     def run(self) -> None:
-        if self.has_coral and not self.ls.get():
-            self.motor.set( self.WheelSpeeds.SLIGHT_IN )
-        else:
-            self.motor.set( self.motor_speed )
+        self.motor.set( self.motor_speed )
 
 
     # Stop the Subsystem

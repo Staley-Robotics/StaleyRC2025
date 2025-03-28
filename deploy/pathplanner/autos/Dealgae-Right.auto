@@ -49,6 +49,25 @@
           }
         },
         {
+          "type": "parallel",
+          "data": {
+            "commands": [
+              {
+                "type": "named",
+                "data": {
+                  "name": "L2.5 Elevator"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "L2 Pivot"
+                }
+              }
+            ]
+          }
+        },
+        {
           "type": "path",
           "data": {
             "pathName": "C5-DAR5"
@@ -61,9 +80,34 @@
           }
         },
         {
+          "type": "parallel",
+          "data": {
+            "commands": [
+              {
+                "type": "named",
+                "data": {
+                  "name": "L3.5 Elevator"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "L3 Pivot"
+                }
+              }
+            ]
+          }
+        },
+        {
           "type": "path",
           "data": {
             "pathName": "R56-R78"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "DA-R78"
           }
         },
         {
@@ -83,6 +127,18 @@
                 }
               }
             ]
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "R78-R910"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "DA R910"
           }
         }
       ]

@@ -32,7 +32,7 @@ class ColorConstants:
 class AlgaeManipulatorPositions:
     MAX = 100.0
     HOLD = 85.0
-    PLACE = 98.0
+    PLACE = 86.0
     GRAB = 35.0
     MIN = 10.0
 
@@ -50,13 +50,13 @@ class AlgaeManipulatorConstants:
     pivot_kFF: float = 0.0
     pivot_kArbFF: float = 0.97006
     pivot_kV: float = 0.0
-    pivot_kTolerance: float = 1
+    pivot_kTolerance: float = 5
 
-    pivot_kP_Algae: float = 2.2
-    pivot_kI_Algae: float = 0.0
-    pivot_kD_Algae: float = 0.0
+    pivot_kP_Algae: float = 0.75
+    pivot_kI_Algae: float = 0.00002
+    pivot_kD_Algae: float = 0.45
     pivot_kFF_Algae: float = 0.0
-    pivot_kArbFF_Algae: float = 1.0
+    pivot_kArbFF_Algae: float = 3.8
 
     pivot_kGearRatio: float = 8
     pivot_kOffsetRotations: float = 0.0
