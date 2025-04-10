@@ -4,7 +4,7 @@ from commands2 import Command
 
 from subsystems import CoralManipulatorWheel
 
-class CoralWheelIn(Command):
+class CoralWheelReleaseL4(Command):
     def __init__(self, coralWheelSys:CoralManipulatorWheel) -> None:
         self.wheelSys = coralWheelSys
 
@@ -12,13 +12,14 @@ class CoralWheelIn(Command):
         self.setName( f'{self.__class__.__name__}' )
     
     def initialize(self):
-        self.wheelSys.setSpeed( CoralManipulatorWheel.WheelSpeeds.IN )
+        self.wheelSys.setSpeed( CoralManipulatorWheel.WheelSpeeds.STOP )
     
     def execute(self):
         pass
     
     def end(self, interrupted):
         self.wheelSys.setSpeed( CoralManipulatorWheel.WheelSpeeds.STOP )
+        self.wheelSys.has_coral = False
     
     def isFinished(self):
-        return self.wheelSys.ls.get() # hasCoral()
+        return not self.wheelSys.hasCoral()

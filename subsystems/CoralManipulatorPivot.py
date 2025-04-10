@@ -21,15 +21,15 @@ from util import FalconLogger
 class CoralPivotConstants:
     gear_ratio = 25
     
-    kP = 2.25 # 3
+    kP = 2.25 # HL: 2.25
     kI = 0 #
-    kD = 0.3 # 0.3
-    kArbFF = 0.55 # 0.425
+    kD = 0.3 # HL: 0.3
+    kArbFF = 0.48 #HL: 0.55
 
-    kP_Coral = 2.25
+    kP_Coral = 2.25 # HL: 2.25
     kI_Coral = 0
-    kD_Coral = 0.3
-    kArbFF_Coral = 0.6
+    kD_Coral = 0.3 # HL: 0.3
+    kArbFF_Coral = 0.65 # HL: 0.6
 
     kTolerance = 1.0 if not RobotBase.isSimulation() else 1.5 # math.pi / 10
     

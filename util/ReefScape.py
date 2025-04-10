@@ -3,34 +3,35 @@ from typing import Callable
 
 from commands2 import Subsystem
 from ntcore import NetworkTable, NetworkTableInstance
+from wpilib import DriverStation
 from wpimath.geometry import Pose2d, Rotation2d
 
 
 class ReefScapePositions(Enum):
     class Reef(Enum):
-        R1 = Pose2d(4.998, 5.199, Rotation2d.fromDegrees(-120))
-        R2 = Pose2d(5.263, 5.053, Rotation2d.fromDegrees(-120))
-        R3 = Pose2d(5.758, 4.194, Rotation2d.fromDegrees(180))
-        R4 = Pose2d(4.763, 3.852, Rotation2d.fromDegrees(180))
-        R5 = Pose2d(5.272, 3, Rotation2d.fromDegrees(120))
-        R6 = Pose2d(4.998, 2.830, Rotation2d.fromDegrees(120))
-        R7 = Pose2d(4, 2.829, Rotation2d.fromDegrees(60))
-        R8 = Pose2d(3.71, 3, Rotation2d.fromDegrees(60))
-        R9 = Pose2d(3.2, 3.86, Rotation2d.fromDegrees(0))
-        R10 = Pose2d(3.2, 4.187, Rotation2d.fromDegrees(0))
-        R11 = Pose2d(3.716, 5.058, Rotation2d.fromDegrees(-60))
-        R12 = Pose2d(3.976, 5.212, Rotation2d.fromDegrees(-60))
+        R1: Pose2d = Pose2d(4.998, 5.199, Rotation2d.fromDegrees(-120))
+        R2: Pose2d = Pose2d(5.263, 5.053, Rotation2d.fromDegrees(-120))
+        R3: Pose2d = Pose2d(5.758, 4.194, Rotation2d.fromDegrees(180))
+        R4: Pose2d = Pose2d(4.763, 3.852, Rotation2d.fromDegrees(180))
+        R5: Pose2d = Pose2d(5.272, 3, Rotation2d.fromDegrees(120))
+        R6: Pose2d = Pose2d(4.998, 2.830, Rotation2d.fromDegrees(120))
+        R7: Pose2d = Pose2d(4, 2.829, Rotation2d.fromDegrees(60))
+        R8: Pose2d = Pose2d(3.71, 3, Rotation2d.fromDegrees(60))
+        R9: Pose2d = Pose2d(3.2, 3.86, Rotation2d.fromDegrees(0))
+        R10: Pose2d = Pose2d(3.2, 4.187, Rotation2d.fromDegrees(0))
+        R11: Pose2d = Pose2d(3.716, 5.058, Rotation2d.fromDegrees(-60))
+        R12: Pose2d = Pose2d(3.976, 5.212, Rotation2d.fromDegrees(-60))
 
     class Source(Enum):
-        class Left(Enum):
-            Outer = Pose2d(1.7, 7.413, Rotation2d.fromDegrees(-27))
-            Middle = Pose2d(1.2, 7.051, Rotation2d.fromDegrees(-27))
-            Inner = Pose2d(0.660, 6.681, Rotation2d.fromDegrees(-27))
+        class LEFT(Enum):
+            OUTER: Pose2d = Pose2d(1.7, 7.413, Rotation2d.fromDegrees(126))
+            MIDDLE: Pose2d = Pose2d(1.2, 7.051, Rotation2d.fromDegrees(126))
+            INNER: Pose2d = Pose2d(0.660, 6.681, Rotation2d.fromDegrees(126))
 
-        class Right(Enum):
-            Outer = Pose2d(1.459, 0.79, Rotation2d.fromDegrees(46.5))
-            Middle = Pose2d(1.202, 1.029, Rotation2d.fromDegrees(46.5))
-            Inner = Pose2d(0.734, 1.340, Rotation2d.fromDegrees(46.5))
+        class RIGHT(Enum):
+            OUTER: Pose2d = Pose2d(1.459, 0.79, Rotation2d.fromDegrees(234))
+            MIDDLE: Pose2d = Pose2d(1.202, 1.029, Rotation2d.fromDegrees(234))
+            INNER: Pose2d = Pose2d(0.734, 1.340, Rotation2d.fromDegrees(234))
 
 class RobotMode(Enum):
     TEST = auto()
@@ -108,14 +109,15 @@ class ReefScape(Subsystem):
     _current_state: RobotState = RobotState.NONE
 
     # Coral Variables
-    _current_source_side: SourceSide = SourceSide.AUTO
+    _current_source_side: SourceSide = SourceSide.LEFT
     _current_select: SourceSelect = SourceSelect.OUTER
     _current_height: ReefTarget = ReefTarget.L2
     _current_reef_side: ReefSide = ReefSide.R1
 
-    __log: NetworkTable = NetworkTableInstance.getDefault().getTable("/")
+    __log: NetworkTable = NetworkTableInstance.getDefault().getTable("/ReefScapeState")
 
     def __init__(self):
+        self.setGetPose(lambda: Pose2d())
         self.setHasCoral(lambda: False)
         self.setHasAlgae(lambda: False)
         self.setElevatorAtPosition(lambda: False)
@@ -169,7 +171,7 @@ class ReefScape(Subsystem):
         self._current_state = state
         self.__log.putString("RobotState", str(state))
 
-    def setNextSide(self):
+    def setNextReefSide(self):
         match self._current_reef_side:
             case ReefSide.R1:
                 self._current_reef_side = ReefSide.R2
@@ -291,9 +293,14 @@ class ReefScape(Subsystem):
                 self._current_source_side = SourceSide.RIGHT
             case SourceSide.RIGHT:
                 self._current_source_side = SourceSide.LEFT
+            case SourceSide.AUTO:
+                self._current_source_side = SourceSide.LEFT
         self.__log.putString("SourceSide", str(self._current_source_side))
 
     # Getters and Setters for what the robot has, and where the elevator is
+
+    def setGetPose(self, getPose: Callable[[], Pose2d]):
+        self.__getPose = getPose
 
     def setHasCoral(self, hasCoral: Callable[[], bool]):
         self.__hasCoral = hasCoral
@@ -304,7 +311,8 @@ class ReefScape(Subsystem):
     def setElevatorAtPosition(self, atPosition: Callable[[], bool]):
         self.__lamdaElevatorAtPosition = atPosition
 
-    # Lambdas
+    def getCurrentPose(self):
+        return self.__getPose()
 
     def getHasCoral(self):
         return self.__hasCoral()
@@ -317,8 +325,45 @@ class ReefScape(Subsystem):
 
     @classmethod
     def getReefPose(self) -> Pose2d:
-        return ReefScapePositions.Reef._member_map_[ self._current_reef_side.name ].value
+        instance = self.getInstance()
+        return ReefScapePositions.Reef._member_map_[ instance._current_reef_side.name ].value
 
     @classmethod
     def getCoralPose(self) -> Pose2d:
-        return ReefScapePositions.Source._member_map_[ self._current_source_side.name ]._member_map_[ self._current_select.name ].value
+        instance = self.getInstance()
+        pos = instance._current_source_side.name
+        
+        if pos == "AUTO":
+            pose:Pose2d = instance.getCurrentPose()
+            pos = 'LEFT' if pose.Y() > 4.10 else 'RIGHT'
+
+            # Transform Side Information for Red Alliance
+            if DriverStation.getAlliance() == DriverStation.Alliance.kRed:
+                pos = 'LEFT' if pos == 'RIGHT' else 'RIGHT'
+        
+        if pos == "LEFT":
+            return ReefScapePositions.Source.LEFT._member_map_[ self._current_select.name ].value
+        if pos == "RIGHT":
+            return ReefScapePositions.Source.RIGHT._member_map_[ self._current_select.name ].value
+
+    @classmethod
+    def getTargetRotation(self) -> Rotation2d:
+        instance = self.getInstance()
+        if instance.getHasCoral():
+            return self.getReefPose().rotation()
+        else:
+            # Get Side of Field Information
+            pose:Pose2d = instance.getCurrentPose()
+            side_name = 'LEFT' if pose.Y() > 4.10 else 'RIGHT'
+
+            # Transform Side Information for Red Alliance
+            if DriverStation.getAlliance() == DriverStation.Alliance.kRed:
+                side_name = 'LEFT' if side_name == 'RIGHT' else 'RIGHT'
+
+            # Return
+            if side_name == 'LEFT':
+                p:Pose2d = ReefScapePositions.Source.LEFT._member_map_['INNER'].value
+                return p.rotation()
+            if side_name == 'RIGHT':
+                p:Pose2d = ReefScapePositions.Source.RIGHT._member_map_['INNER'].value
+                return p.rotation()

@@ -14,27 +14,23 @@ from subsystems import SwerveDrive
 from wpimath.geometry import Rotation2d
 from wpimath.controller import ProfiledPIDControllerRadians, PIDController
 from wpimath.trajectory import TrapezoidProfileRadians
-from commands.Drive.DriveByStick import DriveByStick
 
-class DriveByStickRotate(DriveByStick):
+class DriveByAlignToWall:
     def __init__( self,
                 mySubsystem:SwerveDrive,
-                frcFwd: typing.Callable[[], float] = lambda: 0.0,
                 frcLeft: typing.Callable[[], float] = lambda: 0.0,
-                frcRotation: typing.Callable[[], float] = lambda: 0.0,
                 frcRotation2d: typing.Callable[[], Rotation2d] = lambda: Rotation2d(0.0),
             ) -> None:
 
         # Command Attributes
-        super().__init__( mySubsystem, frcFwd, frcLeft, frcRotation )
-        self.setName( "DriveByStickRotation" )
+        self.setName( "DriveByAlignToWall" )
         self.__getTarget = frcRotation2d
         FalconLogger.logOutput('thingy/targetAngle', Rotation2d())
 
         # self.turnPID = ProfiledPIDControllerRadians(
         #     3.5, 0, 0,
             # TrapezoidProfileRadians.Constraints(
-            #     DriveConstants.kMaxRotationSpeed,
+                # DriveConstants.kMaxRotationSpeed,
             #     DriveConstants.kMaxRotationSpeed / 2
             # )
         # )

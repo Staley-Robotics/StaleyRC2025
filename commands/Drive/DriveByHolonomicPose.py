@@ -12,7 +12,7 @@ from .DriveConstants import *
 from subsystems import SwerveDrive
 
 from wpimath.geometry import Rotation2d
-from wpimath.controller import ProfiledPIDControllerRadians, PIDController
+from wpimath.controller import ProfiledPIDControllerRadians, PIDController, HolonomicDriveController
 from wpimath.trajectory import TrapezoidProfileRadians
 from commands.Drive.DriveByStick import DriveByStick
 
@@ -29,19 +29,19 @@ class DriveByStickRotate(DriveByStick):
         super().__init__( mySubsystem, frcFwd, frcLeft, frcRotation )
         self.setName( "DriveByStickRotation" )
         self.__getTarget = frcRotation2d
-        FalconLogger.logOutput('thingy/targetAngle', Rotation2d())
 
-        # self.turnPID = ProfiledPIDControllerRadians(
-        #     3.5, 0, 0,
-            # TrapezoidProfileRadians.Constraints(
-            #     DriveConstants.kMaxRotationSpeed,
-            #     DriveConstants.kMaxRotationSpeed / 2
-            # )
-        # )
-        self.turnPID = PIDController(1.05,0,0.0)
-        self.turnPID.enableContinuousInput( -math.pi, math.pi )
-        # self.turnPID.\
-        SmartDashboard.putData( "DriveByStickRotation_PID", self.turnPID )
+        self.controller = HolonomicDriveController(
+            PIDController(5,0,0),
+            PIDController(5,0,0),
+            ProfiledPIDControllerRadians(
+                3.5, 0, 0,
+                TrapezoidProfileRadians.Constraints(
+                    DriveConstants.kMaxRotationSpeed,
+                    DriveConstants.kMaxRotationSpeed / 2
+                )
+        )
+        )
+        self.controller.getThetaController().enableContinuousInput(-math.pi,math.pi)
 
     def initialize(self) -> None:
         robotAngle = self.subsystem.getRobotAngle()

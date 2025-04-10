@@ -2,17 +2,19 @@ import typing, threading
 import math
 
 from commands2 import Subsystem
-from wpilib import RobotState, SmartDashboard, Field2d, DriverStation
+from wpilib import RobotState, SmartDashboard, Field2d, DriverStation, RobotBase
 from wpilib.shuffleboard import Shuffleboard
 from wpimath.estimator import SwerveDrive4PoseEstimator
 from wpimath.geometry import Rotation2d, Translation2d, Pose2d, Pose3d, Transform2d
 from wpimath.kinematics import SwerveDrive4Kinematics, SwerveModulePosition, SwerveModuleState, SwerveDrive4Odometry, ChassisSpeeds
 from wpimath.system.plant import DCMotor
-from wpimath.units import lbsToKilograms
+from wpimath.units import lbsToKilograms, seconds, millimeters
 
 from ntcore.util import ntproperty
 
 from phoenix6.hardware import Pigeon2
+
+from playingwithfusion import TimeOfFlight
 
 from pathplannerlib.auto import AutoBuilder
 from pathplannerlib.controller import PPHolonomicDriveController
@@ -40,7 +42,7 @@ class SwerveDrive(Subsystem):
     __DriveMaxSpeedPercent = ntproperty( "/Settings/Driver1/MaxSpeedPercent", 0.75 )
     __DriveMaxRotationPercent = ntproperty( "/Settings/Driver1/MaxRotationPercent", 0.36 )
 
-    __setpoint:ChassisSpeeds = None
+    __setpoint:ChassisSpeeds = ChassisSpeeds()
     __setpointStates = [ SwerveModuleState(), SwerveModuleState(), SwerveModuleState(), SwerveModuleState() ]
     # __odometryLock = False
 
@@ -49,6 +51,9 @@ class SwerveDrive(Subsystem):
         self.setName( "SwerveDrive" )
 
         self.__gyro = Pigeon2( 0, "canivore1" )
+        self.__tofSensor = TimeOfFlight( 1 ) # TODO: can id???
+        self.__tofSensor.setRangingMode( TimeOfFlight.RangingMode.kShort, 24 )
+        # maybe outside comp season, tofs at various angles on bot, use with field geonmetry and estimated position to create more accurate pose2d
 
         self.__modules = [
             SwerveModule( 0, 1, 2, 1, -0.329590 ), # 97.471 ),
@@ -76,22 +81,24 @@ class SwerveDrive(Subsystem):
             self.__getModulePositions(),
             Pose2d(8.7, 4, Rotation2d(0)) # This is where we would set an initial pose on the field
         )
+        self.disable_vision_updates = False
 
         self.stop()
 
         # Dashboards
         self.__field = Field2d()
         SmartDashboard.putData("Field", self.__field)
+        SmartDashboard.putData("Drive_ToF", self.__tofSensor)
        
         # Path Planner
         robotConfig = RobotConfig.fromGUISettings()
         AutoBuilder.configure(
             pose_supplier = self.__visionOdometry.getEstimatedPosition,
-            reset_pose = self.__visionOdometry.resetPose,
+            reset_pose = self.resetOdometry,
             robot_relative_speeds_supplier = self.getChassisSpeeds,
             output = lambda speeds, feedforwards: self.runChassisSpeeds(speeds),
             controller = PPHolonomicDriveController(
-                PIDConstants(5.0, 0.0, 0.0),
+                PIDConstants(0.8, 0.0, 0.0),
                 PIDConstants(5.0, 0.0, 0.0)
             ),
             robot_config = robotConfig,
@@ -100,8 +107,8 @@ class SwerveDrive(Subsystem):
         )
 
         # PathPlannerLogging.setLogCurrentPoseCallback( self.__field.setRobotPose )
-        PathPlannerLogging.setLogTargetPoseCallback( self.__field.getObject('targetPose').setPose )
-        PathPlannerLogging.setLogActivePathCallback( self.__field.getObject('path').setPoses )
+        # PathPlannerLogging.setLogTargetPoseCallback( self.__field.getObject('targetPose').setPose )
+        # PathPlannerLogging.setLogActivePathCallback( self.__field.getObject('path').setPoses )
         SmartDashboard.putData( 'Drive', self )
 
     def shouldFlipPath(self) -> bool:
@@ -139,7 +146,8 @@ class SwerveDrive(Subsystem):
         FalconLogger.logInput( "SwerveDrive/Gyro/yaw_d", self.__gyro.get_yaw().value )
         FalconLogger.logInput( "SwerveDrive/Gyro/pitch_d", self.__gyro.get_pitch().value  )
         FalconLogger.logInput( "SwerveDrive/Gyro/roll_d", self.__gyro.get_roll().value  )
-        # FalconLogger.logInput( "SwerveDrive/OdometryLock", self.__odometryLock )
+
+        FalconLogger.logInput( "SwerveDrive/ToF_range_mm", self.__tofSensor.getRange()  )
 
         # Run Subsystem: Set New State To Subsystem
         if RobotState.isDisabled():
@@ -291,8 +299,27 @@ class SwerveDrive(Subsystem):
     
     def changeDriveSpeedPercent(self) -> None:
         if self.__DriveMaxSpeedPercent == 0.75:
-            self.__DriveMaxSpeedPercent = 0.35
-        elif self.__DriveMaxSpeedPercent == 0.35:
+            self.__DriveMaxSpeedPercent = 0.45
+        elif self.__DriveMaxSpeedPercent == 0.45: 
             self.__DriveMaxSpeedPercent = 0.75
-    # def setRotSpeedPercent(self, val:float) -> None:
-    #     self.__DriveMaxSpeedPercent = val
+    
+    def apply_vision_measurement(self, pose:Pose2d, timestamp:seconds, stddev:tuple[float]) -> None:
+
+        if self.disable_vision_updates:# or RobotState.isAutonomous():
+            return
+
+        # dont apply if rotation or motion is over certain boundary
+        if self.__gyro.get_angular_velocity_z_device().value > SwerveDriveConstants.kMaxRotationSpeed/3 or self.getChassisSpeeds().vx > 1 or self.getChassisSpeeds().vy > 1:
+            return
+
+        self.__visionOdometry.addVisionMeasurement(
+            pose,
+            timestamp,
+            stddev
+            )
+    
+    def set_vision_disabled(self, val:bool) -> None:
+        self.disable_vision_updates = val
+    
+    def get_forwards_distance(self) -> millimeters:
+        return self.__tofSensor.getRange()

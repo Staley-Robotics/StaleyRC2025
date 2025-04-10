@@ -17,14 +17,16 @@ class CoralWheelOut(Command):
         self.wheelSys.setSpeed( CoralManipulatorWheel.WheelSpeeds.OUT )
     
     def execute(self):
-        if not self.wheelSys.hasCoral() and not self.timer.isRunning():
+        if not self.wheelSys.ls.get() and not self.timer.isRunning():
             self.timer.reset()
             self.timer.start()
 
     def end(self, interrupted):
         self.wheelSys.setSpeed( CoralManipulatorWheel.WheelSpeeds.STOP )
+        self.wheelSys.set_has_coral(False)
         self.timer.stop()
         self.timer.reset()
     
     def isFinished(self):
-        return not self.wheelSys.hasCoral() and self.timer.hasElapsed(0.2) # TODO: This is probably wrong
+        return not self.wheelSys.ls.get() and self.timer.hasElapsed(0.4) # TODO: This is probably wrong
+        # return not self.wheelSys.hasCoral() and self.timer.hasElapsed(0.2) # TODO: This is probably wrong

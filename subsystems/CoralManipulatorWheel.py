@@ -3,7 +3,7 @@ from wpilib import RobotState, RobotBase, DigitalInput, SmartDashboard
 from ntcore import NetworkTable, NetworkTableInstance
 from ntcore.util import ntproperty
 
-from rev import SparkMax, SparkMaxConfig
+from rev import SparkMax, SparkMaxConfig, LimitSwitchConfig
 
 from util import FalconLogger, NTTunableFloat
 
@@ -14,7 +14,7 @@ class CoralManipulatorWheel(Subsystem):
     class WheelSpeeds:
         STOP: float = 0
         IN: float = -0.6
-        SLIGHT_IN: float = -0.4 # only meant for short distances, avoid slamming into mechanism
+        SLIGHT_IN: float = -0.06 # only meant for short distances, avoid slamming into mechanism
         OUT: float = 0.6
 
     # Initialization
@@ -26,19 +26,26 @@ class CoralManipulatorWheel(Subsystem):
         self.ls = self.motor.getReverseLimitSwitch()
 
         # limit switch
-        self.limit_switch = DigitalInput( 5 ) # BAD
+        # self.limit_switch = DigitalInput( 5 ) # BAD
 
         # config
         motorConfig = SparkMaxConfig()
         motorConfig = motorConfig.setIdleMode( SparkMaxConfig.IdleMode.kBrake )
         motorConfig = motorConfig.inverted(True)
+
+        lsConfig = LimitSwitchConfig()
+        lsConfig = lsConfig.reverseLimitSwitchEnabled( False ).reverseLimitSwitchType( LimitSwitchConfig.Type.kNormallyOpen )
+
+        motorConfig.apply(lsConfig)
+
         self.motor.configure( motorConfig, SparkMax.ResetMode.kResetSafeParameters, SparkMax.PersistMode.kPersistParameters )
 
         # setup
         self.motor_speed:CoralManipulatorWheel.WheelSpeeds = self.WheelSpeeds.STOP
 
         self.stalled_frames = 0
-        self.free_spin = False
+        # self.free_spin = False
+        self.has_coral = False
 
         SmartDashboard.putData("CoralWheel", self)
 
@@ -47,12 +54,15 @@ class CoralManipulatorWheel(Subsystem):
         # Logging: Write Current Subsystem State
         FalconLogger.logInput('CoralManipulatorWheel/motorOutputCurrent', self.motor.getOutputCurrent())
         FalconLogger.logInput('CoralManipulatorWheel/motorVelocity', self.motor.getEncoder().getVelocity())
+        FalconLogger.logInput('CoralManipulatorWheel/limitSwitchState', self.ls.get())
 
         # Run Subsystem: Set New State To Subsystem
         if RobotState.isDisabled():
             self.stop()
         else:
             self.run()
+        
+        self.has_coral = self.ls.get() or self.has_coral
         
         # Logging: Write Post Operation Information
         FalconLogger.logOutput('CoralManipulatorWheel/motorSetSpeed', self.motor_speed)
@@ -80,4 +90,7 @@ class CoralManipulatorWheel(Subsystem):
     
     def hasCoral(self) -> bool:
         # return self.stalled_frames > 5 or not self.limit_switch.get()
-        return self.ls.get()
+        return self.has_coral
+
+    def set_has_coral(self, val:bool) -> None:
+        self.has_coral = val
