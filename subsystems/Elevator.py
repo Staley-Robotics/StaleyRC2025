@@ -142,7 +142,7 @@ class Elevator(Subsystem):
         self.__leadMotor.configure(lMotorCfg, SparkBase.ResetMode.kResetSafeParameters, SparkBase.PersistMode.kPersistParameters)
         self.__followMotor.configure(fMotorCfg, SparkBase.ResetMode.kResetSafeParameters, SparkBase.PersistMode.kPersistParameters)
 
-        # Closed Loop
+        # Closed Loop (for use with alternate height measurement methods)
         # self.__pidController = PIDController(
         #     ElevatorConstants._kP,
         #     ElevatorConstants._kI,
@@ -207,7 +207,7 @@ class Elevator(Subsystem):
         
 
         ## Updates
-        # sync position
+        # passive sync position
         # by limit switch
         if self.__bottomSwitch.get() and self.getHeight() != ElevatorPositions.BOTTOM:
             self.__leadEncoder.setPosition( ElevatorPositions.BOTTOM )

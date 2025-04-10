@@ -2,7 +2,13 @@
 # requirements.txt
 pip install -r requirements.txt
 
-echo "\n\033[1;36mSuccesfully Installed \'requirements.txt\'!\033[0m\n"
+# check success
+if [ "$?" -eq 0 ]; then
+    echo "\n\033[1;36mSuccesfully Installed 'requirements.txt'!\033[0m\n"
+else
+    echo "\n\033[1;36mFailed to Install 'requirements.txt', Exiting.\033[0m\n"
+    exit
+fi
 
 # robotpy sync
 if [[ "$OSTYPE" == "darwin"* ]]; then
@@ -11,4 +17,10 @@ else
     robotpy sync
 fi
 
-echo "\n\033[1;36mSuccesfully Ran \'robotpy sync\'!\033[0m\n"
+# check success
+if [ "$?" -eq 0 ]; then
+    echo "\n\033[1;36mSuccesfully Ran 'robotpy sync'!\033[0m\n"
+else
+    echo "\n\033[1;36mFailed to Run 'robotpy sync', Exiting.\033[0m\n"
+    exit
+fi

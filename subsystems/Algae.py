@@ -74,6 +74,9 @@ class AlgaeManipulatorConstants:
 
     maxAlgaeDistance = 200
 
+    length:meters = 0.5
+    weight:kilograms = 0.75
+
     class NeoSim:
         kMaxRpm = DCMotor.NEO(2).freeSpeed * kSecondsPerMinute
 
@@ -166,18 +169,18 @@ class AlgaeManipulator(Subsystem):
         #Shuffleboard.getTab("AlgaeManipulator").add("AlgaeManipulator", self)
 
         # Pivot Simulation
-        self.simLMotor = SparkMaxSim(self.__leadMotor, DCMotor.NEO(1))
+        self.simLMotor = SparkMaxSim(self.__leadMotor, DCMotor.NEO(2))
         #self.simLMotor.setPosition( degreesToRotations( 90 ) )
 
         self.simPivotArm = SingleJointedArmSim(
             DCMotor.NEO550(2),
             AlgaeManipulatorConstants.pivot_kGearRatio,
-            SingleJointedArmSim.estimateMOI( 0.50, 2.2 ), # NOTE: these are random numbers
-            0.50,
-            degreesToRadians( -15.0 ),
-            degreesToRadians( 100.0 ),
-            True, #Gravity
-            degreesToRadians( 90.0 ),
+            SingleJointedArmSim.estimateMOI( AlgaeManipulatorConstants.length, AlgaeManipulatorConstants.weight ), # NOTE: these are random numbers
+            armLength=AlgaeManipulatorConstants.length,
+            minAngle=degreesToRadians( -15.0 ),
+            maxAngle=degreesToRadians( 100.0 ),
+            simulateGravity=True, #Gravity
+            startingAngle=degreesToRadians( 90.0 ),
         )
         self.simPivotArm.setState( self.getMeasurement(), 0.0 )
 
@@ -206,12 +209,6 @@ class AlgaeManipulator(Subsystem):
         # Input Logging - 775pro - Intake
         FalconLogger.logInput("AlgaeManipulator/Intake/MotorOutputPercent", self.__intakeMotor.getMotorOutputPercent())
         FalconLogger.logInput("AlgaeManipulator/Intake/MotorVoltage", self.__intakeMotor.getMotorOutputVoltage())
-
-        # Input Logging - Algae Sensor
-        # FalconLogger.logInput("AlgaeManipulator/Sensor/Proximity", self.__colorSensor.getProximity() )
-        # FalconLogger.logInput("AlgaeManipulator/Sensor/Color.red", self.__colorSensor.getColor().red )
-        # FalconLogger.logInput("AlgaeManipulator/Sensor/Color.blue", self.__colorSensor.getColor().blue )
-        # FalconLogger.logInput("AlgaeManipulator/Sensor/Color.green", self.__colorSensor.getColor().green )
 
         # Run
         if RobotState.isDisabled():
