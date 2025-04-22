@@ -11,24 +11,24 @@ from util import FalconLogger
 from .DriveConstants import *
 from subsystems import SwerveDrive
 
-from wpimath.geometry import Rotation2d
+from wpimath.geometry import Rotation2d, Pose2d
 from wpimath.controller import ProfiledPIDControllerRadians, PIDController, HolonomicDriveController
 from wpimath.trajectory import TrapezoidProfileRadians
 from commands.Drive.DriveByStick import DriveByStick
 
-class DriveByStickRotate(DriveByStick):
+class DriveByHolonomic(DriveByStick):
     def __init__( self,
-                mySubsystem:SwerveDrive,
+                driveSys:SwerveDrive,
                 frcFwd: typing.Callable[[], float] = lambda: 0.0,
                 frcLeft: typing.Callable[[], float] = lambda: 0.0,
                 frcRotation: typing.Callable[[], float] = lambda: 0.0,
-                frcRotation2d: typing.Callable[[], Rotation2d] = lambda: Rotation2d(0.0),
+                frcPose2d: typing.Callable[[], Pose2d] = lambda: Pose2d(0.0),
             ) -> None:
 
         # Command Attributes
-        super().__init__( mySubsystem, frcFwd, frcLeft, frcRotation )
+        super().__init__( driveSys, frcFwd, frcLeft, frcRotation )
         self.setName( "DriveByStickRotation" )
-        self.__getTarget = frcRotation2d
+        self.__getTarget = frcPose2d
 
         self.controller = HolonomicDriveController(
             PIDController(5,0,0),
@@ -48,17 +48,19 @@ class DriveByStickRotate(DriveByStick):
         # self.turnPID.reset()
 
     def execute(self) -> None:
-        # self.turnPID = SmartDashboard.getData('DriveByStickRotation_PID')
-        currentAngle = self.subsystem.getRobotAngle()
-        targetAngle = self.__getTarget()
-        self.turnPID.setSetpoint( targetAngle.radians())
 
-        rotationValue = applyDeadband(self.turnPID.calculate( currentAngle.radians() ) / math.pi, 0.03)
-        FalconLogger.logOutput('thingy/rotValue', rotationValue)
+        self.controller.calculate( self.subsystem.getPose(), self.__getTarget(),  )
+        # # self.turnPID = SmartDashboard.getData('DriveByStickRotation_PID')
+        # currentAngle = self.subsystem.getRobotAngle()
+        # targetAngle = self.__getTarget()
+        # self.turnPID.setSetpoint( targetAngle.radians())
 
-        self.subsystem.runPercentInputs( self.getX(), self.getY(), rotationValue / self.subsystem.getDriverMaxRotation() * DriveConstants.kMaxRotationSpeed)
+        # rotationValue = applyDeadband(self.turnPID.calculate( currentAngle.radians() ) / math.pi, 0.03)
+        # FalconLogger.logOutput('thingy/rotValue', rotationValue)
 
-        FalconLogger.logOutput('thingy/targetAngle', targetAngle)
+        # self.subsystem.runPercentInputs( self.getX(), self.getY(), rotationValue / self.subsystem.getDriverMaxRotation() * DriveConstants.kMaxRotationSpeed)
+
+        # FalconLogger.logOutput('thingy/targetAngle', targetAngle)
 
     def isFinished(self) -> bool:
         return self.getR() != 0.0

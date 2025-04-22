@@ -72,6 +72,8 @@ class Vision(Subsystem):
 
     def periodic(self):
         outputs = [camera.update_botpose() for camera in self.cameras]
+        # for camera in self.cameras:
+        #     camera.update_botpose()
 
         # if any(outputs):
         #     for pose in outputs:

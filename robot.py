@@ -11,7 +11,7 @@ from util import FalconLogger
 
 class MyRobot(TimedRobot):
     # Variable Declaration
-    __robotContainer:RobotContainer = None
+    robotContainer:RobotContainer = None
     __autoCmd:Command = None
     __logger:FalconLogger = None
 
@@ -26,7 +26,7 @@ class MyRobot(TimedRobot):
         DriverStation.startDataLog( DataLogManager.getLog() )
         
         # Built The Robot
-        self.__robotContainer = RobotContainer()
+        self.robotContainer = RobotContainer()
         self.__logger = FalconLogger(False)
 
     # Periodic Loop / All Modes
@@ -48,7 +48,7 @@ class MyRobot(TimedRobot):
     def autonomousInit(self):
         # Start the Autonomous Package
         try:
-            self.__autoCmd = self.__robotContainer.getAutonomousCommand()
+            self.__autoCmd = self.robotContainer.getAutonomousCommand()
             self.__autoCmd.schedule()
         except:
             print("WARNING! getAutonomousCommand failed!")

@@ -35,6 +35,7 @@ class AlgaeManipulatorPositions:
     PLACE = 86.0
     GRAB = 35.0
     MIN = 10.0
+    START = MAX
 
 class AlgaeIntakeState(Enum):
     HOLD = -0.2
@@ -91,18 +92,18 @@ class AlgaeManipulator(Subsystem):
     # Motors (Neo and 775pro, at 25:1 and 10.3333:1 respectively)
     pivotSetpoint: float = 0.0
 
-    __intakeMotor: TalonSRX = None
+    intakeMotor: TalonSRX = None
     intakeState = AlgaeIntakeState.OFF
 
     __kMotorOffset = 0.5902802
 
     def __init__(self):
         ## Init Motors
-        self.__leadMotor = SparkMax(1, SparkMax.MotorType.kBrushless)
+        self.leadMotor = SparkMax(1, SparkMax.MotorType.kBrushless)
         self.__followMotor = SparkMax(2, SparkMax.MotorType.kBrushless)
 
-        self.__pivotEncoder = self.__leadMotor.getAbsoluteEncoder()
-        self.__pivotController = self.__leadMotor.getClosedLoopController()
+        self.__pivotEncoder = self.leadMotor.getAbsoluteEncoder()
+        self.__pivotController = self.leadMotor.getClosedLoopController()
         
         # Init motors and config
         lMotorCfg = SparkMaxConfig()
@@ -112,7 +113,7 @@ class AlgaeManipulator(Subsystem):
         fMotorCfg = SparkMaxConfig()
         fMotorCfg = fMotorCfg.setIdleMode( SparkMaxConfig.IdleMode.kBrake )
         fMotorCfg = fMotorCfg.inverted(False)
-        fMotorCfg = fMotorCfg.follow(self.__leadMotor.getDeviceId(), True)
+        fMotorCfg = fMotorCfg.follow(self.leadMotor.getDeviceId(), True)
 
         clConfig = ClosedLoopConfig()
         clConfig = clConfig.pidf(
@@ -140,12 +141,12 @@ class AlgaeManipulator(Subsystem):
         lMotorCfg.apply(clConfig)
         lMotorCfg.apply(encConfig)
 
-        self.__leadMotor.configure( lMotorCfg, SparkBase.ResetMode.kNoResetSafeParameters, SparkBase.PersistMode.kNoPersistParameters )
+        self.leadMotor.configure( lMotorCfg, SparkBase.ResetMode.kNoResetSafeParameters, SparkBase.PersistMode.kNoPersistParameters )
         self.__followMotor.configure( fMotorCfg, SparkBase.ResetMode.kNoResetSafeParameters, SparkBase.PersistMode.kNoPersistParameters )
 
         # 775pro
-        self.__intakeMotor = WPI_TalonSRX(31)
-        self.__intakeMotor.setNeutralMode(NeutralMode.Brake)
+        self.intakeMotor = WPI_TalonSRX(31)
+        self.intakeMotor.setNeutralMode(NeutralMode.Brake)
 
         # Algae Detection Sensor
         # self.__irBeam = DigitalInput(3)
@@ -169,32 +170,32 @@ class AlgaeManipulator(Subsystem):
         #Shuffleboard.getTab("AlgaeManipulator").add("AlgaeManipulator", self)
 
         # Pivot Simulation
-        self.simLMotor = SparkMaxSim(self.__leadMotor, DCMotor.NEO(2))
-        #self.simLMotor.setPosition( degreesToRotations( 90 ) )
+        # self.simLMotor = SparkMaxSim(self.leadMotor, DCMotor.NEO(2))
+        # #self.simLMotor.setPosition( degreesToRotations( 90 ) )
 
-        self.simPivotArm = SingleJointedArmSim(
-            DCMotor.NEO550(2),
-            AlgaeManipulatorConstants.pivot_kGearRatio,
-            SingleJointedArmSim.estimateMOI( AlgaeManipulatorConstants.length, AlgaeManipulatorConstants.weight ), # NOTE: these are random numbers
-            armLength=AlgaeManipulatorConstants.length,
-            minAngle=degreesToRadians( -15.0 ),
-            maxAngle=degreesToRadians( 100.0 ),
-            simulateGravity=True, #Gravity
-            startingAngle=degreesToRadians( 90.0 ),
-        )
-        self.simPivotArm.setState( self.getMeasurement(), 0.0 )
+        # self.simPivotArm = SingleJointedArmSim(
+        #     DCMotor.NEO550(2),
+        #     AlgaeManipulatorConstants.pivot_kGearRatio,
+        #     SingleJointedArmSim.estimateMOI( AlgaeManipulatorConstants.length, AlgaeManipulatorConstants.weight ), # NOTE: these are random numbers
+        #     armLength=AlgaeManipulatorConstants.length,
+        #     minAngle=degreesToRadians( -15.0 ),
+        #     maxAngle=degreesToRadians( 100.0 ),
+        #     simulateGravity=True, #Gravity
+        #     startingAngle=degreesToRadians( 90.0 ),
+        # )
+        # self.simPivotArm.setState( self.getMeasurement(), 0.0 )
 
-        # Intake Simulation
-        self.simIntake = self.__intakeMotor.getSimCollection()
+        # # Intake Simulation
+        # self.simIntake = self.intakeMotor.getSimCollection()
 
     def periodic(self) -> None:
         # Input Logging - Neo - Pivot
-        FalconLogger.logInput("AlgaeManipulator/Pivot/LeadMotorInput", self.__leadMotor.get())
-        FalconLogger.logInput("AlgaeManipulator/Pivot/LeadMotorOutput", self.__leadMotor.getAppliedOutput())
-        FalconLogger.logInput("AlgaeManipulator/Pivot/LeadMotorCurrent_a", self.__leadMotor.getOutputCurrent())
-        FalconLogger.logInput("AlgaeManipulator/Pivot/LeadMotorPosition_r", self.__leadMotor.getEncoder().getPosition())
-        FalconLogger.logInput("AlgaeManipulator/Pivot/LeadMotorVelocity_rpm", self.__leadMotor.getEncoder().getVelocity())
-        FalconLogger.logInput("AlgaeManipulator/Pivot/LeadMotorTemp_c", self.__leadMotor.getMotorTemperature())
+        FalconLogger.logInput("AlgaeManipulator/Pivot/LeadMotorInput", self.leadMotor.get())
+        FalconLogger.logInput("AlgaeManipulator/Pivot/LeadMotorOutput", self.leadMotor.getAppliedOutput())
+        FalconLogger.logInput("AlgaeManipulator/Pivot/LeadMotorCurrent_a", self.leadMotor.getOutputCurrent())
+        FalconLogger.logInput("AlgaeManipulator/Pivot/LeadMotorPosition_r", self.leadMotor.getEncoder().getPosition())
+        FalconLogger.logInput("AlgaeManipulator/Pivot/LeadMotorVelocity_rpm", self.leadMotor.getEncoder().getVelocity())
+        FalconLogger.logInput("AlgaeManipulator/Pivot/LeadMotorTemp_c", self.leadMotor.getMotorTemperature())
 
         FalconLogger.logInput("AlgaeManipulator/Pivot/FollowMotorInput", self.__followMotor.get())
         FalconLogger.logInput("AlgaeManipulator/Pivot/FollowMotorOutput", self.__followMotor.getAppliedOutput())
@@ -207,8 +208,8 @@ class AlgaeManipulator(Subsystem):
         FalconLogger.logInput("AlgaeManipulator/Pivot/EncoderVelocity_rpm", self.__pivotEncoder.getVelocity())
 
         # Input Logging - 775pro - Intake
-        FalconLogger.logInput("AlgaeManipulator/Intake/MotorOutputPercent", self.__intakeMotor.getMotorOutputPercent())
-        FalconLogger.logInput("AlgaeManipulator/Intake/MotorVoltage", self.__intakeMotor.getMotorOutputVoltage())
+        FalconLogger.logInput("AlgaeManipulator/Intake/MotorOutputPercent", self.intakeMotor.getMotorOutputPercent())
+        FalconLogger.logInput("AlgaeManipulator/Intake/MotorVoltage", self.intakeMotor.getMotorOutputVoltage())
 
         # Run
         if RobotState.isDisabled():
@@ -224,7 +225,7 @@ class AlgaeManipulator(Subsystem):
         FalconLogger.logOutput("AlgaeManipulator/Pivot/TargetAngle_d", self.getSetpoint())
         FalconLogger.logOutput("AlgaeManipulator/Pivot/ActualAngle_d", self.getMeasurement())
         FalconLogger.logOutput("AlgaeManipulator/Intake/TargetSpeed_p", self.intakeState.value)
-        FalconLogger.logOutput("AlgaeManipulator/Intake/ActualSpeed_p", self.__intakeMotor.getMotorOutputPercent())
+        FalconLogger.logOutput("AlgaeManipulator/Intake/ActualSpeed_p", self.intakeMotor.getMotorOutputPercent())
         FalconLogger.logOutput("AlgaeManipulator/HasAlgae", self.hasAlgae() )
 
     def simulationPeriodic(self) -> None:
@@ -232,34 +233,34 @@ class AlgaeManipulator(Subsystem):
 
         # Neo Periodic
         #driveRpm = AlgaeManipulatorConstants.NeoSim.kMaxRpm * self.__leadMotor.getAppliedOutput()
-        driveRadps = self.simPivotArm.getVelocity()
-        driveRpm = radiansToRotations( driveRadps ) * 60
+        # driveRadps = self.simPivotArm.getVelocity()
+        # driveRpm = radiansToRotations( driveRadps ) * 60
 
-        self.simLMotor.setMotorCurrent(0)
-        self.simLMotor.iterate( driveRpm , 12, 0.02)
-        self.simLMotor.getRelativeEncoderSim().iterate( driveRpm * AlgaeManipulatorConstants.pivot_kGearRatio, 0.02 )
-        #self.simPivot.getAbsoluteEncoderSim().iterate(driveRpm / AlgaeManipulatorConstants.pivot_kGearRatio, 0.02)
+        # self.simLMotor.setMotorCurrent(0)
+        # self.simLMotor.iterate( driveRpm , 12, 0.02)
+        # self.simLMotor.getRelativeEncoderSim().iterate( driveRpm * AlgaeManipulatorConstants.pivot_kGearRatio, 0.02 )
+        # #self.simPivot.getAbsoluteEncoderSim().iterate(driveRpm / AlgaeManipulatorConstants.pivot_kGearRatio, 0.02)
 
-        # self.simPivot.getRelativeEncoderSim().setVelocity(driveRpm)
-        # self.simPivot.getAbsoluteEncoderSim().setVelocity(driveRpm)
-        # self.simPivot.getAbsoluteEncoderSim().setPosition(self.simPivot.getRelativeEncoderSim().getPosition() % 1)
+        # # self.simPivot.getRelativeEncoderSim().setVelocity(driveRpm)
+        # # self.simPivot.getAbsoluteEncoderSim().setVelocity(driveRpm)
+        # # self.simPivot.getAbsoluteEncoderSim().setPosition(self.simPivot.getRelativeEncoderSim().getPosition() % 1)
 
-        # 775pro Periodic
-        velocity = AlgaeManipulatorConstants.Vex775Sim.kMaxRpm * self.__intakeMotor.getMotorOutputPercent()
-        velocity_Tp100ms = int( velocity * 2048 / 60 / 10 ) # RPM * Tickzzzzxxs/Rot * 1 M/60sec * 1 sec / 10 (100ms)
-        self.simIntake.setAnalogVelocity(velocity_Tp100ms)
-        self.simIntake.addQuadraturePosition( int( velocity_Tp100ms * 0.02 ) )
+        # # 775pro Periodic
+        # velocity = AlgaeManipulatorConstants.Vex775Sim.kMaxRpm * self.intakeMotor.getMotorOutputPercent()
+        # velocity_Tp100ms = int( velocity * 2048 / 60 / 10 ) # RPM * Tickzzzzxxs/Rot * 1 M/60sec * 1 sec / 10 (100ms)
+        # self.simIntake.setAnalogVelocity(velocity_Tp100ms)
+        # self.simIntake.addQuadraturePosition( int( velocity_Tp100ms * 0.02 ) )
 
-        self.mechAlgaeSim.setAngle( self.simPivotArm.getAngleDegrees() - 90.0 )
+        # self.mechAlgaeSim.setAngle( self.simPivotArm.getAngleDegrees() - 90.0 )
 
-        ## Update MOI when you have Algae?
-        # if self.hasAlgae():
-        #     self.simPivotArm.setInput()
-        # else:
-        #     self.simPivotArm.estimateMOI()
+        # ## Update MOI when you have Algae?
+        # # if self.hasAlgae():
+        # #     self.simPivotArm.setInput()
+        # # else:
+        # #     self.simPivotArm.estimateMOI()
 
-        self.simPivotArm.setInputVoltage( self.__leadMotor.getAppliedOutput() * 12.0 )
-        self.simPivotArm.update( 0.02 )
+        # self.simPivotArm.setInputVoltage( self.leadMotor.getAppliedOutput() * 12.0 )
+        # self.simPivotArm.update( 0.02 )
 
     def run(self) -> None:
         # Pivot
@@ -278,14 +279,14 @@ class AlgaeManipulator(Subsystem):
         )
 
         # Intake
-        self.__intakeMotor.set(TalonSRXControlMode.PercentOutput, self.intakeState.value)
+        self.intakeMotor.set(TalonSRXControlMode.PercentOutput, self.intakeState.value)
 
     def stop(self) -> None:
         """
         Stops the manipulator from moving and the intake from rotating
         """
         self.setSetpoint(self.getMeasurement(), True)
-        self.__intakeMotor.set(TalonSRXControlMode.PercentOutput, 0.0)
+        self.intakeMotor.set(TalonSRXControlMode.PercentOutput, 0.0)
 
     def setSetpoint(self, setpoint: degrees, override: bool = False):
         """
@@ -327,7 +328,7 @@ class AlgaeManipulator(Subsystem):
         Sets the state of the intake
         """
         self.intakeState = state
-        self.__intakeMotor.set(TalonSRXControlMode.PercentOutput, state.value)
+        self.intakeMotor.set(TalonSRXControlMode.PercentOutput, state.value)
 
     def hasAlgae(self) -> bool:
         """
