@@ -1,0 +1,54 @@
+## This script does all the necessary environment setup for robotpy usage, it can also be used to update the environment libraries
+
+### Tests
+# Check that we are in a Robot Project
+if test -e "$PWD/robot.py"; then
+    echo "\n\033[1;36mRobot Project Verified Present\033[0m\n"
+else
+    echo "\033[31mNo Robot Project Detected. Exiting.\033[0m"
+    exit 1
+fi
+
+
+# Check that the virtual environment has been created
+if [[ "$VIRTUAL_ENV" != "" ]]; then
+    echo "\n\033[1;36mVirtual Environment Verified\033[0m\n"
+else
+    echo "\n\033[31mNo Virtual Environment Detected. Installing Virtual Environment in Working Directory\033[0m\n"
+    python3 -m venv "$PWD/.venv" || echo "\n\033[31mFailed to Create Virtual Environment, Exiting.\033[0m" || exit 1
+    echo "\n\033[1;36mVirtual Environment Installed. Entering Evironment & Continuing\033[0m\n"
+fi
+
+### Installs
+# install requirements.txt
+pip install -r requirements.txt # || [echo "\n\033[31m;36mFailed to Install 'requirements.txt', Exiting.\033[0m" || exit 1]
+
+# echo "\n\033[1;36mSuccesfully Installed 'requirements.txt'!\033[0m\n"
+
+if [ "$?" -eq 0 ]; then
+    echo "\n\033[1;36mSuccesfully Installed 'requirements.txt'!\033[0m\n"
+else
+    echo "\n\033[31mFailed to Install 'requirements.txt', Exiting.\033[0m"
+    exit 1
+fi
+
+# robotpy sync
+if [[ "$OSTYPE" == "darwin"* ]]; then
+    robotpy sync --use-certifi
+    # check success
+    if [ "$?" -eq 0 ]; then
+        echo "\n\033[1;36mSuccesfully Ran 'robotpy sync --use-certifi'!\033[0m\n"
+    else
+        echo "\n\033[31mFailed to Run 'robotpy sync --use-certifi', Exiting.\033[0m"
+        exit 1
+    fi
+else
+    robotpy sync
+    # check success
+    if [ "$?" -eq 0 ]; then
+        echo "\n\033[1;36mSuccesfully Ran 'robotpy sync'!\033[0m\n"
+    else
+        echo "\n\033[31mFailed to Run 'robotpy sync', Exiting.\033[0m"
+        exit 1
+    fi
+fi
