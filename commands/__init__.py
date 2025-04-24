@@ -4,7 +4,7 @@ from .Algae.AlgaeHold import *
 from .Algae.AlgaeOut import *
 
 from .Climber.ClimberUp import *
-from .Climber.ClimberOpenLoopControl import *
+from .Climber.ClimberOpenControl import *
 from .Climber.ClimberClimb import *
 from .Climber.ClimberOut import *
 from .Climber.ClimberStay import *
@@ -41,7 +41,7 @@ __all__ = [
     "AlgaeOut",
 
     "ClimberUp",
-    "ClimberOpenLoopControl",
+    "ClimberOpenControl",
     "ClimberClimb",
     "ClimberOut",
     "ClimberStay",

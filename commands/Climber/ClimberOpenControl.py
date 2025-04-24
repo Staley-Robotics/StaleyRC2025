@@ -6,7 +6,7 @@ from subsystems.Climber import Climber, ClimberConstants
 from rev import SparkMax
 
 
-class ClimberOpenLoopControl(Command):
+class ClimberOpenControl(Command):
 
     # Initialization
     def __init__(self,
@@ -22,11 +22,11 @@ class ClimberOpenLoopControl(Command):
 
     # On Start
     def initialize(self) -> None:
-        self.climber.control_type = SparkMax.ControlType.kDutyCycle
+        ...
 
     # Periodic
     def execute(self) -> None:
-        self.climber.setSetpoint( self.getControl(), True )
+        self.climber.setSetpoint( self.getControl() )
 
     # On End
     def end(self, interrupted: bool) -> None:

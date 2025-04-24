@@ -18,96 +18,58 @@ class ClimberSpeeds:
     BACKWARD:float = -1
 
 class ClimberPositions:
-    NotInUse:degrees = 200.0
-    Prepare:degrees = 5.0
-    Climbing:degrees= 180.0
+    MaxPosition:degrees = 200 # TODO: measure
+    MinPosition:degrees =  -20
 
 class ClimberConstants:
-    kP = 0#5.0
-    kI = 0.0
-    kD = 0.0
-    kFF = 0#0.5 # Feed Forward
-    kArbFF = 0.0
-    kTolerance:degrees = 1.0
 
-    kP_Climb = 0#5.0
-    kI_Climb = 0.0
-    kD_Climb = 0.0
-    kFF_Climb = 0.0 # Feed Forward
-    kArbFF_Climb = 0.0   
+    safeTolerance:degrees = 10.0
 
-    gearRatio:float = 75.6
+    gearRatio:float = 100
     armLength_m:meters = 0.2667
     armMass_kg:kilograms = 1.35575924
-    minAngle_d:degrees = -75.0
+    minAngle_d:degrees = -60.0
     maxAngle_d:degrees = 200.0
     useGravity:bool = True
     startAngle_d:float = 90.0
 
 class Climber(Subsystem):
     
-    setpoint:float = 0.0
+    # setpoint = 0.0
     control_type:SparkMax.ControlType = None
 
     # Initialization
-    def __init__(self, mainId:int, followId:int, encoder_offset:float) -> None:
+    def __init__(self, motorId:int, encoder_offset:float) -> None:
         '''
-        mainId: main motor ID\n
-        followId: following motor ID
+        mainId: motor ID\n
         '''
-        ## Init Motors
-        self.__leadMotor:SparkMax = SparkMax( mainId, SparkMax.MotorType.kBrushless )
-        self.__followMotor:SparkMax = SparkMax( followId, SparkMax.MotorType.kBrushless )
+        ## Init Motor
+        self.__motor:SparkMax = SparkMax( motorId, SparkMax.MotorType.kBrushless )
 
-        self.__encoder:SparkAbsoluteEncoder = self.__leadMotor.getAbsoluteEncoder()
-        self.__controller:SparkClosedLoopController = self.__leadMotor.getClosedLoopController()
+        self.__setSpeed:percent = 0
+
+        self.__encoder:SparkAbsoluteEncoder = self.__motor.getAbsoluteEncoder()
+        # self.__controller:SparkClosedLoopController = self.__motor.getClosedLoopController()
         
         # Init motors and config
         lMotorCfg = SparkMaxConfig()
-        lMotorCfg = lMotorCfg.setIdleMode( SparkMaxConfig.IdleMode.kCoast )
-
-        fMotorCfg = SparkMaxConfig()
-        fMotorCfg = fMotorCfg.setIdleMode( SparkMaxConfig.IdleMode.kCoast )
-        fMotorCfg = fMotorCfg.follow( self.__leadMotor.getDeviceId() )
-        
-        clConfig = ClosedLoopConfig()
-        clConfig = clConfig.pidf(
-            ClimberConstants.kP,
-            ClimberConstants.kI,
-            ClimberConstants.kD,
-            ClimberConstants.kFF,
-            ClosedLoopSlot.kSlot0
-        )
-        clConfig = clConfig.pidf(
-            ClimberConstants.kP_Climb,
-            ClimberConstants.kI_Climb,
-            ClimberConstants.kD_Climb,
-            ClimberConstants.kFF_Climb,
-            ClosedLoopSlot.kSlot1
-        )
-        clConfig = clConfig.setFeedbackSensor( ClosedLoopConfig.FeedbackSensor.kAbsoluteEncoder )
-        clConfig = clConfig.positionWrappingEnabled(False).positionWrappingInputRange(0, 1)
+        lMotorCfg = lMotorCfg.setIdleMode( SparkMaxConfig.IdleMode.kBrake )
         
         encConfig = AbsoluteEncoderConfig()
         encConfig = encConfig.inverted( True )
+        encConfig = encConfig.positionConversionFactor(ClimberConstants.gearRatio).velocityConversionFactor(ClimberConstants.gearRatio / 60)
         encConfig = encConfig.zeroOffset( encoder_offset )
         encConfig = encConfig.zeroCentered( True )
 
         # Apply configs
-        lMotorCfg.apply(clConfig)
-        lMotorCfg.apply(encConfig)
+        self.__motor.configure( lMotorCfg, SparkBase.ResetMode.kResetSafeParameters, SparkBase.PersistMode.kPersistParameters )
         
-        self.__leadMotor.configure( lMotorCfg, SparkBase.ResetMode.kResetSafeParameters, SparkBase.PersistMode.kPersistParameters )
-        self.__followMotor.configure( fMotorCfg, SparkBase.ResetMode.kResetSafeParameters, SparkBase.PersistMode.kPersistParameters )
-        
-        self.control_type = SparkMax.ControlType.kPosition
-
         # Mechanism2d
         mech = Mechanism2d( 30, 40, Color8Bit(50,50,70) )
         mechRoot = mech.getRoot("Climber", 15, 0)
         mechBase = mechRoot.appendLigament("ClimberPost", 6, 90, 2, color=Color8Bit(Color.kGray))
-        self.mechClimberTarget = mechBase.appendLigament("ClimberActual", 8, 90, 2, color=Color8Bit(Color.kYellow))
-        self.mechClimberActual = mechBase.appendLigament("ClimberTarget", 4, 90, 3, color=Color8Bit(Color.kGreen))
+        # self.mechClimberTarget = mechBase.appendLigament("ClimberTarget", 8, 90, 2, color=Color8Bit(Color.kYellow))
+        self.mechClimberActual = mechBase.appendLigament("ClimberActual", 4, 90, 3, color=Color8Bit(Color.kGreen))
         if RobotBase.isSimulation(): self.mechClimberSim = mechBase.appendLigament("ClimberSSim", 6, 90, 3, color=Color8Bit(Color.kRed))
 
         # Shuffleboard
@@ -115,11 +77,11 @@ class Climber(Subsystem):
         SmartDashboard.putData( "ClimberMech", mech )
 
         # Simulation
-        self.simLMotor = SparkMaxSim(self.__leadMotor, DCMotor.NEO(1))
+        self.simLMotor = SparkMaxSim(self.__motor, DCMotor.NEO(1))
         # self.simLMotor.setPosition( degreesToRotations( 90 ) )
 
         self.simClimber = SingleJointedArmSim(
-            DCMotor.NEO(2),
+            DCMotor.NEO(1),
             ClimberConstants.gearRatio,
             SingleJointedArmSim.estimateMOI( ClimberConstants.armLength_m, ClimberConstants.armMass_kg ),
             ClimberConstants.armLength_m,
@@ -133,19 +95,19 @@ class Climber(Subsystem):
     # Periodic Loop
     def periodic(self) -> None:
         # Logging: Log Inputs
-        FalconLogger.logInput("Climber/LeadMotorInput", self.__leadMotor.get())
-        FalconLogger.logInput("Climber/LeadMotorOutput", self.__leadMotor.getAppliedOutput())
-        FalconLogger.logInput("Climber/LeadMotorCurrent_a", self.__leadMotor.getOutputCurrent())
-        FalconLogger.logInput("Climber/LeadMotorPosition_abs_r", self.__leadMotor.getEncoder().getPosition())
-        FalconLogger.logInput("Climber/LeadMotorVelocity_rpm", self.__leadMotor.getEncoder().getPosition())
-        FalconLogger.logInput("Climber/LeadMotorTemp_c", self.__leadMotor.getMotorTemperature())
+        FalconLogger.logInput("Climber/LeadMotorInput", self.__motor.get())
+        FalconLogger.logInput("Climber/LeadMotorOutput", self.__motor.getAppliedOutput())
+        FalconLogger.logInput("Climber/LeadMotorCurrent_a", self.__motor.getOutputCurrent())
+        FalconLogger.logInput("Climber/LeadMotorPosition_abs_r", self.__motor.getEncoder().getPosition())
+        FalconLogger.logInput("Climber/LeadMotorVelocity_rpm", self.__motor.getEncoder().getPosition())
+        FalconLogger.logInput("Climber/LeadMotorTemp_c", self.__motor.getMotorTemperature())
         
-        FalconLogger.logInput("Climber/FollowMotorInput", self.__leadMotor.get())
-        FalconLogger.logInput("Climber/FollowMotorOutput", self.__leadMotor.getAppliedOutput())
-        FalconLogger.logInput("Climber/FollowMotorCurrent_a", self.__leadMotor.getOutputCurrent())
-        FalconLogger.logInput("Climber/FollowMotorPosition_abs_r", self.__leadMotor.getEncoder().getPosition())
-        FalconLogger.logInput("Climber/FollowMotorVelocity_rpm", self.__leadMotor.getEncoder().getPosition())
-        FalconLogger.logInput("Climber/FollowMotorTemp_c", self.__leadMotor.getMotorTemperature())
+        FalconLogger.logInput("Climber/FollowMotorInput", self.__motor.get())
+        FalconLogger.logInput("Climber/FollowMotorOutput", self.__motor.getAppliedOutput())
+        FalconLogger.logInput("Climber/FollowMotorCurrent_a", self.__motor.getOutputCurrent())
+        FalconLogger.logInput("Climber/FollowMotorPosition_abs_r", self.__motor.getEncoder().getPosition())
+        FalconLogger.logInput("Climber/FollowMotorVelocity_rpm", self.__motor.getEncoder().getPosition())
+        FalconLogger.logInput("Climber/FollowMotorTemp_c", self.__motor.getMotorTemperature())
 
         FalconLogger.logInput("Climber/EncoderPosition_r", self.__encoder.getPosition())
         FalconLogger.logInput("Climber/EncoderVelocity_rpm", self.__encoder.getVelocity()) # TODO should this be rps? or maybe do a * 60
@@ -157,7 +119,7 @@ class Climber(Subsystem):
             self.run()
 
         self.mechClimberActual.setAngle( self.getPosition() - 90.0 )
-        self.mechClimberTarget.setAngle( self.getSetpoint() - 90.0 )
+        # self.mechClimberTarget.setAngle( self.getSetpoint() - 90.0 )
 
         # Logging: Log Outputs
         FalconLogger.logOutput("Climber/TargetPosition_d", self.getSetpoint())
@@ -172,6 +134,7 @@ class Climber(Subsystem):
         Apply sim output to motor sim object
 
         """
+
         velocity_radps = self.simClimber.getVelocity() # note: this returns velocity in radians per sec
         velocity_rpm = radiansToRotations( velocity_radps ) * 60
 
@@ -195,63 +158,31 @@ class Climber(Subsystem):
 
     # Run the Subsystem
     def run(self) -> None:
-        if self.control_type == SparkMax.ControlType.kPosition:
-            sp = degreesToRotations( self.getSetpoint() )
+        # Safeties - check if position nearing bounds, only allow to move away from bound
+        if self.getPosition() >= ClimberPositions.MaxPosition:
+            self.setSetpoint(min(0, self.getSetpoint()))
+        elif self.getPosition() <= ClimberPositions.MinPosition:
+            self.setSetpoint(max(0, self.getSetpoint()))
 
-            arbFF = ClimberConstants.kArbFF_Climb if self.isClimbing() else ClimberConstants.kArbFF
-            cosineScalar = math.cos( degreesToRadians( self.getPosition() ) )
-            slot = ClosedLoopSlot.kSlot1 if self.isClimbing() else ClosedLoopSlot.kSlot0       
-
-            self.__controller.setReference(
-                sp,
-                SparkMax.ControlType.kPosition,
-                slot,
-                arbFF * cosineScalar,
-                SparkClosedLoopController.ArbFFUnits.kVoltage
-            )
-        else: # kDutyCycle
-            # Safeties - check if position nearing bounds, only allow to move away from bound
-            pos = self.getPosition() + 90.0
-            if pos > 360.0: pos -= 360.0
-            if pos < 0.0: pos += 360.0
-
-            if pos <= 90.0: #>= ClimberPositions.Climbing - ClimberConstants.kTolerance:
-                self.setSetpoint(max(0, self.getSetpoint()), True)
-            elif pos >= 270.0: #ClimberPositions.Prepare - ClimberConstants.kTolerance: # tolerance subtracted to extend farther if needed
-                self.setSetpoint(min(0, self.getSetpoint()), True)
-
-
-            # print(self.getSetpoint(), self.control_type)
-            # assumes setpoint will be overrided to match duty cycle range
-            self.__controller.setReference(
-                self.getSetpoint(),
-                self.control_type,
-            )
+        self.__motor.set(self.__setSpeed)
 
     # Stop the Subsystem
     def stop(self) -> None:
         self.setSetpoint( self.getPosition(), True )
 
     # Set the Desired Position
-    def setSetpoint(self, position:degrees, override:bool = False):
-        """Sets the desired position of the climber
-    
-        :param position: the desired position in degrees
-        :param override: whether or not this uses min(max()) to mnormalize position
-        """
-        if not override:
-            position = min(max(position, ClimberConstants.minAngle_d), ClimberConstants.maxAngle_d )
-        self.setpoint = position
+    def setSetpoint(self, speed:float, ovveride:bool=False):
+        self.__setSpeed = speed
 
     # Get Desired Position
     def getSetpoint(self):
-        """Returns desired position of the climber in degrees (not climber's motor, the actual climber)"""
-        return self.setpoint
+        """Returns desired speed percentage of the motor"""
+        return self.__setSpeed
     
     # Check if Subsystem is at the Desired State
-    def atSetpoint(self) -> bool:
-        """Returns true if climber is at desired position (not climber's motor, the actual climber)"""
-        return abs(self.getPosition() - self.getSetpoint()) < ClimberConstants.kTolerance
+    # def atSetpoint(self) -> bool:
+    #     """Returns true if climber is at desired position (not climber's motor, the actual climber)"""
+    #     return abs(self.getPosition() - self.getSetpoint()) < ClimberConstants.kTolerance
     
     def getPosition(self) -> float:
         """
@@ -260,13 +191,8 @@ class Climber(Subsystem):
         :returns: position of climber in degrees
         """
         val = rotationsToDegrees(self.__encoder.getPosition())
-
-        # if val > 270:
-        #     val -= 360
-        # elif val < -90:
-        #     val += 360
             
         return val
         
-    def isClimbing(self) -> bool:
-        return False
+    # def isClimbing(self) -> bool:
+    #     return False

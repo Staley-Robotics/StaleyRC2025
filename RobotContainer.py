@@ -28,7 +28,7 @@ class RobotContainer:
         Initializes RobotContainer
         """
         ## Controller Mapping Mode
-        control_mode: str = "Comp"  # Can be "Comp", "Practice", "Test", "DriveOnly"
+        control_mode: str = "Demo"  # Can be "Comp", "Practice", "Test", "DriveOnly", "Demo"
 
 
         ## Controllers
@@ -43,8 +43,7 @@ class RobotContainer:
         self.sysCoralWheel = CoralManipulatorWheel( 8 )
         self.sysCoralPivot = CoralManipulatorPivot( 7, 0.967803 )
         self.sysAlgae      = AlgaeManipulator()
-        self.sysClimber    = Climber( 3, 4, 0.7306183 )
-        # self.sysClimber    = ClimberSimple( 3, 4, 0.9136312 )
+        self.sysClimber    = Climber( 3, 0.7306183 )
 
         # Vision Prep
         AwaitVisionData( self.sysVision, self.sysDriveTrain ).schedule()
@@ -68,6 +67,8 @@ class RobotContainer:
                 self.__bindTestControls()
             case "DriveOnly":
                 self.__bindDriveOnly()
+            case "Demo":
+                self.__bindDemoControls()
 
         ## Initialize Named Commands
         self.__InitNamedCommands()
@@ -152,6 +153,78 @@ class RobotContainer:
 
         # self.controlBoard.Reset().whileTrue( DriveToPose(self.ReefScapeState.getReefPose) )
 
+    def __bindDemoControls(self):
+        """ Console """
+        # Reef
+        self.controlBoard.R1().onTrue( cmd.runOnce( lambda: self.ReefScapeState.setTarget( ReefSide.R1 ) ).ignoringDisable(True) )
+        self.controlBoard.R2().onTrue( cmd.runOnce( lambda: self.ReefScapeState.setTarget( ReefSide.R2 ) ).ignoringDisable(True) )
+        self.controlBoard.R3().onTrue( cmd.runOnce( lambda: self.ReefScapeState.setTarget( ReefSide.R3 ) ).ignoringDisable(True) )
+        self.controlBoard.R4().onTrue( cmd.runOnce( lambda: self.ReefScapeState.setTarget( ReefSide.R4 ) ).ignoringDisable(True) )
+        self.controlBoard.R5().onTrue( cmd.runOnce( lambda: self.ReefScapeState.setTarget( ReefSide.R5 ) ).ignoringDisable(True) )
+        self.controlBoard.R6().onTrue( cmd.runOnce( lambda: self.ReefScapeState.setTarget( ReefSide.R6 ) ).ignoringDisable(True) )
+        self.controlBoard.R7().onTrue( cmd.runOnce( lambda: self.ReefScapeState.setTarget( ReefSide.R7 ) ).ignoringDisable(True) )
+        self.controlBoard.R8().onTrue( cmd.runOnce( lambda: self.ReefScapeState.setTarget( ReefSide.R8 ) ).ignoringDisable(True) )
+        self.controlBoard.R9().onTrue( cmd.runOnce( lambda: self.ReefScapeState.setTarget( ReefSide.R9 ) ).ignoringDisable(True) )
+        self.controlBoard.R10().onTrue( cmd.runOnce( lambda: self.ReefScapeState.setTarget( ReefSide.R10 ) ).ignoringDisable(True) )
+        self.controlBoard.R11().onTrue( cmd.runOnce( lambda: self.ReefScapeState.setTarget( ReefSide.R11 ) ).ignoringDisable(True) )
+        self.controlBoard.R12().onTrue( cmd.runOnce( lambda: self.ReefScapeState.setTarget( ReefSide.R12 ) ).ignoringDisable(True) )
+
+        # Source
+        self.controlBoard.Inner().onTrue( cmd.runOnce(self.ReefScapeState.setSourceSelect(SourceSelect.INNER)))
+        self.controlBoard.Middle().onTrue( cmd.runOnce(self.ReefScapeState.setSourceSelect(SourceSelect.MIDDLE)))
+        self.controlBoard.Outer().onTrue( cmd.runOnce(self.ReefScapeState.setSourceSelect(SourceSelect.OUTER)))
+
+        self.controlBoard.Reset().onTrue( cmd.runOnce(self.ReefScapeState.changeSourceSide()))
+
+        """Driver 1"""
+        # Drive
+        self.sysDriveTrain.setDefaultCommand(
+            DriveByStick( self.sysDriveTrain, self.driver1.getLeftUpDown, self.driver1.getLeftSideToSide, self.driver1.getRightSideToSide )
+        )
+        # self.driver1.rightTrigger().whileTrue( DriveToPose( self.sysDriveTrain, self.ReefScapeState.getCoralPose) ) # TODO: Make better and more consistent, use sequences
+        # self.driver1.leftTrigger().whileTrue( DriveToPose( self.sysDriveTrain, self.ReefScapeState.getReefPose) )
+        # self.driver1.rightBumper().toggleOnTrue( DriveByStickRotate( self.sysDriveTrain, self.driver1.getLeftUpDown, self.driver1.getLeftSideToSide, self.driver1.getRightSideToSide, ReefScape.getTargetRotation ) )
+        self.driver1.leftBumper().onTrue( cmd.runOnce( self.sysDriveTrain.changeDriveSpeedPercent ) )
+        self.driver1.back().onTrue( AwaitVisionData( self.sysVision, self.sysDriveTrain ) )
+        self.driver1.leftStick().onTrue( cmd.runOnce( self.sysDriveTrain.toggleFieldRelative ) )
+
+        # Algae
+        self.sysAlgae.setDefaultCommand( AlgaeHold( self.sysAlgae ) )
+        self.driver1.a().whileTrue( AlgaeGrab( self.sysAlgae ) )
+        self.driver1.b().whileTrue( AlgaeEject( self.sysAlgae ) )
+
+        # Climber
+        self.sysClimber.setDefaultCommand( ClimberOpenControl(self.sysClimber, self.driver1.getTriggers) )
+
+        """Driver 2"""
+        ## Sequences
+        self.driver2.a().toggleOnTrue( SetPivotPosition( self.sysCoralPivot, CoralPivotPositions.SOURCE, 'Source') ).toggleOnTrue(CoralIO(self.sysCoralWheel))
+        self.driver2.a().onTrue(ElevatorToPos(self.sysElevator, ElevatorPositions.BOTTOM)) # Source button, also moves pivot
+
+        ## Coral
+        # Pivot
+        self.sysCoralPivot.setDefaultCommand( ControlPivotPosition( self.sysCoralPivot, self.driver2.getRightUpDown ) )
+        self.controlBoard.L1().toggleOnTrue( SetPivotPosition( self.sysCoralPivot, CoralPivotPositions.L1, "L1" ) )
+        self.controlBoard.L2().toggleOnTrue( SetPivotPosition( self.sysCoralPivot, CoralPivotPositions.L2, "L2" ) )
+        self.controlBoard.L3().toggleOnTrue( SetPivotPosition( self.sysCoralPivot, CoralPivotPositions.L3, "L3" ) )
+        self.controlBoard.L4().toggleOnTrue( SetPivotPosition( self.sysCoralPivot, CoralPivotPositions.L4_up, "L4u" ) )
+
+        # Wheel
+        self.sysCoralWheel.setDefaultCommand( CoralDefault( self.sysCoralWheel ) )
+        self.driver2.y().toggleOnTrue( CoralIO( self.sysCoralWheel ) )
+
+        # Elevator
+        self.sysElevator.setDefaultCommand(ElevatorByStick(self.sysElevator, self.driver2.getLeftUpDown))
+        self.controlBoard.L1().onTrue(ElevatorToPos(self.sysElevator, ElevatorPositions.L1))
+        self.controlBoard.L2().onTrue(ElevatorToPos(self.sysElevator, ElevatorPositions.L2))
+        self.controlBoard.L3().onTrue(ElevatorToPos(self.sysElevator, ElevatorPositions.L3))
+        self.controlBoard.L4().onTrue(ElevatorToPos(self.sysElevator, ElevatorPositions.L4))
+        # self.controlBoard.Reset().onTrue(ElevatorResync(self.sysElevator, self.sysCoralPivot))
+
+
+        # self.controlBoard.Reset().whileTrue( DriveToPose(self.ReefScapeState.getReefPose) )
+
+
     def __bindPracticeControls(self):
         ## Driver 1
         # DriveTrain
@@ -168,7 +241,7 @@ class RobotContainer:
         # self.sysClimber.setDefaultCommand( ClimberUp( self.sysClimber ) )
         # self.driver1.x().onTrue( ClimberOut( self.sysClimber ) )
         # self.driver1.y().toggleOnTrue( ClimberOpenControl( self.sysClimber, self.driver1.getTriggers ) )# NOTE: use self.driver1.getRightTriggerAxis ) ) to only allow open loop to contract climber
-        self.sysClimber.setDefaultCommand( ClimberOpenLoopControl( self.sysClimber, self.driver1.getTriggers ) )
+        self.sysClimber.setDefaultCommand( ClimberOpenControl( self.sysClimber, self.driver1.getTriggers ) )
 
         ## Driver 2 TODO: update for control board + controller
         # Coral Pivot

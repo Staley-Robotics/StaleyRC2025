@@ -1,7 +1,7 @@
 import typing
 
 from commands2 import Command, Subsystem
-from subsystems.Climber import Climber, ClimberConstants, ClimberPositions
+from subsystems.ClimberOld import ClimberOld, ClimberConstants, ClimberPositions
 
 from rev import SparkMax
 
@@ -10,10 +10,10 @@ class ClimberOut(Command):
 
     # Initialization
     def __init__(self,
-                 climberSubsystem: Climber,
+                 climberSubsystem: ClimberOld,
                  ) -> None:
         # Command Attributes
-        self.Climber: Climber = climberSubsystem
+        self.Climber: ClimberOld = climberSubsystem
         self.setName("ClimberOut")
         self.addRequirements(climberSubsystem)
 

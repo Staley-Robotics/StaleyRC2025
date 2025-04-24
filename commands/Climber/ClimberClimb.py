@@ -1,17 +1,17 @@
 import typing
 
 from commands2 import Command, Subsystem
-from subsystems.Climber import Climber, ClimberConstants
+from subsystems.ClimberOld import ClimberOld, ClimberConstants
 
 
 class ClimberClimb(Command):
 
     # Initialization
     def __init__(self,
-                 climberSubsystem: Climber,
+                 climberSubsystem: ClimberOld,
                  ) -> None:
         # Command Attributes
-        self.Climber: Climber = climberSubsystem
+        self.Climber: ClimberOld = climberSubsystem
         self.setName("ClimberClimb")
         self.addRequirements(climberSubsystem)
 
