@@ -28,7 +28,7 @@ class RobotContainer:
         Initializes RobotContainer
         """
         ## Controller Mapping Mode
-        control_mode: str = "Practice"  # Can be "Comp", "Practice", "Test", "DriveOnly", "Demo"
+        control_mode: str = "Practice``"  # Can be "Comp", "Practice", "Test", "DriveOnly", "Demo"
 
 
         ## Controllers
@@ -39,7 +39,7 @@ class RobotContainer:
         ## Initialize Subsystems
         self.sysDriveTrain = SwerveDrive()
         self.sysVision     = Vision( self.sysDriveTrain.apply_vision_measurement )
-        self.sysElevator   = Elevator( 5, 6 )
+        # self.sysElevator   = Elevator( 5, 6 )
         self.sysCoralWheel = CoralManipulatorWheel( 8 )
         self.sysCoralPivot = CoralManipulatorPivot( 7, 0.967803 )
         self.sysAlgae      = AlgaeManipulator()
@@ -128,7 +128,7 @@ class RobotContainer:
         """Driver 2"""
         ## Sequences
         self.driver2.a().toggleOnTrue( SetPivotPosition( self.sysCoralPivot, CoralPivotPositions.SOURCE, 'Source') ).toggleOnTrue(CoralIO(self.sysCoralWheel))
-        self.driver2.a().onTrue(ElevatorToPos(self.sysElevator, ElevatorPositions.BOTTOM)) # Source button, also moves pivot
+        # self.driver2.a().onTrue(ElevatorToPos(self.sysElevator, ElevatorPositions.BOTTOM)) # Source button, also moves pivot
 
         ## Coral
         # Pivot
@@ -143,11 +143,11 @@ class RobotContainer:
         self.driver2.y().toggleOnTrue( CoralIO( self.sysCoralWheel ) )
 
         # Elevator
-        self.sysElevator.setDefaultCommand(ElevatorByStick(self.sysElevator, self.driver2.getLeftUpDown))
-        self.controlBoard.L1().onTrue(ElevatorToPos(self.sysElevator, ElevatorPositions.L1))
-        self.controlBoard.L2().onTrue(ElevatorToPos(self.sysElevator, ElevatorPositions.L2))
-        self.controlBoard.L3().onTrue(ElevatorToPos(self.sysElevator, ElevatorPositions.L3))
-        self.controlBoard.L4().onTrue(ElevatorToPos(self.sysElevator, ElevatorPositions.L4))
+        # self.sysElevator.setDefaultCommand(ElevatorByStick(self.sysElevator, self.driver2.getLeftUpDown))
+        # self.controlBoard.L1().onTrue(ElevatorToPos(self.sysElevator, ElevatorPositions.L1))
+        # self.controlBoard.L2().onTrue(ElevatorToPos(self.sysElevator, ElevatorPositions.L2))
+        # self.controlBoard.L3().onTrue(ElevatorToPos(self.sysElevator, ElevatorPositions.L3))
+        # self.controlBoard.L4().onTrue(ElevatorToPos(self.sysElevator, ElevatorPositions.L4))
         # self.controlBoard.Reset().onTrue(ElevatorResync(self.sysElevator, self.sysCoralPivot))
 
 
@@ -199,7 +199,7 @@ class RobotContainer:
         """Driver 2"""
         ## Sequences
         self.driver2.a().toggleOnTrue( SetPivotPosition( self.sysCoralPivot, CoralPivotPositions.SOURCE, 'Source') ).toggleOnTrue(CoralIO(self.sysCoralWheel))
-        self.driver2.a().onTrue(ElevatorToPos(self.sysElevator, ElevatorPositions.BOTTOM)) # Source button, also moves pivot
+        # self.driver2.a().onTrue(ElevatorToPos(self.sysElevator, ElevatorPositions.BOTTOM)) # Source button, also moves pivot
 
         ## Coral
         # Pivot
@@ -214,11 +214,11 @@ class RobotContainer:
         self.driver2.y().toggleOnTrue( CoralIO( self.sysCoralWheel ) )
 
         # Elevator
-        self.sysElevator.setDefaultCommand(ElevatorByStick(self.sysElevator, self.driver2.getLeftUpDown))
-        self.controlBoard.L1().onTrue(ElevatorToPos(self.sysElevator, ElevatorPositions.L1))
-        self.controlBoard.L2().onTrue(ElevatorToPos(self.sysElevator, ElevatorPositions.L2))
-        self.controlBoard.L3().onTrue(ElevatorToPos(self.sysElevator, ElevatorPositions.L3))
-        self.controlBoard.L4().onTrue(ElevatorToPos(self.sysElevator, ElevatorPositions.L4))
+        # self.sysElevator.setDefaultCommand(ElevatorByStick(self.sysElevator, self.driver2.getLeftUpDown))
+        # self.controlBoard.L1().onTrue(ElevatorToPos(self.sysElevator, ElevatorPositions.L1))
+        # self.controlBoard.L2().onTrue(ElevatorToPos(self.sysElevator, ElevatorPositions.L2))
+        # self.controlBoard.L3().onTrue(ElevatorToPos(self.sysElevator, ElevatorPositions.L3))
+        # self.controlBoard.L4().onTrue(ElevatorToPos(self.sysElevator, ElevatorPositions.L4))
         # self.controlBoard.Reset().onTrue(ElevatorResync(self.sysElevator, self.sysCoralPivot))
 
 
@@ -272,7 +272,7 @@ class RobotContainer:
         """Driver 2"""
         ## Sequences
         self.driver2.a().toggleOnTrue( SetPivotPosition( self.sysCoralPivot, CoralPivotPositions.SOURCE, 'Source') ).toggleOnTrue(CoralIO(self.sysCoralWheel))
-        self.driver2.a().onTrue(ElevatorToPos(self.sysElevator, ElevatorPositions.BOTTOM)) # Source button, also moves pivot
+        # self.driver2.a().onTrue(ElevatorToPos(self.sysElevator, ElevatorPositions.BOTTOM)) # Source button, also moves pivot
 
         ## Coral
         # Pivot
@@ -287,11 +287,11 @@ class RobotContainer:
         self.driver2.y().toggleOnTrue( CoralIO( self.sysCoralWheel ) )
 
         # Elevator
-        self.sysElevator.setDefaultCommand(ElevatorByStick(self.sysElevator, self.driver2.getLeftUpDown))
-        self.controlBoard.L1().onTrue(ElevatorToPos(self.sysElevator, ElevatorPositions.L1))
-        self.controlBoard.L2().onTrue(ElevatorToPos(self.sysElevator, ElevatorPositions.L2))
-        self.controlBoard.L3().onTrue(ElevatorToPos(self.sysElevator, ElevatorPositions.L3))
-        self.controlBoard.L4().onTrue(ElevatorToPos(self.sysElevator, ElevatorPositions.L4))
+        # self.sysElevator.setDefaultCommand(ElevatorByStick(self.sysElevator, self.driver2.getLeftUpDown))
+        # self.controlBoard.L1().onTrue(ElevatorToPos(self.sysElevator, ElevatorPositions.L1))
+        # self.controlBoard.L2().onTrue(ElevatorToPos(self.sysElevator, ElevatorPositions.L2))
+        # self.controlBoard.L3().onTrue(ElevatorToPos(self.sysElevator, ElevatorPositions.L3))
+        # self.controlBoard.L4().onTrue(ElevatorToPos(self.sysElevator, ElevatorPositions.L4))
         # self.controlBoard.Reset().onTrue(ElevatorResync(self.sysElevator, self.sysCoralPivot))
 
 
@@ -364,19 +364,19 @@ class RobotContainer:
 
 
         # Elevator
-        self.sysElevator.setDefaultCommand(ElevatorByStick(self.sysElevator, self.driver2.getLeftUpDown))
-        self.controlBoard.L1().onTrue(ElevatorToPos(self.sysElevator, ElevatorPositions.L1))
-        self.controlBoard.L2().onTrue(ElevatorToPos(self.sysElevator, ElevatorPositions.L2))
-        self.controlBoard.L3().onTrue(ElevatorToPos(self.sysElevator, ElevatorPositions.L3))
-        self.controlBoard.L4().onTrue(ElevatorToPos(self.sysElevator, ElevatorPositions.L4))
-        self.controlBoard.Reset().onTrue(ElevatorResync(self.sysElevator, self.sysCoralPivot))
-        SmartDashboard.putData('ElevatorL1', ElevatorToPos(self.sysElevator, ElevatorPositions.L1))
-        SmartDashboard.putData('ElevatorL2', ElevatorToPos(self.sysElevator, ElevatorPositions.L2))
-        SmartDashboard.putData('ElevatorL3', ElevatorToPos(self.sysElevator, ElevatorPositions.L3))
-        SmartDashboard.putData('ElevatorL4', ElevatorToPos(self.sysElevator, ElevatorPositions.L4))
+        # self.sysElevator.setDefaultCommand(ElevatorByStick(self.sysElevator, self.driver2.getLeftUpDown))
+        # self.controlBoard.L1().onTrue(ElevatorToPos(self.sysElevator, ElevatorPositions.L1))
+        # self.controlBoard.L2().onTrue(ElevatorToPos(self.sysElevator, ElevatorPositions.L2))
+        # self.controlBoard.L3().onTrue(ElevatorToPos(self.sysElevator, ElevatorPositions.L3))
+        # self.controlBoard.L4().onTrue(ElevatorToPos(self.sysElevator, ElevatorPositions.L4))
+        # self.controlBoard.Reset().onTrue(ElevatorResync(self.sysElevator, self.sysCoralPivot))
+        # SmartDashboard.putData('ElevatorL1', ElevatorToPos(self.sysElevator, ElevatorPositions.L1))
+        # SmartDashboard.putData('ElevatorL2', ElevatorToPos(self.sysElevator, ElevatorPositions.L2))
+        # SmartDashboard.putData('ElevatorL3', ElevatorToPos(self.sysElevator, ElevatorPositions.L3))
+        # SmartDashboard.putData('ElevatorL4', ElevatorToPos(self.sysElevator, ElevatorPositions.L4))
 
-        self.driver2.a().onTrue(ElevatorToPos(self.sysElevator, ElevatorPositions.SOURCE)) # Source button, also moves pivot
-        self.driver2.x().onTrue(ElevatorScoreL4(self.sysElevator, self.sysCoralWheel))
+        # self.driver2.a().onTrue(ElevatorToPos(self.sysElevator, ElevatorPositions.SOURCE)) # Source button, also moves pivot
+        # self.driver2.x().onTrue(ElevatorScoreL4(self.sysElevator, self.sysCoralWheel))
 
         # self.controlBoard.Reset().whileTrue( DriveToPose(self.ReefScapeState.getReefPose) )
 
@@ -476,14 +476,14 @@ class RobotContainer:
         """
         Initialize Named Commands for PathPlanner
         """
-        NamedCommands.registerCommand("L4 Elevator", ElevatorToPos(self.sysElevator, ElevatorPositions.L4))
-        NamedCommands.registerCommand("L3 Elevator", ElevatorToPos(self.sysElevator, ElevatorPositions.L3))
-        NamedCommands.registerCommand("L2 Elevator", ElevatorToPos(self.sysElevator, ElevatorPositions.L2))
-        NamedCommands.registerCommand("L1 Elevator", ElevatorToPos(self.sysElevator, ElevatorPositions.L1))
-        NamedCommands.registerCommand("MIN Elevator", ElevatorToPos(self.sysElevator, ElevatorPositions.BOTTOM))
+        # NamedCommands.registerCommand("L4 Elevator", ElevatorToPos(self.sysElevator, ElevatorPositions.L4))
+        # NamedCommands.registerCommand("L3 Elevator", ElevatorToPos(self.sysElevator, ElevatorPositions.L3))
+        # NamedCommands.registerCommand("L2 Elevator", ElevatorToPos(self.sysElevator, ElevatorPositions.L2))
+        # NamedCommands.registerCommand("L1 Elevator", ElevatorToPos(self.sysElevator, ElevatorPositions.L1))
+        # NamedCommands.registerCommand("MIN Elevator", ElevatorToPos(self.sysElevator, ElevatorPositions.BOTTOM))
 
-        NamedCommands.registerCommand("L3.5 Elevator", ElevatorToPos( self.sysElevator, ElevatorPositions.L35 ))
-        NamedCommands.registerCommand("L2.5 Elevator", ElevatorToPos( self.sysElevator, ElevatorPositions.L25 ))
+        # NamedCommands.registerCommand("L3.5 Elevator", ElevatorToPos( self.sysElevator, ElevatorPositions.L35 ))
+        # NamedCommands.registerCommand("L2.5 Elevator", ElevatorToPos( self.sysElevator, ElevatorPositions.L25 ))
 
         NamedCommands.registerCommand("L4 Pivot", SetPivotPosition(self.sysCoralPivot, CoralPivotPositions.L4_up, "L4u"))
         NamedCommands.registerCommand("L3 Pivot", SetPivotPosition(self.sysCoralPivot, CoralPivotPositions.L3, "L3"))
