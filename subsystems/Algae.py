@@ -32,7 +32,7 @@ class ColorConstants:
 class AlgaeManipulatorPositions:
     MAX = 100.0
     HOLD = 85.0
-    PLACE = 86.0
+    PLACE = 105.0
     GRAB = 35.0
     MIN = 10.0
 
@@ -44,17 +44,17 @@ class AlgaeIntakeState(Enum):
 
 class AlgaeManipulatorConstants:
     # Pivot Constants
-    pivot_kP: float = 0.75
+    pivot_kP: float = 1.2
     pivot_kI: float = 0.00002
-    pivot_kD: float = 0.05
+    pivot_kD: float = 0.9
     pivot_kFF: float = 0.0
     pivot_kArbFF: float = 0.97006
     pivot_kV: float = 0.0
-    pivot_kTolerance: float = 5
+    pivot_kTolerance: float = 5 
 
-    pivot_kP_Algae: float = 0.75
+    pivot_kP_Algae: float = 0.9
     pivot_kI_Algae: float = 0.00002
-    pivot_kD_Algae: float = 0.45
+    pivot_kD_Algae: float = 1.0
     pivot_kFF_Algae: float = 0.0
     pivot_kArbFF_Algae: float = 3.8
 
@@ -73,6 +73,8 @@ class AlgaeManipulatorConstants:
     intake_kOffsetRotations: float = 0.0
 
     maxAlgaeDistance = 200
+
+    algaeLostToleranceFrames: int = 4
 
     length:meters = 0.5
     weight:kilograms = 0.75
@@ -154,6 +156,8 @@ class AlgaeManipulator(Subsystem):
         self.__tofSensor = TimeOfFlight( 0 ) # TODO: how get can id?
         self.__tofSensor.setRangingMode( TimeOfFlight.RangingMode.kShort, 24 )
 
+        self.algae_lost_frames = 0
+
         # Mechanism 2d stuff
         mech = Mechanism2d(30, 40, Color8Bit(50,50,70))
         mechRoot = mech.getRoot("Pivot", 15, 0 )
@@ -219,6 +223,11 @@ class AlgaeManipulator(Subsystem):
 
         self.mechAlgaeActual.setAngle( self.getMeasurement() - 90.0 )
         self.mechAlgaeTarget.setAngle( self.getSetpoint() - 90.0 )
+
+        if self.__tofSensor.getRange() < AlgaeManipulatorConstants.maxAlgaeDistance:
+            self.algae_lost_frames = 0
+        else:
+            self.algae_lost_frames += 1
 
         # Output Logging
         FalconLogger.logOutput("AlgaeManipulator/Pivot/TargetAngle_d", self.getSetpoint())
@@ -346,4 +355,4 @@ class AlgaeManipulator(Subsystem):
             # inRangeBlue = inRange( color.blue * 255, ColorConstants.blue, ColorConstants.tolerence )
 
             # return inProximity and inRangeRed and inRangeGreen and inRangeBlue
-            return self.__tofSensor.getAmbientLightLevel() != 0 and self.__tofSensor.getRange() < AlgaeManipulatorConstants.maxAlgaeDistance
+            return (self.__tofSensor.getAmbientLightLevel() or self.__tofSensor.getRange()) and self.algae_lost_frames <= AlgaeManipulatorConstants.algaeLostToleranceFrames

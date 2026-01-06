@@ -23,8 +23,8 @@ class AlgaeEject(Command):
 
     # Periodic
     def execute(self) -> None:
-        if self.Algae.getMeasurement() >= self.Algae.getSetpoint():
-            self.Algae.setIntake(AlgaeIntakeState.OUT)
+        # if self.Algae.getMeasurement() >= self.Algae.getSetpoint():
+        self.Algae.setIntake(AlgaeIntakeState.OUT)
 
     # On End
     def end(self, interrupted:bool) -> None:
